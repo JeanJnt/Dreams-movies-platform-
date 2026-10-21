@@ -1,0 +1,281 @@
+/*
+ * Les thèmes de Dreams, chacun inspiré d'un film (choisis avec data-theme sur <html>).
+ * Chaque thème définit ses couleurs, sa police de titres (--display), une texture de fond
+ * et son motif sous les titres.
+ */
+
+/* 夢 YUME — Rêves, Akira Kurosawa (1990), segment « Les Corbeaux »
+   Le blé jaune de chrome, le ciel de cobalt tourmenté, les corbeaux noirs : Van Gogh vu par Kurosawa. */
+:root,
+[data-theme="yume"] {
+  --background: #101c55;
+  --surface: #182a72;
+  --surface-2: #213685;
+  --border: #2f4699;
+  --foreground: #fbf3d9;
+  --muted: #a9b5e0;
+  --accent: #f2c230;
+  --accent-soft: #f2c23024;
+  --on-accent: #101c55;
+  --heart: #ff8a5c;
+  --display: var(--font-fraunces);
+  --display-weight: 900;
+  /* Coups de pinceau tourbillonnants, comme le ciel de Van Gogh */
+  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.022' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.65 0 0 0 0 1 0 0 0 0.9 -0.42'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --glow: radial-gradient(ellipse 70% 45% at 85% -5%, #f2c23038, transparent 70%),
+    radial-gradient(ellipse 90% 40% at 0% 110%, #e8a23a2a, transparent 70%);
+  color-scheme: dark;
+}
+
+/* トトロ — Mon voisin Totoro, Hayao Miyazaki (1988)
+   Le ciel d'été, les nuages, le vert du camphrier, l'orange du Chatbus et les noiraudes. */
+[data-theme="totoro"] {
+  --background: #e6f1ec;
+  --surface: #fbfaf2;
+  --surface-2: #d9e9df;
+  --border: #bcd4c5;
+  --foreground: #1f3a2c;
+  --muted: #5e7b6b;
+  --accent: #3f7d4e;
+  --accent-soft: #3f7d4e1f;
+  --on-accent: #fbfaf2;
+  --heart: #e86a3a;
+  --display: var(--font-kaisei);
+  --display-weight: 700;
+  --texture: none;
+  --glow: radial-gradient(ellipse 40% 18% at 20% 4%, #ffffffee, transparent 70%),
+    radial-gradient(ellipse 35% 14% at 75% 9%, #ffffffdd, transparent 70%),
+    linear-gradient(to bottom, #bfe0f2 0, #e6f1ec 520px);
+  color-scheme: light;
+}
+
+/* TWIN PEAKS — Fire Walk with Me, David Lynch (1992)
+   La Chambre rouge : rideaux de velours, sol à chevrons noir et blanc, lumière de lounge. */
+[data-theme="lynch"] {
+  --background: #0d0303;
+  --surface: #1e0507;
+  --surface-2: #2e080b;
+  --border: #4b1015;
+  --foreground: #f1ece1;
+  --muted: #b08d86;
+  --accent: #d0191f;
+  --accent-soft: #d0191f22;
+  --on-accent: #fff;
+  --heart: #e9d7a6;
+  --display: var(--font-limelight);
+  --display-weight: 400;
+  /* Les plis des rideaux rouges, en haut de page */
+  --texture: repeating-linear-gradient(90deg, #00000000 0 26px, #00000055 34px, #ffffff08 44px, #00000000 52px);
+  --texture-size: 100% 460px;
+  --texture-repeat: repeat-x;
+  --glow: linear-gradient(to bottom, #6a0c11 0, #3a0609 260px, transparent 520px);
+  color-scheme: dark;
+}
+
+/* PIERROT — Pierrot le fou, Jean-Luc Godard (1965)
+   Les aplats rouge, bleu et jaune de Godard, version brutaliste : typo énorme et charnue, bordures noires. */
+[data-theme="pierrot"] {
+  --background: #ff4a1c;
+  --surface: #ff6a40;
+  --surface-2: #ff8a63;
+  --border: #111111;
+  --foreground: #111111;
+  --muted: #4a1405;
+  --accent: #1838ff;
+  --accent-soft: #1838ff22;
+  --on-accent: #fff;
+  --heart: #ffd400;
+  --display: var(--font-fat);
+  --display-weight: 400;
+  --texture: none;
+  --glow: none;
+  color-scheme: light;
+}
+
+/* 花樣年華 — In the Mood for Love, Wong Kar-wai (2000)
+   Le rouge sang des couloirs, la lumière ambrée des lampes, l'élégance des qipao. */
+[data-theme="mood"] {
+  --background: #22080b;
+  --surface: #330d12;
+  --surface-2: #451219;
+  --border: #5a1c23;
+  --foreground: #f3e3cf;
+  --muted: #c09a86;
+  --accent: #e0a84e;
+  --accent-soft: #e0a84e22;
+  --on-accent: #22080b;
+  --heart: #ff6b6b;
+  --display: var(--font-bodoni);
+  --display-weight: 600;
+  --texture: none;
+  --glow: radial-gradient(ellipse 50% 40% at 15% 0%, #e0a84e22, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, #0f3b2e66, transparent 70%);
+  color-scheme: dark;
+}
+
+/* 2001 — 2001 : l'Odyssée de l'espace, Stanley Kubrick (1968)
+   Le blanc clinique du vaisseau, le noir de l'espace, l'œil rouge de HAL 9000. */
+[data-theme="odyssey"] {
+  --background: #f3f3f1;
+  --surface: #ffffff;
+  --surface-2: #e9e9e6;
+  --border: #d7d7d3;
+  --foreground: #0b0b0b;
+  --muted: #6d6d6a;
+  --accent: #e10600;
+  --accent-soft: #e1060014;
+  --on-accent: #fff;
+  --heart: #e10600;
+  --display: var(--font-syncopate);
+  --display-weight: 700;
+  --texture: none;
+  --glow: none;
+  color-scheme: light;
+}
+
+/* CLOSE-UP — Abbas Kiarostami (1990)
+   La lumière crue de Téhéran, les collines ocre de Koker, le chemin en zigzag.
+   Titres en Lalezar, une police dessinée pour les affiches persanes. */
+[data-theme="closeup"] {
+  --background: #eee6d8;
+  --surface: #f7f1e6;
+  --surface-2: #e4dac8;
+  --border: #d6c9b3;
+  --foreground: #2a241d;
+  --muted: #7a6e5f;
+  --accent: #a4532a;
+  --accent-soft: #a4532a1a;
+  --on-accent: #fff;
+  --heart: #b8433b;
+  --display: var(--font-lalezar);
+  --display-weight: 400;
+  --texture: none;
+  --glow: radial-gradient(ellipse 90% 60% at 50% -20%, #fffaf0aa, transparent 70%);
+  color-scheme: light;
+}
+
+/* --- La police de titres, partout : titres, navigation, boutons, onglets --- */
+h1,
+h2,
+h3,
+.font-display,
+nav a,
+.tab-label {
+  font-family: var(--display), serif;
+  font-weight: var(--display-weight);
+}
+nav a {
+  letter-spacing: 0.01em;
+}
+
+/* Réglages typographiques propres à chaque thème */
+[data-theme="yume"] :is(h1, h2, h3, .font-display) {
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+  letter-spacing: -0.025em;
+}
+[data-theme="yume"] h1.page-title,
+[data-theme="yume"] .hero-title {
+  font-style: italic;
+}
+[data-theme="pierrot"] :is(h1, h2, h3, .font-display) {
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+[data-theme="mood"] :is(h1, h2, h3, .font-display) {
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+[data-theme="odyssey"] :is(h1, h2, h3, .font-display, nav a) {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-theme="odyssey"] h1.page-title {
+  font-size: clamp(2rem, 6vw, 4rem);
+  letter-spacing: 0.12em;
+}
+[data-theme="lynch"] :is(h1, h2, h3, .font-display) {
+  letter-spacing: 0.02em;
+}
+[data-theme="closeup"] :is(h1, h2, h3, .font-display) {
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* Pierrot : bordures épaisses et ombres pleines, façon affiche sérigraphiée */
+[data-theme="pierrot"] main .border {
+  border-width: 2px;
+}
+[data-theme="pierrot"] main a.rounded-2xl:hover,
+[data-theme="pierrot"] main a.rounded-xl:hover {
+  box-shadow: 5px 5px 0 #111;
+}
+/* Totoro : cartes douces comme des nuages */
+[data-theme="totoro"] main .rounded-2xl {
+  box-shadow: 0 8px 24px -12px #3f7d4e40;
+}
+
+/* --- Motif sous les grands titres de page --- */
+.page-title::after {
+  content: "";
+  display: block;
+  margin-top: 0.8rem;
+}
+/* Yume : trois corbeaux qui s'envolent au-dessus des blés */
+[data-theme="yume"] .page-title::after,
+:root:not([data-theme]) .page-title::after {
+  width: 5rem;
+  height: 22px;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 22'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M2 12 Q8 4 13 11 Q18 4 24 12'/%3E%3Cpath d='M32 8 Q36 3 40 7 Q44 3 48 8'/%3E%3Cpath d='M56 17 Q62 9 67 16 Q72 9 78 17'/%3E%3C/g%3E%3C/svg%3E") no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 22'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M2 12 Q8 4 13 11 Q18 4 24 12'/%3E%3Cpath d='M32 8 Q36 3 40 7 Q44 3 48 8'/%3E%3Cpath d='M56 17 Q62 9 67 16 Q72 9 78 17'/%3E%3C/g%3E%3C/svg%3E") no-repeat;
+}
+/* Totoro : une noiraude (susuwatari), boule de suie aux grands yeux */
+[data-theme="totoro"] .page-title::after {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 45%, #fff 0 3px, #111 3.5px 4.5px, transparent 5px),
+    radial-gradient(circle at 65% 45%, #fff 0 3px, #111 3.5px 4.5px, transparent 5px),
+    radial-gradient(circle, #1a1a1a 55%, transparent 72%);
+  filter: drop-shadow(0 0 1px #1a1a1a) drop-shadow(0 0 1px #1a1a1a);
+}
+/* Twin Peaks : le sol à chevrons noir et blanc de la Chambre rouge */
+[data-theme="lynch"] .page-title::after {
+  width: 9rem;
+  height: 14px;
+  background:
+    linear-gradient(135deg, #f1ece1 25%, transparent 25%) -7px 0 / 14px 14px,
+    linear-gradient(225deg, #f1ece1 25%, transparent 25%) -7px 0 / 14px 14px,
+    linear-gradient(315deg, #f1ece1 25%, transparent 25%) 0 0 / 14px 14px,
+    linear-gradient(45deg, #f1ece1 25%, #0b0b0b 25%) 0 0 / 14px 14px;
+}
+/* Pierrot : un gros trait noir */
+[data-theme="pierrot"] .page-title::after {
+  width: 100%;
+  height: 6px;
+  background: var(--foreground);
+}
+/* In the Mood for Love : deux filets dorés */
+[data-theme="mood"] .page-title::after {
+  width: 6rem;
+  height: 5px;
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+/* 2001 : l'œil rouge de HAL */
+[data-theme="odyssey"] .page-title::after {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #ffd36b 0 12%, #e10600 35%, #5a0000 100%);
+  box-shadow: 0 0 12px #e1060088;
+}
+/* Close-Up : le chemin en zigzag des collines de Koker */
+[data-theme="closeup"] .page-title::after {
+  width: 5.5rem;
+  height: 12px;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 88 12'%3E%3Cpath d='M1 11 L12 1 L23 11 L34 1 L45 11 L56 1 L67 11 L78 1 L87 9' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 88 12'%3E%3Cpath d='M1 11 L12 1 L23 11 L34 1 L45 11 L56 1 L67 11 L78 1 L87 9' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;
+}
