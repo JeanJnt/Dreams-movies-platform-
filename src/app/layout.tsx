@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bagel_Fat_One, Bodoni_Moda, Fraunces, Geist, Kaisei_Decol, Lalezar, Limelight, Syncopate } from "next/font/google";
 import { cookies } from "next/headers";
 import { Nav } from "@/components/Nav";
+import { PwaSetup } from "@/components/PwaSetup";
 import { unseenAlerts } from "@/lib/alerts";
 import { THEMES, type Theme } from "@/lib/theme";
 import "./globals.css";
@@ -21,10 +22,12 @@ export const metadata: Metadata = {
   title: { default: "Dreams 夢", template: "%s · Dreams" },
   description: "Mon journal de cinéma : films vus, critiques, conseils, collection et statistiques.",
   appleWebApp: { capable: true, title: "Dreams", statusBarStyle: "black-translucent" },
+  formatDetection: { telephone: false },
+  applicationName: "Dreams",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d0f18",
+  themeColor: "#101c55",
   viewportFit: "cover",
 };
 
@@ -38,6 +41,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     // Les variables de police sont posées sur <html>, là où les thèmes les utilisent (--display).
     <html lang="fr" data-theme={theme} className={fonts}>
       <body className="antialiased">
+        <PwaSetup />
         <Nav theme={theme} alerts={alerts} />
         <main className="mx-auto max-w-6xl px-4 pb-safe md:px-8">{children}</main>
       </body>

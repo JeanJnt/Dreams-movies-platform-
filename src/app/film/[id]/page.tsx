@@ -231,6 +231,11 @@ export default async function FilmPage({ params }: Props) {
             ) : (
               <p className="text-sm text-muted">Pas d&apos;offre en France en ce moment.</p>
             )}
+            <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Au cinéma à Paris</p>
+            <div className="mb-1 flex flex-wrap gap-1.5">
+              <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-accent">Paris Ciné Info ↗</a>
+              <a href={`https://www.allocine.fr/rechercher/?q=${encodeURIComponent(title)}`} target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-accent">Allociné ↗</a>
+            </div>
             <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Gratuit et légal ?</p>
             <div className="flex flex-wrap gap-1.5">
               {LEGAL_FREE.map((s) => (

@@ -48,6 +48,16 @@ const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}">
 fs.writeFileSync("public/icon.svg", icon);
 fs.writeFileSync("src/app/icon.svg", icon);
 
+// Icône « maskable » pour Android : plus de marge, car Android la découpe en cercle ou en goutte.
+const mPad = 230;
+const mScale = (S - mPad * 2) / Math.max(w, h);
+const maskable = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}">
+  <defs>${brushFilter}</defs>
+  <rect width="${S}" height="${S}" fill="#efe8dc"/>
+  <g filter="url(#brush)"><path transform="translate(${(S - w * mScale) / 2} ${(S - h * mScale) / 2}) skewX(-5) translate(30 0) scale(${mScale})" d="${d}" fill="#141210"/></g>
+</svg>`;
+sharp(Buffer.from(maskable)).resize(512, 512).png().toFile("public/icon-maskable-512.png");
+
 Promise.all(
   ([[192, "public/icon-192.png"], [512, "public/icon-512.png"], [180, "src/app/apple-icon.png"]] as const).map(([s, out]) =>
     sharp(Buffer.from(icon)).resize(s, s).png().toFile(out),

@@ -24,7 +24,11 @@ export default async function AlertsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Au cinéma</h1>
-          <p className="mt-3 max-w-2xl text-muted">Les films de ta watchlist et tes coups de cœur qui passent en salle à Paris, maintenant ou bientôt.</p>
+          <p className="mt-3 max-w-2xl text-muted">Les films de ta watchlist et tes coups de cœur qui passent en salle, maintenant ou bientôt.</p>
+          <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition hover:border-accent">
+            <span className="font-display text-lg">Paris Ciné Info</span>
+            <span className="text-muted">Toutes les séances de Paris, classiques et rétrospectives comprises ↗</span>
+          </a>
         </div>
         <RefreshAlerts />
       </div>
@@ -47,7 +51,7 @@ export default async function AlertsPage() {
       })}
 
       <p className="text-xs text-muted">
-        Sorties et ressorties : TMDB. Horaires des séances : Allociné. Les alertes se mettent à jour avec « Vérifier maintenant » ou <code>npm run alertes</code>.
+        Sorties et ressorties : TMDB. Horaires des séances : Allociné et <a href="https://www.paris-cine.info/" className="underline">Paris Ciné Info</a> (le plus complet pour les classiques et rétrospectives). Les alertes se mettent à jour avec « Vérifier maintenant » ou <code>npm run alertes</code>.
       </p>
     </div>
   );
@@ -81,7 +85,8 @@ function AlertCard({ alert: a }: { alert: Alert }) {
           )}
           {a.note && <p className="text-xs text-muted italic">{a.note}</p>}
           <div className="mt-auto flex flex-wrap gap-2 pt-3">
-            <a href={showtimes} target="_blank" rel="noreferrer" className="rounded-full bg-foreground px-3 py-1.5 text-xs text-background">Séances à Paris ↗</a>
+            <a href={showtimes} target="_blank" rel="noreferrer" className="rounded-full bg-foreground px-3 py-1.5 text-xs text-background">Séances (Allociné) ↗</a>
+            <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent">Paris Ciné Info ↗</a>
             <Link href={`/agenda?film=${a.filmId}`} className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent">+ Agenda</Link>
           </div>
         </div>

@@ -32,6 +32,9 @@ export function ThemeSwitch({ initial }: { initial: Theme }) {
     setTheme(t);
     setOpen(false);
     document.documentElement.dataset.theme = t;
+    // Barre d'état d'Android et barre de titre de l'appli installée aux couleurs du thème
+    const bg = THEMES.find((x) => x.key === t)!.swatch[0];
+    document.querySelectorAll("meta[name=theme-color]").forEach((m) => m.setAttribute("content", bg));
     document.cookie = `theme=${t}; path=/; max-age=31536000; samesite=lax`;
     router.refresh();
   };
@@ -67,6 +70,9 @@ export function ThemeSwitch({ initial }: { initial: Theme }) {
               {t.key === theme && <span className="text-accent">●</span>}
             </button>
           ))}
+        <a href="/installer" className="mt-1 flex items-center gap-3 rounded-xl border-t border-border px-3 py-2.5 text-sm text-muted hover:bg-surface-2 hover:text-foreground">
+          <span className="text-lg">⬇</span> Installer l&apos;appli (ordi, iPhone, Android)
+        </a>
         </div>
       )}
     </div>

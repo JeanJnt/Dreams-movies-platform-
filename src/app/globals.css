@@ -240,3 +240,24 @@ select.field {
     top: calc(100% - 2px);
   }
 }
+
+/* iPhone : un champ en dessous de 16 px fait zoomer Safari quand on tape dedans */
+@media (pointer: coarse) {
+  .field,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+/* Appli installée : pas de rebond ni de sélection accidentelle sur les boutons */
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: none;
+  }
+  button,
+  nav a {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
