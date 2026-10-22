@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { enrichStepAction, importLetterboxdAction, recoStepAction } from "@/app/auth-actions";
 import type { ImportSummary } from "@/lib/importer";
+import { LetterboxdConnect } from "./LetterboxdConnect";
 
 type Phase = "idle" | "import" | "enrich" | "reco" | "done" | "error";
 
 // Import de l'export Letterboxd, puis on complète tout, étape par étape, avec une barre de progression :
 // 1. lecture du .zip  2. affiches et infos TMDB  3. recommandations  4. alertes cinéma
-export function ImportPanel({ welcome }: { welcome?: boolean }) {
+export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolean; letterboxdConnected?: boolean }) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
@@ -89,6 +90,12 @@ export function ImportPanel({ welcome }: { welcome?: boolean }) {
           ✓ <b>{summary.watched.toLocaleString("fr-FR")}</b> films vus · {summary.ratings} notes · {summary.likes} coups de cœur ·{" "}
           {summary.diary} entrées de journal · {summary.reviews} reviews Letterboxd · {summary.watchlist} en watchlist · {summary.lists} listes
         </p>
+      )}
+      {/* Juste après l'import : on propose de connecter Letterboxd pour la suite (pseudo trouvé dans l'export) */}
+      {phase === "done" && !letterboxdConnected && (
+        <div className="mt-5">
+          <LetterboxdConnect connected={null} suggested={summary?.username} highlight />
+        </div>
       )}
       {phase === "done" && (
         <button onClick={() => router.push("/")} className="font-display mt-4 rounded-full bg-accent px-5 py-2 text-on-accent">

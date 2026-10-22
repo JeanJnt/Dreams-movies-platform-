@@ -203,6 +203,9 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
   // Visibilité pour les autres membres : 'membres' (visible) ou 'prive'
   ["critiques", "visibility", "TEXT NOT NULL DEFAULT 'membres'"],
   ["media", "visibility", "TEXT NOT NULL DEFAULT 'membres'"],
+  // Synchronisation automatique avec le flux public Letterboxd du membre
+  ["users", "letterboxd_username", "TEXT"],
+  ["users", "letterboxd_synced_at", "TEXT"],
 ];
 
 let ready: Promise<void> | undefined;

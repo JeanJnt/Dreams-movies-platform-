@@ -15,7 +15,7 @@ const MAX_ZIP = 30 * 1024 * 1024;
 const MAX_UNZIPPED = 80 * 1024 * 1024;
 const MAX_ENTRIES = 500;
 
-export type ImportSummary = { films: number; watched: number; ratings: number; likes: number; diary: number; reviews: number; watchlist: number; lists: number };
+export type ImportSummary = { username: string | null; films: number; watched: number; ratings: number; likes: number; diary: number; reviews: number; watchlist: number; lists: number };
 
 function readZip(buffer: Buffer): Map<string, string> {
   if (buffer.length > MAX_ZIP) throw new Error("Fichier trop lourd (30 Mo maximum).");
@@ -130,7 +130,11 @@ export async function importLetterboxd(userId: number, zip: Buffer): Promise<Imp
   ];
   await client.batch(statements, "write");
 
+  // Le pseudo Letterboxd (profile.csv), pour proposer ensuite la synchronisation automatique.
+  const username = csv(files.get("profile.csv"))[0]?.Username?.trim() || null;
+
   return {
+    username,
     films: films.size, watched: watched.length, ratings: ratings.length, likes: likes.length,
     diary: diary.length, reviews: reviews.length, watchlist: watchlist.length, lists: lists.length,
   };

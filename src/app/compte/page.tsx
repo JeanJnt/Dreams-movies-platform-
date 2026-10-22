@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { DeleteAccountForm, PasswordForm, SessionButtons } from "@/components/AccountForms";
 import { ImportPanel } from "@/components/ImportPanel";
+import { LetterboxdConnect } from "@/components/LetterboxdConnect";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 
@@ -15,13 +16,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const me = await requireUser();
   const { bienvenue } = await searchParams;
   const { rows } = await db().execute({
-    sql: `SELECT u.calendar_token, u.created_at,
+    sql: `SELECT u.calendar_token, u.created_at, u.letterboxd_username, u.letterboxd_synced_at,
             (SELECT COUNT(*) FROM watched WHERE user_id = u.id) AS watched,
             (SELECT COUNT(*) FROM sessions WHERE user_id = u.id AND expires_at > ?) AS sessions
           FROM users u WHERE u.id = ?`,
     args: [new Date().toISOString(), me.id],
   });
   const info = rows[0];
+  const onboarding = Boolean(bienvenue) || Number(info.watched) === 0;
   const host = (await headers()).get("host") ?? "localhost:3000";
   const calendar = `webcal://${host}/agenda/ics?token=${info.calendar_token}`;
 
@@ -35,7 +37,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </p>
       </div>
 
-      <ImportPanel welcome={Boolean(bienvenue) || Number(info.watched) === 0} />
+      <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
+
+      {/* Pendant l'accueil d'un nouveau membre, la connexion Letterboxd apparaît à la fin de l'import. */}
+      {(!onboarding || info.letterboxd_username) && (
+        <LetterboxdConnect connected={(info.letterboxd_username as string) ?? null} syncedAt={(info.letterboxd_synced_at as string) ?? null} />
+      )}
 
       <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
         <h2 className="text-2xl">Mon profil</h2>

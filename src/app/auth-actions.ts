@@ -11,6 +11,7 @@ import { db, ensureSchema, USER_TABLES } from "@/lib/db";
 import { enrichBatch } from "@/lib/enrich";
 import { importLetterboxd, type ImportSummary } from "@/lib/importer";
 import { deleteUserFiles } from "@/lib/storage";
+import { connectLetterboxd, disconnectLetterboxd, syncLetterboxd } from "@/lib/letterboxd-sync";
 import { recoDetails, recoSeeds, recoWatchlistProviders } from "@/lib/reco-compute";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -148,6 +149,28 @@ export async function recoStepAction(step: "seeds" | "details" | "providers" | "
   await quickCheck(me.id);
   revalidatePath("/", "layout");
   return { remaining: 0 };
+}
+
+// --- Synchronisation Letterboxd (flux RSS public) ---
+
+export async function connectLetterboxdAction(username: string) {
+  const me = await requireUser();
+  const res = await connectLetterboxd(me.id, String(username).slice(0, 60));
+  revalidatePath("/", "layout");
+  return res;
+}
+
+export async function syncLetterboxdAction() {
+  const me = await requireUser();
+  const res = await syncLetterboxd(me.id);
+  revalidatePath("/", "layout");
+  return res;
+}
+
+export async function disconnectLetterboxdAction() {
+  const me = await requireUser();
+  await disconnectLetterboxd(me.id);
+  revalidatePath("/compte");
 }
 
 // --- Administration (invitations et membres) ---
