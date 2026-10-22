@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deleteEvent, saveEvent } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
-import { quickCheck } from "@/lib/alerts";
 import { lookupBarcode, searchFilms } from "@/lib/barcode";
 import { CASE_TYPES, FORMATS, setOwned, type CaseType } from "@/lib/collection";
 import { ensureFilmFromTmdb } from "@/lib/tmdb-film";
@@ -104,16 +103,6 @@ export async function deleteEventAction(id: number) {
 export async function searchMyFilmsAction(q: string) {
   await requireUser();
   return searchMyFilms(q.slice(0, 80));
-}
-
-// --- Alertes cinéma ---
-
-export async function refreshAlertsAction() {
-  await requireUser();
-  const n = await quickCheck();
-  revalidatePath("/alertes");
-  revalidatePath("/", "layout");
-  return n;
 }
 
 export async function setPlatformsAction(keys: string[]) {

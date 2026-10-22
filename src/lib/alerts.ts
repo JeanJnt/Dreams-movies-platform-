@@ -33,8 +33,7 @@ async function upsert(u: number, m: Mine, kind: string, releaseDate: string | nu
 
 // Vérification rapide (une dizaine d'appels) : les listes « à l'affiche » et « prochainement » de TMDB pour la France.
 // userId : fourni par la tâche automatique quotidienne ; sinon, le membre connecté.
-// pciMax : nombre d'appels à Paris Ciné Info autorisés (plus élevé pour la tâche du matin, qui a 5 minutes).
-export async function quickCheck(userId?: number, pciMax = 25) {
+export async function quickCheck(userId?: number) {
   await ensureSchema();
   const u = userId ?? (await uid());
   const mine = new Map((await myFilms(u)).map((m) => [m.tmdbId, m]));
@@ -55,8 +54,9 @@ export async function quickCheck(userId?: number, pciMax = 25) {
   }
   // À Paris : le programme de toutes les salles (classiques et rétrospectives comprises) via Paris Ciné Info.
   const { rows } = await db().execute({ sql: "SELECT city FROM users WHERE id = ?", args: [u] });
-  if (/^paris$/i.test(String(rows[0]?.city ?? "Paris").trim())) found += await pciCheck(u, pciMax).catch(() => 0);
+  if (/^paris$/i.test(String(rows[0]?.city ?? "Paris").trim())) found += await pciCheck(u).catch(() => 0);
   await cleanup(u);
+  await db().execute({ sql: "UPDATE users SET alerts_checked_at = ? WHERE id = ?", args: [new Date().toISOString(), u] });
   return found;
 }
 
@@ -141,7 +141,6 @@ export type Alert = {
   tmdbId: number;
   filmId: number;
   kind: "paris" | "en_salle" | "bientot" | "ressortie";
-  showtimes: { movId: number; times: { start: string; cinema: string; version: string; book: string | null }[] } | null;
   releaseDate: string | null;
   note: string | null;
   source: "watchlist" | "coup_de_coeur";
@@ -166,7 +165,6 @@ export async function listAlerts(): Promise<Alert[]> {
     note: (r.note as string) ?? null, source: r.source as Alert["source"], seen: Boolean(r.seen), title: String(r.title),
     year: r.year == null ? null : Number(r.year), poster: (r.poster as string) ?? null, backdrop: (r.backdrop_path as string) ?? null,
     director: (r.director as string) ?? null,
-    showtimes: typeof r.showtimes === "string" ? JSON.parse(r.showtimes) : null,
   }));
 }
 

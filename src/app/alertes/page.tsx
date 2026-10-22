@@ -1,19 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import Link from "next/link";
-import { RefreshAlerts } from "@/components/RefreshAlerts";
 import { requireUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { formatLongDate, showtimeLinks } from "@/lib/format";
 import { listAlerts, markAlertsSeen, nowPlaying, type Alert } from "@/lib/alerts";
 import { backdrop, poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Au cinéma" };
 export const dynamic = "force-dynamic";
-// « Vérifier maintenant » interroge aussi Paris Ciné Info, lentement (une pause entre chaque film)
-export const maxDuration = 60;
 
 const KINDS: Record<Alert["kind"], { title: string; badge: string }> = {
-  paris: { title: "À Paris cette semaine", badge: "Paris Ciné Info" },
+  paris: { title: "À l'affiche à Paris", badge: "Paris Ciné Info" },
   en_salle: { title: "À l'affiche en ce moment", badge: "En salle" },
   ressortie: { title: "Ressorties en salle", badge: "Ressortie" },
   bientot: { title: "Bientôt au cinéma", badge: "Bientôt" },
@@ -23,6 +21,8 @@ export default async function AlertsPage() {
   const [alerts, playing, me] = await Promise.all([listAlerts(), nowPlaying(), requireUser()]);
   await markAlertsSeen(); // ouvrir la page = alertes lues
   const isParis = /^paris$/i.test(me.city.trim());
+  const checked = await db().execute({ sql: "SELECT alerts_checked_at FROM users WHERE id = ?", args: [me.id] });
+  const checkedAt = (checked.rows[0]?.alerts_checked_at as string) ?? null;
 
   return (
     <div className="space-y-10 pt-2 md:pt-8">
@@ -40,7 +40,12 @@ export default async function AlertsPage() {
             </a>
           )}
         </div>
-        <RefreshAlerts />
+        {/* Mis à jour tout seul 4 fois par jour (matin, midi, après-midi, soir) */}
+        {checkedAt && (
+          <p className="text-xs text-muted">
+            Mis à jour {new Date(checkedAt).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}
+          </p>
+        )}
       </div>
 
       {alerts.length === 0 && (
@@ -84,27 +89,9 @@ export default async function AlertsPage() {
       )}
 
       <p className="text-xs text-muted">
-        Films à l&apos;affiche, sorties et ressorties : TMDB. Les horaires s&apos;ouvrent sur Google (toutes les salles de ta ville){me.country === "FR" && ", Allociné"}{isParis && " et Paris Ciné Info"}. Les alertes se mettent à jour chaque matin, ou avec « Vérifier maintenant ».
+        Films à l&apos;affiche, sorties et ressorties : TMDB. Les horaires s&apos;ouvrent sur Google (toutes les salles de ta ville){me.country === "FR" && ", Allociné"}{isParis && " et Paris Ciné Info"}.{isParis && " Tes films à l’affiche à Paris viennent du programme de Paris Ciné Info."} Tout se met à jour 4 fois par jour, matin, midi, après-midi et soir.
       </p>
     </div>
-  );
-}
-
-// Les prochaines séances (Paris Ciné Info) : jour, heure, salle, version ; réservation quand la salle la propose.
-function Showtimes({ times }: { times: NonNullable<Alert["showtimes"]>["times"] }) {
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
-  return (
-    <ul className="mt-2 space-y-1 text-sm">
-      {times.slice(0, 3).map((t) => (
-        <li key={t.start + t.cinema} className="flex flex-wrap items-baseline gap-x-2">
-          <b className="tabular-nums">{fmt(t.start)}</b>
-          <span className="text-muted">{t.cinema}{t.version ? ` · ${t.version}` : ""}</span>
-          {t.book && <a href={t.book} target="_blank" rel="noreferrer" className="text-xs text-accent hover:underline">Réserver ↗</a>}
-        </li>
-      ))}
-      {times.length > 3 && <li className="text-xs text-muted">+ {times.length - 3} autre(s) séance(s)</li>}
-    </ul>
   );
 }
 
@@ -127,7 +114,6 @@ function AlertCard({ alert: a, city, country }: { alert: Alert; city: string; co
           </div>
           <Link href={`/film/${a.filmId}`} className="font-display mt-2 text-2xl leading-tight hover:text-accent">{a.title}</Link>
           <p className="text-sm text-muted">{[a.director, a.year].filter(Boolean).join(" · ")}</p>
-          {a.showtimes && a.showtimes.times.length > 0 && <Showtimes times={a.showtimes.times} />}
           {a.releaseDate && a.kind !== "paris" && (
             <p className="mt-1 text-sm">
               {a.kind === "bientot" ? "Sortie le " : "En salle depuis le "}
