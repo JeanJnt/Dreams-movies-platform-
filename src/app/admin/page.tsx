@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InviteForm, MemberActions, RevokeInvite } from "@/components/AdminTools";
+import { RefListAdmin } from "@/components/RefListAdmin";
+import { refLists } from "@/lib/ref-lists";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatLongDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Administration" };
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // import de grandes listes
 
 export default async function AdminPage() {
   const me = await requireAdmin();
-  const [members, invites] = await Promise.all([
+  const [members, invites, lists] = await Promise.all([
     db().execute(`SELECT u.id, u.name, u.email, u.is_admin, u.created_at, (SELECT COUNT(*) FROM watched w WHERE w.user_id = u.id) AS films
                   FROM users u ORDER BY u.created_at`),
     db().execute(`SELECT i.code, i.note, i.expires_at, i.used_at, u.name AS used_by FROM invites i LEFT JOIN users u ON u.id = i.used_by
                   ORDER BY i.created_at DESC LIMIT 30`),
+    refLists(),
   ]);
   const now = new Date().toISOString();
 
@@ -52,6 +56,12 @@ export default async function AdminPage() {
             })}
           </ul>
         )}
+      </section>
+
+      <section className="space-y-4 rounded-3xl border border-border bg-surface p-5 md:p-6">
+        <h2 className="text-2xl">Listes de référence</h2>
+        <p className="text-sm text-muted">Des listes communes à tous les membres (Sight and Sound, Top Letterboxd…). Chacun y voit sa progression.</p>
+        <RefListAdmin lists={lists} />
       </section>
 
       <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">

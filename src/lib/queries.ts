@@ -15,6 +15,8 @@ export type Film = {
   liked: boolean;
   director: string | null;
   runtime: number | null;
+  tmdb_id?: number | null;
+  lb_uri?: string | null;
 };
 
 export type FilmDetail = Film & {
@@ -34,7 +36,7 @@ const json = <T>(v: unknown, fallback: T): T => (typeof v === "string" ? JSON.pa
 
 // Colonnes et jointures communes ; u est l'identifiant de l'utilisateur (entier issu de la session).
 const filmColumns = (u: number) => `f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, f.backdrop_path,
-  r.rating, (l.film_id IS NOT NULL) AS liked, json_extract(f.directors, '$[0]') AS director, f.runtime`;
+  r.rating, (l.film_id IS NOT NULL) AS liked, json_extract(f.directors, '$[0]') AS director, f.runtime, f.tmdb_id, f.lb_uri`;
 const filmJoins = (u: number) =>
   `LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u} LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}`;
 
@@ -50,6 +52,8 @@ function toFilm(row: Record<string, unknown>): Film {
     liked: Boolean(row.liked),
     director: (row.director as string) ?? (typeof row.directors === "string" ? JSON.parse(row.directors)[0] ?? null : null),
     runtime: row.runtime == null ? null : Number(row.runtime),
+    tmdb_id: row.tmdb_id == null ? null : Number(row.tmdb_id),
+    lb_uri: (row.lb_uri as string) ?? null,
   };
 }
 

@@ -13,6 +13,7 @@ import { importLetterboxd, type ImportSummary } from "@/lib/importer";
 import { deleteUserFiles } from "@/lib/storage";
 import { connectLetterboxd, disconnectLetterboxd, syncLetterboxd } from "@/lib/letterboxd-sync";
 import { recoDetails, recoSeeds, recoWatchlistProviders } from "@/lib/reco-compute";
+import { deleteRefList, importLetterboxdCsv, importTmdbList, importTmdbTop } from "@/lib/ref-lists";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -171,6 +172,36 @@ export async function disconnectLetterboxdAction() {
   const me = await requireUser();
   await disconnectLetterboxd(me.id);
   revalidatePath("/compte");
+}
+
+// --- Listes de référence (administrateurs) ---
+
+export async function addRefListAction(form: FormData): Promise<{ ok?: string; error?: string }> {
+  await requireAdmin();
+  const kind = String(form.get("kind") ?? "");
+  const name = field(form, "name", 120);
+  try {
+    let res: { slug: string; count: number };
+    if (kind === "tmdb-top") res = await importTmdbTop(250);
+    else if (kind === "tmdb-list") res = await importTmdbList(field(form, "url", 300), name);
+    else if (kind === "letterboxd-csv") {
+      const file = form.get("csv");
+      if (!(file instanceof File) || !file.size) return { error: "Choisis le fichier CSV de la liste." };
+      res = await importLetterboxdCsv(await file.text(), name);
+    } else return { error: "Type de liste inconnu." };
+    revalidatePath("/listes");
+    revalidatePath("/admin");
+    return { ok: `Liste ajoutée : ${res.count} films.` };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+export async function deleteRefListAction(slug: string) {
+  await requireAdmin();
+  await deleteRefList(slug);
+  revalidatePath("/listes");
+  revalidatePath("/admin");
 }
 
 // --- Administration (invitations et membres) ---

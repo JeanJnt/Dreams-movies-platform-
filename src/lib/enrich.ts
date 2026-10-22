@@ -23,8 +23,9 @@ async function findMovie(name: string, year: number | null): Promise<number | nu
   return null;
 }
 
-async function enrichOne(film: { id: number; name: string; year: number | null }) {
-  const tmdbId = await findMovie(film.name, film.year);
+async function enrichOne(film: { id: number; name: string; year: number | null; tmdbId: number | null }) {
+  // Film ajouté depuis une liste TMDB : on connaît déjà son identifiant. Sinon, on le cherche par titre et année.
+  const tmdbId = film.tmdbId ?? (await findMovie(film.name, film.year));
   if (!tmdbId) {
     await db().execute({ sql: "UPDATE films SET tmdb_status = 'not_found' WHERE id = ?", args: [film.id] });
     return false;
@@ -35,15 +36,15 @@ async function enrichOne(film: { id: number; name: string; year: number | null }
 
 export async function pendingCount() {
   await ensureSchema();
-  const { rows } = await db().execute("SELECT COUNT(*) AS n FROM films WHERE tmdb_status IS NULL");
+  const { rows } = await db().execute("SELECT COUNT(*) AS n FROM films WHERE tmdb_status IS NULL OR tmdb_status = 'partial'");
   return Number(rows[0].n);
 }
 
 // Traite jusqu'à `limit` films en attente ; renvoie combien il en reste.
 export async function enrichBatch(limit = 40, concurrency = 8) {
   await ensureSchema();
-  const { rows } = await db().execute({ sql: "SELECT id, name, year FROM films WHERE tmdb_status IS NULL ORDER BY id LIMIT ?", args: [limit] });
-  const queue = rows.map((r) => ({ id: Number(r.id), name: String(r.name), year: r.year == null ? null : Number(r.year) }));
+  const { rows } = await db().execute({ sql: "SELECT id, name, year, tmdb_id FROM films WHERE tmdb_status IS NULL OR tmdb_status = 'partial' ORDER BY id LIMIT ?", args: [limit] });
+  const queue = rows.map((r) => ({ id: Number(r.id), name: String(r.name), year: r.year == null ? null : Number(r.year), tmdbId: r.tmdb_id == null ? null : Number(r.tmdb_id) }));
   const missing: string[] = [];
   const worker = async () => {
     for (let f = queue.shift(); f; f = queue.shift()) {

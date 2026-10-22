@@ -33,7 +33,7 @@ export function ThemeSwitch({ initial }: { initial: Theme }) {
     setOpen(false);
     document.documentElement.dataset.theme = t;
     // Barre d'état d'Android et barre de titre de l'appli installée aux couleurs du thème
-    const bg = THEMES.find((x) => x.key === t)!.swatch[0];
+    const bg = THEMES.find((x) => x.key === t)!.bar;
     document.querySelectorAll("meta[name=theme-color]").forEach((m) => m.setAttribute("content", bg));
     document.cookie = `theme=${t}; path=/; max-age=31536000; samesite=lax`;
     router.refresh();

@@ -73,6 +73,18 @@ const SHARED = [
     expires_at TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+  // Listes de référence (Sight and Sound, Top Letterboxd…) : communes à tous, chacun y voit sa progression
+  `CREATE TABLE IF NOT EXISTS ref_lists (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    source TEXT,                       -- 'tmdb-list', 'tmdb-top', 'letterboxd-csv'
+    source_url TEXT,
+    created_by INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS ref_list_items (list_id INTEGER NOT NULL, film_id INTEGER NOT NULL, rank INTEGER, PRIMARY KEY (list_id, film_id))`,
   // Tentatives de connexion ratées, pour bloquer les essais de mots de passe en rafale
   `CREATE TABLE IF NOT EXISTS login_attempts (key TEXT NOT NULL, at TEXT NOT NULL DEFAULT (datetime('now')))`,
   `CREATE INDEX IF NOT EXISTS idx_login_attempts ON login_attempts(key, at)`,

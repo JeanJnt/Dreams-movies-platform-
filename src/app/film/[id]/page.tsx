@@ -16,7 +16,7 @@ import { CASE_TYPES, FORMATS, ownedItem } from "@/lib/collection";
 import { critiqueForFilm, readingTime } from "@/lib/critiques";
 import { filmMedia } from "@/lib/media";
 import { currentPoster } from "@/lib/posters";
-import { formatLongDate, formatRuntime } from "@/lib/format";
+import { formatLongDate, formatRuntime, letterboxdUrl } from "@/lib/format";
 import { filmDetail, filmDiary, filmLists, filmReviews, type FilmDetail } from "@/lib/queries";
 import { ARTICLE_SOURCES, LEGAL_FREE, articleUrl, legalSearchUrl, reviewVideos, youtubeSearchUrl } from "@/lib/sources";
 import { backdrop, poster, watchProviders, type Provider } from "@/lib/tmdb";
@@ -263,10 +263,16 @@ export default async function FilmPage({ params }: Props) {
             </div>
           )}
 
+          {/* Fiche Letterboxd : note moyenne de la communauté, avis, listes */}
+          <a href={letterboxdUrl(film)} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/60">
+            <span className="flex gap-1"><span className="size-3 rounded-full bg-[#ff8000]" /><span className="size-3 rounded-full bg-[#00e054]" /><span className="size-3 rounded-full bg-[#40bcf4]" /></span>
+            <span className="flex-1">
+              <span className="font-display block">Voir sur Letterboxd</span>
+              <span className="block text-xs text-muted">Note moyenne, avis et listes de la communauté</span>
+            </span>
+            <span className="text-muted">↗</span>
+          </a>
           <div className="flex flex-col gap-2 text-sm">
-            {film.lb_uri && (
-              <a href={film.lb_uri} target="_blank" rel="noreferrer" className="text-muted hover:text-accent">Voir sur Letterboxd ↗</a>
-            )}
             {film.tmdb_id && (
               <a href={`https://www.themoviedb.org/movie/${film.tmdb_id}`} target="_blank" rel="noreferrer" className="text-muted hover:text-accent">Voir sur TMDB ↗</a>
             )}

@@ -27,10 +27,12 @@ export const metadata: Metadata = {
   applicationName: "Dreams",
 };
 
-export const viewport: Viewport = {
-  themeColor: "#101c55",
-  viewportFit: "cover",
-};
+// La couleur de la barre de titre (appli installée) suit le thème choisi, dès le chargement.
+export async function generateViewport(): Promise<Viewport> {
+  const saved = (await cookies()).get("theme")?.value;
+  const theme = THEMES.find((t) => t.key === saved) ?? THEMES[0];
+  return { themeColor: theme.bar, viewportFit: "cover" };
+}
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const saved = (await cookies()).get("theme")?.value;
