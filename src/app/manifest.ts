@@ -12,8 +12,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     display_override: ["standalone", "minimal-ui"],
     orientation: "any",
-    background_color: "#101c55",
-    theme_color: "#101c55",
+    // Noir, comme le logo : couleur de l'écran de démarrage de l'appli
+    background_color: "#0a0a0a",
+    theme_color: "#0a0a0a",
     lang: "fr",
     dir: "ltr",
     categories: ["entertainment", "lifestyle"],
