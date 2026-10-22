@@ -46,3 +46,6 @@ next-env.d.ts
 # police source du logo (8 Mo, téléchargeable, voir scripts/make-logo.ts)
 /scripts/assets
 !.env.example
+
+# réglages locaux de l'éditeur
+/.claude
