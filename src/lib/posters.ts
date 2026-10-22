@@ -59,3 +59,16 @@ export async function uploadPoster(filmId: number, file: File) {
     args: [u, filmId, url],
   });
 }
+
+// Affiche déjà envoyée dans le stockage par le navigateur (en ligne) : on vérifie qu'elle est bien à moi, puis on l'utilise.
+export async function setUploadedPoster(filmId: number, url: string) {
+  const u = await uid();
+  const m = url.match(/^\/media\/(\d+)\/(\d+)\/(poster-[\w-]+\.\w+)$/);
+  if (!m || Number(m[1]) !== u || Number(m[2]) !== filmId) throw new Error("Affiche invalide");
+  const { custom } = await currentPoster(filmId);
+  if (custom && custom !== url) await removeImage(custom);
+  await db().execute({
+    sql: "INSERT INTO user_posters (user_id, film_id, poster) VALUES (?, ?, ?) ON CONFLICT(user_id, film_id) DO UPDATE SET poster = excluded.poster",
+    args: [u, filmId, url],
+  });
+}

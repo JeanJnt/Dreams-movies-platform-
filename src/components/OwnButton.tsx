@@ -3,6 +3,7 @@
 
 import { useState, useTransition } from "react";
 import { posterOptionsAction, setOwnedAction, uploadCoverAction } from "@/app/actions";
+import { sendFile } from "@/lib/upload-client";
 import type { OwnedItem } from "@/lib/collection";
 import type { PosterOption } from "@/lib/posters";
 import { DvdCase, type CaseFilm } from "./DvdCase";
@@ -47,9 +48,20 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
 
   const upload = async (data: FormData) => {
     setError(null);
-    const res = await uploadCoverAction(filmId, data);
-    if (res.error) setError(res.error);
-    else setCover(res.url!);
+    const file = data.get("cover");
+    if (!(file instanceof File) || !file.size) return;
+    try {
+      // En ligne : la photo part directement vers le stockage (les photos de téléphone dépassent souvent 4,5 Mo).
+      const sent = await sendFile(file, filmId, "cover");
+      if (sent) setCover(sent.url);
+      else {
+        const res = await uploadCoverAction(filmId, data);
+        if (res.error) throw new Error(res.error);
+        setCover(res.url!);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    }
   };
 
   const preview: CaseFilm = { ...film, format, caseType, cover: cover ?? film.poster };

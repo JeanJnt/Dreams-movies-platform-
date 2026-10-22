@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { posterOptionsAction, setPosterAction, uploadPosterAction } from "@/app/actions";
+import { posterOptionsAction, setPosterAction, setUploadedPosterAction, uploadPosterAction } from "@/app/actions";
+import { sendFile } from "@/lib/upload-client";
 import type { PosterOption } from "@/lib/posters";
 
 const LANGS: Record<string, string> = { fr: "FR", en: "EN", ja: "JA" };
@@ -28,9 +29,20 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
 
   const upload = async (data: FormData) => {
     setError(null);
-    const res = await uploadPosterAction(filmId, data);
-    if (res.error) setError(res.error);
-    else setOpen(false);
+    const file = data.get("poster");
+    if (!(file instanceof File) || !file.size) return;
+    try {
+      // En ligne : envoi direct vers le stockage ; en local : formulaire classique.
+      const sent = await sendFile(file, filmId, "poster");
+      if (sent) await setUploadedPosterAction(filmId, sent.url);
+      else {
+        const res = await uploadPosterAction(filmId, data);
+        if (res.error) throw new Error(res.error);
+      }
+      setOpen(false);
+    } catch (e) {
+      setError((e as Error).message);
+    }
   };
 
   return (

@@ -1,12 +1,11 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { deleteFile, fileExists, mediaPath, saveFile } from "./storage";
 import { uid } from "./auth";
 import { db, ensureSchema } from "./db";
 
-// Les fichiers sont rangés dans data/media/<id du membre>/<id du film>/ (jamais envoyés sur GitHub).
-// Ils ne sont servis qu'aux membres connectés (voir src/app/media/…/route.ts).
-export const MEDIA_DIR = path.join(process.cwd(), "data", "media");
+// Les fichiers sont rangés sous media/<id du membre>/<id du film>/ (voir storage.ts : disque en local, Vercel Blob en ligne).
+// Ils ne sont servis qu'aux membres connectés qui ont le droit de les voir (voir src/app/media/…/route.ts).
 
 export const MIME: Record<string, string> = {
   ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif", ".avif": "image/avif",
@@ -54,9 +53,20 @@ export async function filmMedia(filmId: number) {
 }
 
 async function store(userId: number, filmId: number, name: string, file: File) {
-  const dir = path.join(MEDIA_DIR, String(userId), String(filmId));
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(path.join(dir, name), Buffer.from(await file.arrayBuffer()));
+  const mime = MIME[path.extname(name).toLowerCase()] ?? "application/octet-stream";
+  await saveFile(mediaPath(userId, filmId, name), Buffer.from(await file.arrayBuffer()), mime);
+}
+
+// Fichier envoyé directement par le navigateur vers le stockage en ligne (vidéos lourdes) : on l'enregistre ensuite.
+export async function registerUploaded(filmId: number, name: string, caption: string | null, visibility: Visibility) {
+  const me = await uid();
+  const mime = MIME[path.extname(name).toLowerCase()];
+  if (!mime || !/^[\w-]+\.\w+$/.test(name)) throw new Error("Fichier invalide");
+  if (!(await fileExists(mediaPath(me, filmId, name)))) throw new Error("Fichier introuvable");
+  await db().execute({
+    sql: "INSERT INTO media (user_id, film_id, kind, src, caption, visibility) VALUES (?, ?, ?, ?, ?, ?)",
+    args: [me, filmId, mime.startsWith("video") ? "video" : "image", name, caption, visibility],
+  });
 }
 
 export async function addFile(filmId: number, file: File, caption: string | null, visibility: Visibility) {
@@ -97,7 +107,7 @@ export async function deleteMedia(id: number) {
   const { rows } = await db().execute({ sql: "SELECT * FROM media WHERE id = ? AND user_id = ?", args: [id, me] });
   const m = rows[0];
   if (!m) return null;
-  if (m.kind !== "youtube") await fs.rm(path.join(MEDIA_DIR, String(me), String(m.film_id), String(m.src)), { force: true });
+  if (m.kind !== "youtube") await deleteFile(mediaPath(me, Number(m.film_id), String(m.src)));
   await db().execute({ sql: "DELETE FROM media WHERE id = ? AND user_id = ?", args: [id, me] });
   return Number(m.film_id);
 }
@@ -121,7 +131,7 @@ export async function saveImage(filmId: number, file: File, prefix: "cover" | "p
 export async function removeImage(url: string) {
   const me = await uid();
   const m = url.match(/^\/media\/(\d+)\/(\d+)\/((?:cover|poster)-[\w-]+\.\w+)$/);
-  if (m && Number(m[1]) === me) await fs.rm(path.join(MEDIA_DIR, m[1], m[2], m[3]), { force: true });
+  if (m && Number(m[1]) === me) await deleteFile(mediaPath(me, Number(m[2]), m[3]));
 }
 
 // Qui a le droit de voir un fichier ? Son auteur, et les membres si le média est partagé.

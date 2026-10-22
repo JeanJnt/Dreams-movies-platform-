@@ -10,8 +10,10 @@ import { lookupBarcode, searchFilms } from "@/lib/barcode";
 import { CASE_TYPES, FORMATS, setOwned, type CaseType } from "@/lib/collection";
 import { ensureFilmFromTmdb } from "@/lib/tmdb-film";
 import { deleteCritique, saveCritique } from "@/lib/critiques";
-import { addFile, addYoutube, deleteMedia, saveImage, setMediaVisibility } from "@/lib/media";
-import { posterOptions, setCustomPoster, uploadPoster } from "@/lib/posters";
+import { randomUUID } from "node:crypto";
+import { addFile, addYoutube, deleteMedia, MIME, registerUploaded, saveImage, setMediaVisibility } from "@/lib/media";
+import { mediaPath, blobEnabled } from "@/lib/storage";
+import { posterOptions, setCustomPoster, setUploadedPoster, uploadPoster } from "@/lib/posters";
 import { searchMyFilms } from "@/lib/queries";
 import { PLATFORMS, setMyPlatforms } from "@/lib/reco";
 
@@ -178,4 +180,27 @@ export async function deleteCritiqueAction(id: number, filmId: number) {
   revalidatePath(`/film/${filmId}`);
   revalidatePath("/critiques");
   redirect(`/film/${filmId}`);
+}
+
+// --- Envoi de fichiers (en ligne : directement du navigateur vers Vercel Blob) ---
+
+export async function uploadTargetAction(filmId: number, fileName: string, prefix: "media" | "cover" | "poster") {
+  const me = await requireUser();
+  const ext = (fileName.match(/\.\w+$/)?.[0] ?? ".jpg").toLowerCase();
+  const name = `${prefix === "media" ? "" : `${prefix}-`}${randomUUID()}${ext}`;
+  const contentType = MIME[ext];
+  if (!contentType) throw new Error("Format non pris en charge.");
+  return { mode: blobEnabled() ? ("blob" as const) : ("local" as const), pathname: mediaPath(me.id, filmId, name), name, contentType, url: `/media/${me.id}/${filmId}/${name}` };
+}
+
+export async function registerMediaAction(filmId: number, name: string, caption: string | null, visibility: "membres" | "prive") {
+  await requireUser();
+  await registerUploaded(filmId, name, caption?.slice(0, 300) || null, visibility === "prive" ? "prive" : "membres");
+  revalidatePath(`/film/${filmId}`);
+}
+
+export async function setUploadedPosterAction(filmId: number, url: string) {
+  await requireUser();
+  await setUploadedPoster(filmId, url);
+  revalidatePath("/", "layout");
 }

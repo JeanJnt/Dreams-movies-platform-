@@ -10,10 +10,12 @@
     "import": "tsx --env-file=.env.local scripts/import-letterboxd.ts",
     "enrich": "tsx --env-file=.env.local scripts/enrich-tmdb.ts",
     "reco": "tsx --env-file=.env.local scripts/reco.ts",
-    "alertes": "tsx --env-file=.env.local scripts/alerts.ts"
+    "alertes": "tsx --env-file=.env.local scripts/alerts.ts",
+    "vers-turso": "tsx --env-file=.env.local scripts/vers-turso.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
+    "@vercel/blob": "^2.8.2",
     "@zxing/browser": "^0.2.1",
     "@zxing/library": "^0.23.0",
     "adm-zip": "^0.6.1",

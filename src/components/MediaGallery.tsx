@@ -2,7 +2,8 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { addMediaAction, deleteMediaAction, setMediaVisibilityAction } from "@/app/actions";
+import { addMediaAction, deleteMediaAction, registerMediaAction, setMediaVisibilityAction } from "@/app/actions";
+import { sendFile } from "@/lib/upload-client";
 import type { Media } from "@/lib/media";
 
 export function MediaGallery({ filmId, media }: { filmId: number; media: Media[] }) {
@@ -10,15 +11,38 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState<Media | null>(null);
   const [pending, startTransition] = useTransition();
+  const [progress, setProgress] = useState<string | null>(null);
   const form = useRef<HTMLFormElement>(null);
 
   const submit = (data: FormData) =>
     startTransition(async () => {
-      const res = await addMediaAction(filmId, data);
-      setError(res.error ?? null);
-      if (!res.error) {
+      try {
+        // En ligne, les fichiers partent directement vers le stockage (même les grosses vidéos) ;
+        // en local, ils passent par le formulaire classique.
+        const files = data.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
+        const caption = String(data.get("caption") ?? "").trim() || null;
+        const visibility = data.get("visibility") === "prive" ? "prive" : "membres";
+        const remaining: File[] = [];
+        for (const [i, file] of files.entries()) {
+          const sent = await sendFile(file, filmId, "media", (pct) => setProgress(`Envoi ${i + 1}/${files.length} : ${pct} %`));
+          if (sent) await registerMediaAction(filmId, sent.name, caption, visibility);
+          else remaining.push(file);
+        }
+        data.delete("files");
+        remaining.forEach((f) => data.append("files", f));
+        if (remaining.length || data.get("youtube")) {
+          const res = await addMediaAction(filmId, data);
+          if (res.error) throw new Error(res.error);
+        } else if (!files.length) {
+          throw new Error("Choisis un fichier ou colle un lien YouTube.");
+        }
+        setError(null);
         form.current?.reset();
         setAdding(false);
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        setProgress(null);
       }
     });
 
@@ -45,7 +69,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
           <input name="caption" placeholder="Légende (facultatif)" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
           {error && <p className="text-sm text-heart">{error}</p>}
           <button disabled={pending} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50">
-            {pending ? "Envoi en cours…" : "Ajouter à la galerie"}
+            {pending ? (progress ?? "Envoi en cours…") : "Ajouter à la galerie"}
           </button>
         </form>
       )}

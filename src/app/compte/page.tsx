@@ -8,6 +8,8 @@ import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Mon compte" };
 export const dynamic = "force-dynamic";
+// L'import Letterboxd et le calcul des conseils peuvent prendre un moment : jusqu'à 60 s par étape.
+export const maxDuration = 60;
 
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ bienvenue?: string }> }) {
   const me = await requireUser();

@@ -1,7 +1,5 @@
 "use server";
 
-import fs from "node:fs/promises";
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { quickCheck } from "@/lib/alerts";
@@ -12,7 +10,7 @@ import {
 import { db, ensureSchema, USER_TABLES } from "@/lib/db";
 import { enrichBatch } from "@/lib/enrich";
 import { importLetterboxd, type ImportSummary } from "@/lib/importer";
-import { MEDIA_DIR } from "@/lib/media";
+import { deleteUserFiles } from "@/lib/storage";
 import { recoDetails, recoSeeds, recoWatchlistProviders } from "@/lib/reco-compute";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -116,7 +114,7 @@ export async function deleteAccountAction(_: FormState, form: FormData): Promise
     ],
     "write",
   );
-  await fs.rm(path.join(MEDIA_DIR, String(me.id)), { recursive: true, force: true });
+  await deleteUserFiles(me.id);
   await destroySession();
   redirect("/connexion?supprime=1");
 }
