@@ -15,8 +15,8 @@ export type CaseType = (typeof CASE_TYPES)[number]["key"];
 
 export type OwnedItem = { format: string; caseType: CaseType; edition: string | null; cover: string | null; ean: string | null };
 
-let ready: Promise<void> | undefined;
-const schema = () => (ready ??= ensureSchema());
+
+const schema = () => ensureSchema(); // mémorisé dans db.ts (et réessayé en cas d'échec)
 
 const toItem = (r: Record<string, unknown>): OwnedItem => ({
   format: String(r.format),

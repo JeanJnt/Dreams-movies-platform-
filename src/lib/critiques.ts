@@ -24,8 +24,8 @@ export type CritiqueWithFilm = Critique & {
 };
 
 // La table a été ajoutée après la V1 : on s'assure qu'elle existe avant chaque accès.
-let ready: Promise<void> | undefined;
-const schema = () => (ready ??= ensureSchema());
+
+const schema = () => ensureSchema(); // mémorisé dans db.ts (et réessayé en cas d'échec)
 
 function toCritique(r: Record<string, unknown>): Critique {
   return {

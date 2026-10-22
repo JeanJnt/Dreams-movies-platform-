@@ -210,15 +210,26 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
 
 let ready: Promise<void> | undefined;
 
+// En ligne, plusieurs copies du serveur démarrent en même temps : deux peuvent tenter la même modification.
+// On ignore donc les erreurs « déjà fait », et on ne garde jamais un échec en mémoire (on réessaiera au prochain appel).
+const alreadyDone = (e: unknown) => /duplicate column|already exists/i.test(String((e as Error)?.message ?? e));
+
 export function ensureSchema() {
-  return (ready ??= (async () => {
+  ready ??= (async () => {
     await db().batch(SHARED, "write");
     await migrateToAccounts();
     await db().batch([...PER_USER.map((t) => t.create), ...PER_USER.flatMap((t) => t.indexes ?? [])], "write");
     for (const [table, column, definition] of ADDED_COLUMNS) {
-      if (!(await columns(table)).includes(column)) await db().execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+      if ((await columns(table)).includes(column)) continue;
+      await db().execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`).catch((e) => {
+        if (!alreadyDone(e)) throw e;
+      });
     }
-  })());
+  })().catch((e) => {
+    ready = undefined;
+    throw e;
+  });
+  return ready;
 }
 
 // L'affiche d'un film pour un utilisateur : la sienne s'il en a choisi une, sinon celle de TMDB.

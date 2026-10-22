@@ -18,8 +18,8 @@ export const PLATFORMS = [
 
 const DEFAULT_PLATFORMS = ["netflix", "prime", "canal", "hbo"];
 
-let ready: Promise<void> | undefined;
-const schema = () => (ready ??= ensureSchema());
+
+const schema = () => ensureSchema(); // mémorisé dans db.ts (et réessayé en cas d'échec)
 
 export async function getMyPlatforms(): Promise<string[]> {
   await schema();

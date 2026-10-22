@@ -13,8 +13,8 @@ export type CinemaEvent = {
   runtime: number | null;
 };
 
-let ready: Promise<void> | undefined;
-const schema = () => (ready ??= ensureSchema());
+
+const schema = () => ensureSchema(); // mémorisé dans db.ts (et réessayé en cas d'échec)
 
 const toEvent = (r: Record<string, unknown>): CinemaEvent => ({
   id: Number(r.id),
