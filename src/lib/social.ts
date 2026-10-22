@@ -9,25 +9,25 @@ import { db } from "./db";
  * Une critique Dreams n'est visible des autres que publiée ET réglée sur « Membres ».
  */
 
-export type Member = { id: number; name: string; isAdmin: boolean; createdAt: string; films: number; critiques: number; lastActivity: string | null };
+export type Member = { id: number; name: string; username: string | null; isAdmin: boolean; createdAt: string; films: number; critiques: number; lastActivity: string | null };
 
 export async function members(): Promise<Member[]> {
   await requireUser();
   const { rows } = await db().execute(`
-    SELECT u.id, u.name, u.is_admin, u.created_at,
+    SELECT u.id, COALESCE(u.username, u.name) AS name, u.username, u.is_admin, u.created_at,
       (SELECT COUNT(*) FROM watched w WHERE w.user_id = u.id) AS films,
       (SELECT COUNT(*) FROM critiques c WHERE c.user_id = u.id AND c.status = 'published' AND c.visibility = 'membres') AS critiques,
       (SELECT MAX(d.logged_date) FROM diary d WHERE d.user_id = u.id) AS last_activity
-    FROM users u ORDER BY u.name COLLATE NOCASE`);
+    FROM users u ORDER BY COALESCE(u.username, u.name) COLLATE NOCASE`);
   return rows.map((r) => ({
-    id: Number(r.id), name: String(r.name), isAdmin: Boolean(r.is_admin), createdAt: String(r.created_at),
+    id: Number(r.id), name: String(r.name), username: (r.username as string) ?? null, isAdmin: Boolean(r.is_admin), createdAt: String(r.created_at),
     films: Number(r.films), critiques: Number(r.critiques), lastActivity: (r.last_activity as string) ?? null,
   }));
 }
 
 export async function memberName(id: number) {
-  const { rows } = await db().execute({ sql: "SELECT name, created_at FROM users WHERE id = ?", args: [id] });
-  return rows[0] ? { name: String(rows[0].name), createdAt: String(rows[0].created_at) } : null;
+  const { rows } = await db().execute({ sql: "SELECT COALESCE(username, name) AS name, username, name AS first_name, created_at FROM users WHERE id = ?", args: [id] });
+  return rows[0] ? { name: String(rows[0].name), username: (rows[0].username as string) ?? null, firstName: String(rows[0].first_name), createdAt: String(rows[0].created_at) } : null;
 }
 
 // --- Critiques Dreams visibles ---
@@ -55,7 +55,7 @@ export async function sharedCritiques(opts: { userId?: number; filmId?: number; 
   if (opts.filmId) { where.push("c.film_id = ?"); args.push(opts.filmId); }
   if (opts.excludeMine) where.push(`c.user_id <> ${me}`);
   const { rows } = await db().execute({
-    sql: `SELECT c.*, u.name AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, f.backdrop_path,
+    sql: `SELECT c.*, COALESCE(u.username, u.name) AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, f.backdrop_path,
             COALESCE((SELECT up.poster FROM user_posters up WHERE up.user_id = c.user_id AND up.film_id = f.id), f.poster_path) AS poster
           FROM critiques c JOIN users u ON u.id = c.user_id JOIN films f ON f.id = c.film_id
           WHERE ${where.join(" AND ")} ORDER BY c.updated_at DESC LIMIT ${opts.limit ?? 50}`,
@@ -68,7 +68,7 @@ export async function sharedCritiques(opts: { userId?: number; filmId?: number; 
 export async function readableCritique(id: number) {
   const me = await uid();
   const { rows } = await db().execute({
-    sql: `SELECT c.*, u.name AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, f.backdrop_path, f.directors,
+    sql: `SELECT c.*, COALESCE(u.username, u.name) AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, f.backdrop_path, f.directors,
             COALESCE((SELECT up.poster FROM user_posters up WHERE up.user_id = c.user_id AND up.film_id = f.id), f.poster_path) AS poster
           FROM critiques c JOIN users u ON u.id = c.user_id JOIN films f ON f.id = c.film_id
           WHERE c.id = ? AND (c.user_id = ? OR (c.status = 'published' AND c.visibility = 'membres'))`,
@@ -84,7 +84,7 @@ export async function readableCritique(id: number) {
 export async function filmCommunity(filmId: number) {
   const me = await uid();
   const { rows } = await db().execute({
-    sql: `SELECT u.id, u.name, r.rating, (l.film_id IS NOT NULL) AS liked, w.date AS watched,
+    sql: `SELECT u.id, COALESCE(u.username, u.name) AS name, r.rating, (l.film_id IS NOT NULL) AS liked, w.date AS watched,
             (SELECT MAX(d.watched_date) FROM diary d WHERE d.user_id = u.id AND d.film_id = ?) AS last_seen,
             (SELECT rv.review FROM reviews rv WHERE rv.user_id = u.id AND rv.film_id = ? AND rv.source = 'letterboxd' ORDER BY rv.watched_date DESC LIMIT 1) AS lb_review
           FROM users u

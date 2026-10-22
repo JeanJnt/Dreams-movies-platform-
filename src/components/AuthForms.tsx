@@ -53,8 +53,12 @@ export function SignupForm({ first }: { first: boolean }) {
         </label>
       )}
       <label className="block space-y-1.5">
-        <span className="text-sm text-muted">Prénom ou pseudo (visible des autres membres)</span>
-        <input name="name" required maxLength={60} autoComplete="nickname" className={input} />
+        <span className="text-sm text-muted">Prénom</span>
+        <input name="name" required maxLength={60} autoComplete="given-name" className={input} />
+      </label>
+      <label className="block space-y-1.5">
+        <span className="text-sm text-muted">Pseudo (visible des autres membres)</span>
+        <input name="username" required minLength={3} maxLength={21} pattern="@?[a-zA-Z0-9._]{3,20}" autoComplete="username" placeholder="ex. ogzy" className={input} />
       </label>
       <label className="block space-y-1.5">
         <span className="text-sm text-muted">Email</span>

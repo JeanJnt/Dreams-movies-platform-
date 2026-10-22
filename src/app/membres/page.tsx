@@ -20,7 +20,7 @@ export default async function MembersPage() {
           <Link key={m.id} href={`/membre/${m.id}`} className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/60">
             <span className="font-display flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-2xl text-on-accent">{m.name.slice(0, 1).toUpperCase()}</span>
             <span className="min-w-0">
-              <span className="font-display block truncate text-xl">{m.name}{m.id === me.id && <span className="ml-1 text-sm text-muted">(toi)</span>}</span>
+              <span className="font-display block truncate text-xl">{m.username ? `@${m.username}` : m.name}{m.id === me.id && <span className="ml-1 text-sm text-muted">(toi)</span>}</span>
               <span className="block text-xs text-muted">{m.films.toLocaleString("fr-FR")} films · {m.critiques} critiques Dreams</span>
               <span className="block text-xs text-muted">{m.lastActivity ? `Dernier film le ${formatLongDate(m.lastActivity.slice(0, 10))}` : `Membre depuis le ${formatLongDate(m.createdAt.slice(0, 10))}`}</span>
             </span>

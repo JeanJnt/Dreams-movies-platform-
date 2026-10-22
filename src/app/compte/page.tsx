@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { DeleteAccountForm, PasswordForm, SessionButtons } from "@/components/AccountForms";
+import { DeleteAccountForm, PasswordForm, ProfileForm, SessionButtons } from "@/components/AccountForms";
 import { ImportPanel } from "@/components/ImportPanel";
 import { LetterboxdConnect } from "@/components/LetterboxdConnect";
 import { requireUser } from "@/lib/auth";
@@ -32,7 +32,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <div>
         <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Mon compte</h1>
         <p className="mt-3 text-muted">
-          {me.name} · {me.email}
+          {me.username ? <b className="text-foreground">@{me.username}</b> : me.name} · {me.email}
           {me.isAdmin && <> · <Link href="/admin" className="text-accent hover:underline">Administration</Link></>}
         </p>
       </div>
@@ -43,6 +43,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       {(!onboarding || info.letterboxd_username) && (
         <LetterboxdConnect connected={(info.letterboxd_username as string) ?? null} syncedAt={(info.letterboxd_synced_at as string) ?? null} />
       )}
+
+      <section id="profil" className={`space-y-4 rounded-3xl border bg-surface p-5 md:p-6 ${me.username ? "border-border" : "border-accent"}`}>
+        <h2 className="text-2xl">Profil et préférences</h2>
+        {!me.username && <p className="text-sm text-accent">Choisis ton pseudo : c&apos;est lui que les autres membres verront.</p>}
+        <ProfileForm user={me} />
+      </section>
 
       <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
         <h2 className="text-2xl">Mon profil</h2>

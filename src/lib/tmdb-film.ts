@@ -1,5 +1,6 @@
 import { db, ensureSchema } from "./db";
 import { tmdb } from "./tmdb";
+import { pickTranslations, searchText } from "./titles";
 
 export type ProviderLite = { name: string; logo: string };
 
@@ -20,7 +21,10 @@ export type Movie = {
   voteAverage: number;
   voteCount: number;
   flatrate: ProviderLite[];
+  titles: Record<string, string>;
 };
+
+export type Translations = { translations: { iso_639_1: string; iso_3166_1: string; data?: { title?: string } }[] };
 
 type Raw = {
   title: string;
@@ -36,12 +40,13 @@ type Raw = {
   genres: { name: string }[];
   production_countries: { name: string }[];
   credits: { cast: { name: string; character: string }[]; crew: { name: string; job: string }[] };
+  translations?: Translations;
   "watch/providers"?: { results?: { FR?: { flatrate?: { provider_name: string; logo_path: string }[] } } };
 };
 
 // Toutes les infos d'un film en un seul appel (détails + équipe + plateformes en France).
 export async function fetchMovie(tmdbId: number): Promise<Movie> {
-  const d = await tmdb<Raw>(`/movie/${tmdbId}`, { append_to_response: "credits,watch/providers" });
+  const d = await tmdb<Raw>(`/movie/${tmdbId}`, { append_to_response: "credits,watch/providers,translations" });
   return {
     tmdbId,
     title: d.title,
@@ -59,6 +64,7 @@ export async function fetchMovie(tmdbId: number): Promise<Movie> {
     voteAverage: d.vote_average,
     voteCount: d.vote_count,
     flatrate: (d["watch/providers"]?.results?.FR?.flatrate ?? []).map((p) => ({ name: p.provider_name, logo: p.logo_path })),
+    titles: pickTranslations(d.translations?.translations ?? [], { language: d.original_language, title: d.original_title }),
   };
 }
 
@@ -74,13 +80,22 @@ export async function applyMovieToFilm(filmId: number, m: Movie) {
   await db().execute({
     sql: `UPDATE films SET tmdb_id = ?, title_fr = ?, original_title = ?, overview = ?, runtime = ?,
           poster_path = ?, backdrop_path = ?, original_language = ?, genres = ?, countries = ?,
-          directors = ?, cast_list = ?, tmdb_status = 'ok' WHERE id = ?`,
+          directors = ?, cast_list = ?, titles = ?, tmdb_status = 'ok' WHERE id = ?`,
     args: [
       m.tmdbId, m.title, m.originalTitle, m.overview, m.runtime, m.posterPath, m.backdropPath, m.originalLanguage,
-      JSON.stringify(m.genres), JSON.stringify(m.countries), JSON.stringify(m.directors), JSON.stringify(m.cast), filmId,
+      JSON.stringify(m.genres), JSON.stringify(m.countries), JSON.stringify(m.directors), JSON.stringify(m.cast), JSON.stringify(m.titles), filmId,
     ],
   });
-  await saveProviders(m.tmdbId, m.flatrate);
+  await Promise.all([saveProviders(m.tmdbId, m.flatrate), refreshSearchText(filmId)]);
+}
+
+// Recalcule le texte de recherche d'un film (tous ses titres, sans accents).
+export async function refreshSearchText(filmId: number) {
+  const { rows } = await db().execute({ sql: "SELECT name, title_fr, original_title, titles FROM films WHERE id = ?", args: [filmId] });
+  const r = rows[0];
+  if (!r) return;
+  const text = searchText({ name: String(r.name), title_fr: r.title_fr as string | null, original_title: r.original_title as string | null, titles: r.titles as string | null });
+  await db().execute({ sql: "UPDATE films SET search_text = ? WHERE id = ?", args: [text, filmId] });
 }
 
 // Retrouve (ou crée) la fiche Dreams d'un film TMDB : sert aux films recommandés ou trouvés par la recherche.

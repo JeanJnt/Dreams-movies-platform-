@@ -1,5 +1,6 @@
 import { quickCheck } from "@/lib/alerts";
 import { db, ensureSchema } from "@/lib/db";
+import { titlesBatch } from "@/lib/enrich";
 import { syncLetterboxd } from "@/lib/letterboxd-sync";
 
 // Tâche planifiée (voir vercel.json) : chaque matin, pour chaque membre,
@@ -17,5 +18,7 @@ export async function GET(req: Request) {
     const sync = r.letterboxd_username ? await syncLetterboxd(Number(r.id)).catch(() => null) : null;
     results[String(r.id)] = { films: sync?.newFilms ?? 0, alertes: await quickCheck(Number(r.id)).catch(() => -1) };
   }
-  return Response.json({ ok: true, results });
+  // Titres traduits des films qui n'en ont pas encore (un paquet par jour suffit pour les nouveaux).
+  const titles = await titlesBatch(80).catch(() => null);
+  return Response.json({ ok: true, results, titles });
 }

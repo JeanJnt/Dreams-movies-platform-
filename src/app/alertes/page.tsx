@@ -2,8 +2,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RefreshAlerts } from "@/components/RefreshAlerts";
-import { formatLongDate } from "@/lib/format";
-import { listAlerts, markAlertsSeen, type Alert } from "@/lib/alerts";
+import { requireUser } from "@/lib/auth";
+import { formatLongDate, showtimeLinks } from "@/lib/format";
+import { listAlerts, markAlertsSeen, nowPlaying, type Alert } from "@/lib/alerts";
 import { backdrop, poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Au cinéma" };
@@ -16,19 +17,25 @@ const KINDS: Record<Alert["kind"], { title: string; badge: string }> = {
 };
 
 export default async function AlertsPage() {
-  const alerts = await listAlerts();
+  const [alerts, playing, me] = await Promise.all([listAlerts(), nowPlaying(), requireUser()]);
   await markAlertsSeen(); // ouvrir la page = alertes lues
+  const isParis = /^paris$/i.test(me.city.trim());
 
   return (
     <div className="space-y-10 pt-2 md:pt-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Au cinéma</h1>
-          <p className="mt-3 max-w-2xl text-muted">Les films de ta watchlist et tes coups de cœur qui passent en salle, maintenant ou bientôt.</p>
-          <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition hover:border-accent">
-            <span className="font-display text-lg">Paris Ciné Info</span>
-            <span className="text-muted">Toutes les séances de Paris, classiques et rétrospectives comprises ↗</span>
-          </a>
+          <p className="mt-3 max-w-2xl text-muted">
+            Les films de ta watchlist et tes coups de cœur qui passent en salle, et tout ce qui est à l&apos;affiche. Séances à <b className="text-foreground">{me.city}</b>{" "}
+            <Link href="/compte#profil" className="text-sm text-accent hover:underline">changer de ville</Link>
+          </p>
+          {isParis && (
+            <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition hover:border-accent">
+              <span className="font-display text-lg">Paris Ciné Info</span>
+              <span className="text-muted">Classiques et rétrospectives dans les salles parisiennes ↗</span>
+            </a>
+          )}
         </div>
         <RefreshAlerts />
       </div>
@@ -44,22 +51,44 @@ export default async function AlertsPage() {
           <section key={kind}>
             <h2 className="mb-4 text-3xl">{KINDS[kind].title}</h2>
             <div className="grid gap-4 md:grid-cols-2">
-              {list.map((a) => <AlertCard key={a.tmdbId} alert={a} />)}
+              {list.map((a) => <AlertCard key={a.tmdbId} alert={a} city={me.city} country={me.country} />)}
             </div>
           </section>
         );
       })}
 
+      {playing.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-3xl">À l&apos;affiche en ce moment</h2>
+          <p className="mb-4 text-sm text-muted">Les films en salle en ce moment, les plus vus d&apos;abord. Touche une affiche pour ses séances à {me.city}.</p>
+          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+            {playing.map((p) => (
+              <div key={p.tmdbId} className={`group ${p.seen ? "opacity-50 hover:opacity-100" : ""}`}>
+                <Link href={p.filmId ? `/film/${p.filmId}` : `/tmdb/${p.tmdbId}`} className="block">
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-white/5 transition group-hover:-translate-y-1 group-hover:ring-accent/60">
+                    {p.poster ? <img src={poster(p.poster, "w342")!} alt={p.title} loading="lazy" className="size-full object-cover" /> : <span className="flex size-full items-center justify-center p-2 text-center text-xs text-muted">{p.title}</span>}
+                    {p.wanted && <span className="absolute top-1 left-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] text-on-accent">Watchlist</span>}
+                    {p.seen && <span className="absolute top-1 left-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] text-white">✓ vu</span>}
+                  </div>
+                </Link>
+                <a href={showtimeLinks(p.title, me.city, me.country)[0].href} target="_blank" rel="noreferrer" className="mt-1.5 block truncate text-xs text-muted hover:text-accent" title={`Séances de ${p.title} à ${me.city}`}>
+                  {p.title} <span className="text-accent">↗</span>
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <p className="text-xs text-muted">
-        Sorties et ressorties : TMDB. Horaires des séances : Allociné et <a href="https://www.paris-cine.info/" className="underline">Paris Ciné Info</a> (le plus complet pour les classiques et rétrospectives). Les alertes se mettent à jour avec « Vérifier maintenant » ou <code>npm run alertes</code>.
+        Films à l&apos;affiche, sorties et ressorties : TMDB. Les horaires s&apos;ouvrent sur Google (toutes les salles de ta ville){me.country === "FR" && ", Allociné"}{isParis && " et Paris Ciné Info"}. Les alertes se mettent à jour chaque matin, ou avec « Vérifier maintenant ».
       </p>
     </div>
   );
 }
 
-function AlertCard({ alert: a }: { alert: Alert }) {
+function AlertCard({ alert: a, city, country }: { alert: Alert; city: string; country: string }) {
   const bg = backdrop(a.backdrop);
-  const showtimes = `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(a.title)}`;
   return (
     <article className="relative overflow-hidden rounded-3xl border border-border bg-surface">
       {bg && <img src={bg} alt="" className="absolute inset-0 size-full object-cover opacity-20" />}
@@ -85,8 +114,9 @@ function AlertCard({ alert: a }: { alert: Alert }) {
           )}
           {a.note && <p className="text-xs text-muted italic">{a.note}</p>}
           <div className="mt-auto flex flex-wrap gap-2 pt-3">
-            <a href={showtimes} target="_blank" rel="noreferrer" className="rounded-full bg-foreground px-3 py-1.5 text-xs text-background">Séances (Allociné) ↗</a>
-            <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent">Paris Ciné Info ↗</a>
+            {showtimeLinks(a.title, city, country).map((l) => (
+              <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className={l.main ? "rounded-full bg-foreground px-3 py-1.5 text-xs text-background" : "rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent"}>{l.label} ↗</a>
+            ))}
             <Link href={`/agenda?film=${a.filmId}`} className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent">+ Agenda</Link>
           </div>
         </div>

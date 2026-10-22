@@ -14,7 +14,7 @@ export const maxDuration = 60; // import de grandes listes
 export default async function AdminPage() {
   const me = await requireAdmin();
   const [members, invites, lists] = await Promise.all([
-    db().execute(`SELECT u.id, u.name, u.email, u.is_admin, u.created_at, (SELECT COUNT(*) FROM watched w WHERE w.user_id = u.id) AS films
+    db().execute(`SELECT u.id, u.name, u.username, u.email, u.is_admin, u.created_at, (SELECT COUNT(*) FROM watched w WHERE w.user_id = u.id) AS films
                   FROM users u ORDER BY u.created_at`),
     db().execute(`SELECT i.code, i.note, i.expires_at, i.used_at, u.name AS used_by FROM invites i LEFT JOIN users u ON u.id = i.used_by
                   ORDER BY i.created_at DESC LIMIT 30`),
@@ -72,6 +72,7 @@ export default async function AdminPage() {
               <span className="font-display flex size-9 items-center justify-center rounded-full bg-accent text-on-accent">{String(m.name).slice(0, 1).toUpperCase()}</span>
               <div className="min-w-0 flex-1">
                 <Link href={`/membre/${m.id}`} className="hover:text-accent">{String(m.name)}</Link>
+                {m.username && <span className="ml-1.5 text-sm text-muted">@{String(m.username)}</span>}
                 {Boolean(m.is_admin) && <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] text-accent">admin</span>}
                 <p className="truncate text-xs text-muted">{String(m.email)} · {Number(m.films)} films · depuis le {formatLongDate(String(m.created_at).slice(0, 10))}</p>
               </div>

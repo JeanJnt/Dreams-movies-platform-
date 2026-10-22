@@ -218,7 +218,18 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
   // Synchronisation automatique avec le flux public Letterboxd du membre
   ["users", "letterboxd_username", "TEXT"],
   ["users", "letterboxd_synced_at", "TEXT"],
+  // Profil et préférences : pseudo public, langue des titres traduits, ville et pays pour les séances
+  ["users", "username", "TEXT"],
+  ["users", "title_lang", "TEXT NOT NULL DEFAULT 'fr'"],
+  ["users", "city", "TEXT NOT NULL DEFAULT 'Paris'"],
+  ["users", "country", "TEXT NOT NULL DEFAULT 'FR'"],
+  // Titres du film dans plusieurs langues (JSON { fr, en, ja… }) et texte de recherche sans accents
+  ["films", "titles", "TEXT"],
+  ["films", "search_text", "TEXT"],
 ];
+
+// Index sur les colonnes ajoutées ci-dessus (créés une fois les colonnes en place).
+const ADDED_INDEXES = [`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username COLLATE NOCASE)`];
 
 let ready: Promise<void> | undefined;
 
@@ -237,6 +248,7 @@ export function ensureSchema() {
         if (!alreadyDone(e)) throw e;
       });
     }
+    await db().batch(ADDED_INDEXES, "write");
   })().catch((e) => {
     ready = undefined;
     throw e;

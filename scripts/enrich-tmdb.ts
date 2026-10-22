@@ -3,7 +3,7 @@
  *
  *   npm run enrich
  */
-import { enrichBatch } from "../src/lib/enrich";
+import { enrichBatch, titlesBatch } from "../src/lib/enrich";
 
 (async () => {
   const missing: string[] = [];
@@ -11,6 +11,8 @@ import { enrichBatch } from "../src/lib/enrich";
     missing.push(...r.missing);
     process.stdout.write(`\rFilms restants : ${r.remaining}   `);
   }
+  // Titres dans plusieurs langues (affichage et recherche)
+  for (let r = await titlesBatch(200); r.done; r = await titlesBatch(200)) process.stdout.write(`\rTitres traduits restants : ${r.remaining}   `);
   console.log("\n✅ Catalogue à jour.");
   if (missing.length) console.log(`❓ Introuvables sur TMDB (${missing.length}) :\n  ${missing.join("\n  ")}`);
 })().catch((e) => {

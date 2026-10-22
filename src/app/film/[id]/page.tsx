@@ -16,7 +16,9 @@ import { CASE_TYPES, FORMATS, ownedItem } from "@/lib/collection";
 import { critiqueForFilm, readingTime } from "@/lib/critiques";
 import { filmMedia } from "@/lib/media";
 import { currentPoster } from "@/lib/posters";
-import { formatLongDate, formatRuntime, letterboxdUrl } from "@/lib/format";
+import { currentUser } from "@/lib/auth";
+import { formatLongDate, formatRuntime, letterboxdUrl, showtimeLinks } from "@/lib/format";
+import { filmTitles } from "@/lib/titles";
 import { filmDetail, filmDiary, filmLists, filmReviews, type FilmDetail } from "@/lib/queries";
 import { ARTICLE_SOURCES, LEGAL_FREE, articleUrl, legalSearchUrl, reviewVideos, youtubeSearchUrl } from "@/lib/sources";
 import { backdrop, poster, watchProviders, type Provider } from "@/lib/tmdb";
@@ -32,7 +34,7 @@ export default async function FilmPage({ params }: Props) {
   const id = Number((await params).id);
   const film = await filmDetail(id);
   if (!film) notFound();
-  const [reviews, diary, lists, providers, critique, owned, media, posters] = await Promise.all([
+  const [reviews, diary, lists, providers, critique, owned, media, posters, me] = await Promise.all([
     filmReviews(id),
     filmDiary(id),
     filmLists(id),
@@ -41,8 +43,11 @@ export default async function FilmPage({ params }: Props) {
     ownedItem(id),
     filmMedia(id),
     currentPoster(id),
+    currentUser(),
   ]);
   const title = film.title_fr ?? film.name;
+  // En grand le titre original, en petit sa traduction dans la langue choisie par le membre.
+  const titles = filmTitles(film, me?.titleLang ?? "fr");
   const bg = backdrop(film.backdrop_path);
 
   return (
@@ -58,10 +63,8 @@ export default async function FilmPage({ params }: Props) {
             </PosterPicker>
           </div>
           <div className="flex min-w-0 flex-col justify-end">
-            <h1 className="font-display text-4xl leading-none md:text-6xl">{title}</h1>
-            {film.original_title && film.original_title !== title && (
-              <p className="mt-1 text-sm text-muted italic">{film.original_title}</p>
-            )}
+            <h1 className="font-display text-4xl leading-none md:text-6xl">{titles.main}</h1>
+            {titles.sub && <p className="mt-1.5 text-base text-muted md:text-lg">{titles.sub}</p>}
             <p className="mt-3 text-sm text-muted">
               {[film.year, formatRuntime(film.runtime), film.countries.slice(0, 2).join(", ")].filter(Boolean).join(" · ")}
             </p>
@@ -237,10 +240,11 @@ export default async function FilmPage({ params }: Props) {
             ) : (
               <p className="text-sm text-muted">Pas d&apos;offre en France en ce moment.</p>
             )}
-            <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Au cinéma à Paris</p>
+            <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Au cinéma à {me?.city ?? "Paris"}</p>
             <div className="mb-1 flex flex-wrap gap-1.5">
-              <a href="https://www.paris-cine.info/" target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-accent">Paris Ciné Info ↗</a>
-              <a href={`https://www.allocine.fr/rechercher/?q=${encodeURIComponent(title)}`} target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-accent">Allociné ↗</a>
+              {showtimeLinks(title, me?.city ?? "Paris", me?.country ?? "FR").map((l) => (
+                <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className={`rounded-full px-2.5 py-1 text-xs ${l.main ? "bg-accent text-on-accent" : "bg-surface-2 text-muted hover:text-accent"}`}>{l.label} ↗</a>
+              ))}
             </div>
             <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Gratuit et légal ?</p>
             <div className="flex flex-wrap gap-1.5">

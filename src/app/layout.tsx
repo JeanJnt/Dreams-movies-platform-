@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body className="antialiased">
         <PwaSetup />
         {/* La navigation n'apparaît qu'une fois connecté */}
-        {user && <Nav theme={theme} alerts={alerts} user={{ name: user.name, isAdmin: user.isAdmin }} />}
+        {user && <Nav theme={theme} alerts={alerts} user={{ name: user.username ?? user.name, isAdmin: user.isAdmin }} />}
         <main className="mx-auto max-w-6xl px-4 pb-safe md:px-8">{children}</main>
       </body>
     </html>

@@ -35,10 +35,11 @@ export async function quickCheck(userId?: number) {
   await ensureSchema();
   const u = userId ?? (await uid());
   const mine = new Map((await myFilms(u)).map((m) => [m.tmdbId, m]));
+  const region = await userCountry(u);
   let found = 0;
   for (const [list, kind, pages] of [["now_playing", "en_salle", 6], ["upcoming", "bientot", 4]] as const) {
     for (let page = 1; page <= pages; page++) {
-      const res = await tmdb<{ results: { id: number; release_date?: string }[]; total_pages: number }>(`/movie/${list}`, { region: "FR", page: String(page) });
+      const res = await tmdb<{ results: { id: number; release_date?: string }[]; total_pages: number }>(`/movie/${list}`, { region, page: String(page) });
       for (const r of res.results) {
         const m = mine.get(r.id);
         if (m) {
@@ -58,6 +59,7 @@ export async function fullCheck(onProgress?: (done: number, total: number) => vo
   await ensureSchema();
   const u = userId ?? (await uid());
   const mine = await myFilms(u);
+  const region = await userCountry(u);
   const today = Date.now();
   const DAY = 86_400_000;
   let done = 0, found = 0;
@@ -66,7 +68,7 @@ export async function fullCheck(onProgress?: (done: number, total: number) => vo
     for (let m = queue.shift(); m; m = queue.shift()) {
       try {
         const res = await tmdb<{ results: { iso_3166_1: string; release_dates: { release_date: string; type: number; note: string }[] }[] }>(`/movie/${m.tmdbId}/release_dates`);
-        const fr = res.results.find((r) => r.iso_3166_1 === "FR");
+        const fr = res.results.find((r) => r.iso_3166_1 === region);
         // Type 3 = sortie en salle. On garde celles entre il y a 5 semaines et dans 2 mois.
         const theatrical = (fr?.release_dates ?? [])
           .filter((d) => d.type === 3 || d.type === 2)
@@ -88,6 +90,40 @@ export async function fullCheck(onProgress?: (done: number, total: number) => vo
   await Promise.all(Array.from({ length: 8 }, worker));
   await cleanup(u);
   return found;
+}
+
+async function userCountry(u: number) {
+  const { rows } = await db().execute({ sql: "SELECT country FROM users WHERE id = ?", args: [u] });
+  return String(rows[0]?.country ?? "FR");
+}
+
+// Tous les films à l'affiche en ce moment dans le pays du membre (pas seulement les siens), les plus populaires d'abord.
+export type NowPlaying = { tmdbId: number; filmId: number | null; title: string; original: string; year: number | null; poster: string | null; seen: boolean; wanted: boolean };
+export async function nowPlaying(): Promise<NowPlaying[]> {
+  await ensureSchema();
+  const u = await uid();
+  const region = await userCountry(u);
+  type R = { id: number; title: string; original_title: string; release_date?: string; poster_path: string | null; popularity: number };
+  const pages = await Promise.all(
+    [1, 2, 3].map((p) =>
+      tmdb<{ results: R[] }>("/movie/now_playing", { region, page: String(p) }, 3, { next: { revalidate: 6 * 3600 } }).then((r) => r.results).catch(() => [] as R[]),
+    ),
+  );
+  const seenIds = new Set<number>();
+  const films = pages.flat().filter((f) => !seenIds.has(f.id) && seenIds.add(f.id)).sort((a, b) => b.popularity - a.popularity);
+  if (!films.length) return [];
+  const { rows } = await db().execute(`
+    SELECT f.id, f.tmdb_id, (w.film_id IS NOT NULL) AS seen, (wl.film_id IS NOT NULL) AS wanted FROM films f
+    LEFT JOIN watched w ON w.film_id = f.id AND w.user_id = ${u} LEFT JOIN watchlist wl ON wl.film_id = f.id AND wl.user_id = ${u}
+    WHERE f.tmdb_id IN (${films.map((f) => Number(f.id)).join(",")})`);
+  const local = new Map(rows.map((r) => [Number(r.tmdb_id), r]));
+  return films.map((f) => {
+    const l = local.get(f.id);
+    return {
+      tmdbId: f.id, filmId: l ? Number(l.id) : null, title: f.title, original: f.original_title, year: f.release_date ? Number(f.release_date.slice(0, 4)) : null,
+      poster: f.poster_path, seen: Boolean(l?.seen), wanted: Boolean(l?.wanted),
+    };
+  });
 }
 
 // On oublie les alertes trop anciennes (sorties depuis plus de 2 mois).

@@ -44,7 +44,7 @@ export async function filmMedia(filmId: number) {
   await ensureSchema();
   const me = await uid();
   const { rows } = await db().execute({
-    sql: `SELECT m.*, u.name AS author FROM media m JOIN users u ON u.id = m.user_id
+    sql: `SELECT m.*, COALESCE(u.username, u.name) AS author FROM media m JOIN users u ON u.id = m.user_id
           WHERE m.film_id = ? AND (m.user_id = ? OR m.visibility = 'membres')
           ORDER BY (m.user_id = ?) DESC, m.created_at DESC, m.id DESC`,
     args: [filmId, me, me],

@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db, ensureSchema, USER_TABLES } from "./db";
+import { isTitleLang, type TitleLang } from "./titles";
 
 /*
  * Sécurité des comptes
@@ -17,7 +18,31 @@ const COOKIE = "dreams_session";
 const SESSION_DAYS = 30;
 const SCRYPT = { N: 2 ** 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
-export type User = { id: number; email: string; name: string; isAdmin: boolean };
+export type User = {
+  id: number;
+  email: string;
+  name: string;
+  username: string | null; // pseudo public (@pseudo)
+  isAdmin: boolean;
+  titleLang: TitleLang; // langue des titres traduits affichés sous le titre original
+  city: string; // ville pour les séances de cinéma
+  country: string; // pays (code ISO) pour les sorties en salle
+};
+
+const USER_COLUMNS = "u.id, u.email, u.name, u.username, u.is_admin, u.title_lang, u.city, u.country";
+const toUser = (r: Record<string, unknown>): User => ({
+  id: Number(r.id),
+  email: String(r.email),
+  name: String(r.name),
+  username: (r.username as string) ?? null,
+  isAdmin: Boolean(r.is_admin),
+  titleLang: isTitleLang(String(r.title_lang ?? "fr")) ? (String(r.title_lang ?? "fr") as TitleLang) : "fr",
+  city: String(r.city ?? "Paris"),
+  country: String(r.country ?? "FR"),
+});
+
+// Nom affiché aux autres membres : le pseudo s'il existe, sinon le prénom.
+export const displayName = (u: Pick<User, "name" | "username">) => u.username ?? u.name;
 
 // --- Mots de passe ---
 
@@ -89,12 +114,12 @@ export const currentUser = cache(async (): Promise<User | null> => {
   if (!token) return null;
   await ensureSchema();
   const { rows } = await db().execute({
-    sql: `SELECT u.id, u.email, u.name, u.is_admin FROM sessions s JOIN users u ON u.id = s.user_id
+    sql: `SELECT ${USER_COLUMNS} FROM sessions s JOIN users u ON u.id = s.user_id
           WHERE s.id = ? AND s.expires_at > ?`,
     args: [sha256(token), new Date().toISOString()],
   });
   const r = rows[0];
-  return r ? { id: Number(r.id), email: String(r.email), name: String(r.name), isAdmin: Boolean(r.is_admin) } : null;
+  return r ? toUser(r) : null;
 });
 
 // À appeler au début de chaque page, action ou requête qui touche aux données d'un utilisateur.
@@ -129,9 +154,9 @@ export async function requireAdmin(): Promise<User> {
 let cliUser: User | null = null;
 export async function setCliUser(email: string) {
   await ensureSchema();
-  const { rows } = await db().execute({ sql: "SELECT id, email, name, is_admin FROM users WHERE email = ?", args: [email] });
+  const { rows } = await db().execute({ sql: `SELECT ${USER_COLUMNS} FROM users u WHERE u.email = ?`, args: [email] });
   if (!rows[0]) throw new Error(`Aucun compte pour ${email}`);
-  cliUser = { id: Number(rows[0].id), email: String(rows[0].email), name: String(rows[0].name), isAdmin: Boolean(rows[0].is_admin) };
+  cliUser = toUser(rows[0]);
   return cliUser;
 }
 
@@ -163,7 +188,7 @@ export async function userCount() {
   return Number(rows[0].n);
 }
 
-export async function createUser(input: { email: string; name: string; password: string; inviteCode?: string }) {
+export async function createUser(input: { email: string; name: string; username?: string; password: string; inviteCode?: string }) {
   await ensureSchema();
   const first = (await userCount()) === 0;
   let invite: string | null = null;
@@ -175,8 +200,8 @@ export async function createUser(input: { email: string; name: string; password:
   }
   const hash = await hashPassword(input.password);
   const res = await db().execute({
-    sql: "INSERT INTO users (email, name, password_hash, is_admin, calendar_token) VALUES (?, ?, ?, ?, ?)",
-    args: [input.email.trim().toLowerCase(), input.name.trim(), hash, first ? 1 : 0, randomBytes(24).toString("base64url")],
+    sql: "INSERT INTO users (email, name, username, password_hash, is_admin, calendar_token) VALUES (?, ?, ?, ?, ?, ?)",
+    args: [input.email.trim().toLowerCase(), input.name.trim(), input.username ?? null, hash, first ? 1 : 0, randomBytes(24).toString("base64url")],
   });
   const id = Number(res.lastInsertRowid);
   if (invite) await db().execute({ sql: "UPDATE invites SET used_by = ?, used_at = datetime('now') WHERE code = ?", args: [id, invite] });
@@ -191,4 +216,16 @@ export function newInviteCode() {
   const bytes = randomBytes(9);
   const chars = [...bytes].map((b) => alphabet[b % alphabet.length]).join("");
   return `${chars.slice(0, 4)}-${chars.slice(4, 9)}`;
+}
+
+// Pseudo : 3 à 20 caractères, lettres sans accents, chiffres, « . » et « _ ».
+export function checkUsername(raw: string): { username?: string; error?: string } {
+  const username = raw.trim().replace(/^@/, "");
+  if (!/^[a-zA-Z0-9._]{3,20}$/.test(username)) return { error: "Pseudo : 3 à 20 caractères (lettres, chiffres, « . » ou « _ »)." };
+  return { username };
+}
+
+export async function usernameTaken(username: string, exceptId?: number) {
+  const { rows } = await db().execute({ sql: "SELECT id FROM users WHERE username = ? COLLATE NOCASE AND id != ?", args: [username, exceptId ?? 0] });
+  return Boolean(rows[0]);
 }

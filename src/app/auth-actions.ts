@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { quickCheck } from "@/lib/alerts";
 import {
-  checkPasswordStrength, clientIp, createSession, createUser, currentUser, destroySession, hashPassword,
-  newInviteCode, recordFailedAttempt, requireAdmin, requireUser, tooManyAttempts, verifyPassword,
+  checkPasswordStrength, checkUsername, clientIp, createSession, createUser, currentUser, destroySession, hashPassword,
+  newInviteCode, recordFailedAttempt, requireAdmin, requireUser, tooManyAttempts, usernameTaken, verifyPassword,
 } from "@/lib/auth";
 import { db, ensureSchema, USER_TABLES } from "@/lib/db";
 import { enrichBatch } from "@/lib/enrich";
@@ -13,6 +13,7 @@ import { importLetterboxd, type ImportSummary } from "@/lib/importer";
 import { deleteUserFiles } from "@/lib/storage";
 import { connectLetterboxd, disconnectLetterboxd, syncLetterboxd } from "@/lib/letterboxd-sync";
 import { recoDetails, recoSeeds, recoWatchlistProviders } from "@/lib/reco-compute";
+import { isTitleLang } from "@/lib/titles";
 import { deleteRefList, importLetterboxdCsv, importTmdbList, importTmdbTop } from "@/lib/ref-lists";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -46,7 +47,9 @@ export async function signupAction(_: FormState, form: FormData): Promise<FormSt
   const email = field(form, "email").toLowerCase();
   const password = String(form.get("password") ?? "");
   const inviteCode = field(form, "invite", 20);
-  if (!name) return { error: "Indique ton prénom ou ton pseudo." };
+  if (!name) return { error: "Indique ton prénom." };
+  const pseudo = checkUsername(field(form, "username", 21));
+  if (pseudo.error) return { error: pseudo.error };
   if (!isEmail(email)) return { error: "Adresse email invalide." };
   const weak = checkPasswordStrength(password);
   if (weak) return { error: weak };
@@ -56,10 +59,11 @@ export async function signupAction(_: FormState, form: FormData): Promise<FormSt
   if (await tooManyAttempts(key)) return { error: "Trop d'essais. Réessaie dans 15 minutes." };
   const exists = await db().execute({ sql: "SELECT 1 FROM users WHERE email = ?", args: [email] });
   if (exists.rows[0]) return { error: "Un compte existe déjà avec cet email." };
+  if (await usernameTaken(pseudo.username!)) return { error: "Ce pseudo est déjà pris." };
 
   let user;
   try {
-    user = await createUser({ email, name, password, inviteCode });
+    user = await createUser({ email, name, username: pseudo.username, password, inviteCode });
   } catch (e) {
     await recordFailedAttempt(key);
     return { error: (e as Error).message };
@@ -74,6 +78,25 @@ export async function logoutAction() {
 }
 
 // --- Mon compte ---
+
+// Profil et préférences : pseudo, prénom, langue des titres, ville et pays pour les séances.
+export async function updateProfileAction(_: FormState, form: FormData): Promise<FormState> {
+  const me = await requireUser();
+  const name = field(form, "name", 60);
+  if (!name) return { error: "Indique ton prénom." };
+  const pseudo = checkUsername(field(form, "username", 21));
+  if (pseudo.error) return { error: pseudo.error };
+  if (await usernameTaken(pseudo.username!, me.id)) return { error: "Ce pseudo est déjà pris." };
+  const lang = field(form, "title_lang", 4);
+  const city = field(form, "city", 60) || "Paris";
+  const country = field(form, "country", 2).toUpperCase();
+  await db().execute({
+    sql: "UPDATE users SET name = ?, username = ?, title_lang = ?, city = ?, country = ? WHERE id = ?",
+    args: [name, pseudo.username!, isTitleLang(lang) ? lang : "fr", city, /^[A-Z]{2}$/.test(country) ? country : "FR", me.id],
+  });
+  revalidatePath("/", "layout");
+  return { ok: "Enregistré." };
+}
 
 export async function changePasswordAction(_: FormState, form: FormData): Promise<FormState> {
   const me = await requireUser();

@@ -1,5 +1,10 @@
 import { uid, viewedUser } from "./auth";
 import { db, posterSql } from "./db";
+import { normalize } from "./titles";
+
+// Recherche dans tous les titres d'un film (original, français, anglais, traductions), sans tenir compte des accents.
+export const titleMatchSql = "(f.search_text LIKE ? OR f.name LIKE ? OR f.title_fr LIKE ? OR f.original_title LIKE ?)";
+export const titleMatchArgs = (q: string) => [`%${normalize(q)}%`, `%${q}%`, `%${q}%`, `%${q}%`];
 
 // Toutes ces requêtes ne lisent que les données de l'utilisateur connecté (uid).
 // Le catalogue de films (table films) est partagé ; les vus, notes, listes… sont à chacun.
@@ -23,6 +28,7 @@ export type FilmDetail = Film & {
   lb_uri: string | null;
   tmdb_id: number | null;
   original_title: string | null;
+  titles: string | null; // JSON des titres traduits
   overview: string | null;
   genres: string[];
   directors: string[];
@@ -71,8 +77,8 @@ export async function watchedFilms({ q, sort = "recent", genre, rating }: FilmFi
   const where = [`w.user_id = ${u}`];
   const args: (string | number)[] = [];
   if (q) {
-    where.push("(f.name LIKE ? OR f.title_fr LIKE ? OR f.directors LIKE ?)");
-    args.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    where.push(`(${titleMatchSql} OR f.directors LIKE ?)`);
+    args.push(...titleMatchArgs(q), `%${q}%`);
   }
   if (genre) {
     where.push("f.genres LIKE ?");
@@ -171,6 +177,7 @@ export async function filmDetail(id: number): Promise<FilmDetail | null> {
     lb_uri: (r.lb_uri as string) ?? null,
     tmdb_id: r.tmdb_id == null ? null : Number(r.tmdb_id),
     original_title: (r.original_title as string) ?? null,
+    titles: (r.titles as string) ?? null,
     overview: (r.overview as string) ?? null,
     runtime: r.runtime == null ? null : Number(r.runtime),
     genres: json(r.genres, []),
@@ -267,9 +274,9 @@ export async function searchMyFilms(q: string) {
     sql: `SELECT f.id, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster_path,
             (wl.film_id IS NOT NULL) AS in_watchlist
           FROM films f LEFT JOIN watchlist wl ON wl.film_id = f.id AND wl.user_id = ${u}
-          WHERE f.name LIKE ? OR f.title_fr LIKE ? OR f.original_title LIKE ?
+          WHERE ${titleMatchSql}
           ORDER BY in_watchlist DESC, f.year DESC LIMIT 8`,
-    args: [`%${q}%`, `%${q}%`, `%${q}%`],
+    args: titleMatchArgs(q),
   });
   return rows.map((r) => ({ id: Number(r.id), title: String(r.title), year: r.year == null ? null : Number(r.year), poster: (r.poster_path as string) ?? null }));
 }

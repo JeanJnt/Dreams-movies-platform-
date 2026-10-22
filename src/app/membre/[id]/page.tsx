@@ -51,8 +51,8 @@ export default async function MemberPage({ params }: Props) {
         <div className="relative flex flex-wrap items-end gap-5 p-6 pt-24 md:p-8 md:pt-32">
           <span className="font-display flex size-24 items-center justify-center rounded-full bg-accent text-5xl text-on-accent shadow-xl">{member.name.slice(0, 1).toUpperCase()}</span>
           <div className="min-w-0 flex-1">
-            <h1 className="text-5xl leading-none md:text-6xl">{member.name}</h1>
-            <p className="mt-2 text-sm text-muted">Membre depuis le {formatLongDate(member.createdAt.slice(0, 10))}</p>
+            <h1 className="text-5xl leading-none md:text-6xl">{member.username ? `@${member.username}` : member.name}</h1>
+            <p className="mt-2 text-sm text-muted">{member.username && `${member.firstName} · `}Membre depuis le {formatLongDate(member.createdAt.slice(0, 10))}</p>
           </div>
           {isMe && <Link href="/compte" className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent">Modifier mon compte</Link>}
         </div>
