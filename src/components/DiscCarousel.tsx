@@ -54,7 +54,7 @@ export function DiscCarousel({ discs, label }: { discs: Disc[]; label?: string }
     <section aria-label={label ?? "Carrousel de disques"} className="relative select-none">
       {/* L'image du disque sélectionné, floutée en fond, comme une lumière de salle */}
       {current.image && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_72%)] md:h-[460px]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 hidden h-[460px] overflow-hidden [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_72%)] md:block">
           <img key={current.image} src={current.image} alt="" className="size-full scale-125 object-cover opacity-30 blur-3xl transition-opacity duration-700" />
         </div>
       )}
@@ -120,9 +120,9 @@ export function DiscCarousel({ discs, label }: { discs: Disc[]; label?: string }
           {current.rating != null && <Stars rating={current.rating} />}
           <span>{[current.director, current.year].filter(Boolean).join(" · ")}</span>
         </p>
-        <div className="mt-5 flex items-center justify-center gap-3">
+        {/* Sur téléphone on fait glisser les disques et on touche le titre ; les flèches ne servent qu'à la souris */}
+        <div className="mt-5 hidden items-center justify-center gap-3 md:flex">
           <button onClick={() => go(active - 1)} disabled={active === 0} className="flex size-11 items-center justify-center rounded-full border border-border bg-surface transition hover:border-accent disabled:opacity-30" aria-label="Disque précédent">←</button>
-          <Link href={current.href} className="rounded-full bg-accent px-6 py-2.5 text-sm text-on-accent transition hover:brightness-110">Ouvrir la fiche</Link>
           <button onClick={() => go(active + 1)} disabled={active === n - 1} className="flex size-11 items-center justify-center rounded-full border border-border bg-surface transition hover:border-accent disabled:opacity-30" aria-label="Disque suivant">→</button>
         </div>
       </div>

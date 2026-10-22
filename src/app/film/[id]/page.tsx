@@ -215,19 +215,8 @@ export default async function FilmPage({ params }: Props) {
           />
 
           <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-surface" />}>
-            <Soundtrack titles={[film.original_title, film.name, film.title_fr]} />
+            <Soundtrack titles={[film.original_title, film.name, film.title_fr]} tmdbId={film.tmdb_id} />
           </Suspense>
-
-          <Link href={`/agenda?film=${id}`} className="flex items-center justify-between rounded-2xl border border-border bg-surface p-5 transition hover:border-accent/60">
-            <span className="font-display">Planifier une séance</span>
-          </Link>
-
-
-          {film.tmdb_id && (
-            <Link href={`/conseils?from=${id}&partout=1`} className="flex items-center justify-between rounded-xl border border-border bg-surface p-5 transition hover:border-accent/60">
-              <span className="font-medium">Films dans le même esprit</span>
-            </Link>
-          )}
 
           <div className="rounded-xl border border-border bg-surface p-5">
             <h3 className="mb-3 font-medium">Où regarder</h3>
@@ -236,27 +225,23 @@ export default async function FilmPage({ params }: Props) {
                 <ProviderRow label="Abonnement" items={providers.flatrate} link={providers.link} />
                 <ProviderRow label="Location" items={providers.rent} link={providers.link} />
                 <ProviderRow label="Achat" items={providers.buy} link={providers.link} />
-                <a href={providers.link} target="_blank" rel="noreferrer" className="block text-xs text-muted hover:text-accent">
-                  Toutes les offres (JustWatch)
-                </a>
               </>
             ) : (
               <p className="text-sm text-muted">Pas d&apos;offre en France en ce moment.</p>
             )}
-            <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Au cinéma à {me?.city ?? "Paris"}</p>
-            <div className="mb-1 flex flex-wrap gap-1.5">
-              {showtimeLinks(title, me?.city ?? "Paris", me?.country ?? "FR").map((l) => (
-                <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className={`rounded-full px-2.5 py-1 text-xs ${l.main ? "bg-accent text-on-accent" : "bg-surface-2 text-muted hover:text-accent"}`}>{l.label}</a>
-              ))}
-            </div>
-            <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Gratuit et légal ?</p>
-            <div className="flex flex-wrap gap-1.5">
-              {LEGAL_FREE.map((s) => (
-                <a key={s.domain} href={legalSearchUrl(s.domain, film)} target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-accent">
-                  {s.name}
-                </a>
-              ))}
-            </div>
+            <a href={showtimeLinks(title, me?.city ?? "Paris", me?.country ?? "FR")[0].href} target="_blank" rel="noreferrer" className="mt-3 block text-sm text-accent">
+              Séances à {me?.city ?? "Paris"}
+            </a>
+            <details className="mt-3 text-sm">
+              <summary className="cursor-pointer text-muted">Gratuit et légal</summary>
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                {LEGAL_FREE.map((s) => (
+                  <a key={s.domain} href={legalSearchUrl(s.domain, film)} target="_blank" rel="noreferrer" className="text-muted hover:text-accent">
+                    {s.name}
+                  </a>
+                ))}
+              </div>
+            </details>
           </div>
 
           {lists.length > 0 && (
@@ -270,19 +255,13 @@ export default async function FilmPage({ params }: Props) {
             </div>
           )}
 
-          {/* Fiche Letterboxd : note moyenne de la communauté, avis, listes */}
-          <a href={letterboxdUrl(film)} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/60">
-            <span className="flex gap-1"><span className="size-3 rounded-full bg-[#ff8000]" /><span className="size-3 rounded-full bg-[#00e054]" /><span className="size-3 rounded-full bg-[#40bcf4]" /></span>
-            <span className="flex-1">
-              <span className="font-display block">Voir sur Letterboxd</span>
-              <span className="block text-xs text-muted">Note moyenne, avis et listes de la communauté</span>
-            </span>
-          </a>
-          <div className="flex flex-col gap-2 text-sm">
-            {film.tmdb_id && (
-              <a href={`https://www.themoviedb.org/movie/${film.tmdb_id}`} target="_blank" rel="noreferrer" className="text-muted hover:text-accent">Voir sur TMDB</a>
-            )}
-          </div>
+          {/* Les autres actions, en une seule liste */}
+          <nav className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface text-sm">
+            <Link href={`/agenda?film=${id}`} className="block px-5 py-3.5 hover:bg-surface-2">Planifier une séance</Link>
+            {film.tmdb_id && <Link href={`/conseils?from=${id}&partout=1`} className="block px-5 py-3.5 hover:bg-surface-2">Films dans le même esprit</Link>}
+            <a href={letterboxdUrl(film)} target="_blank" rel="noreferrer" className="block px-5 py-3.5 hover:bg-surface-2">Letterboxd <span className="text-muted">· note moyenne, avis</span></a>
+            {film.tmdb_id && <a href={`https://www.themoviedb.org/movie/${film.tmdb_id}`} target="_blank" rel="noreferrer" className="block px-5 py-3.5 hover:bg-surface-2">TMDB</a>}
+          </nav>
         </aside>
       </div>
     </article>

@@ -53,7 +53,7 @@ export function ThemeSwitch({ initial }: { initial: Theme }) {
       </button>
       {open && (
         <div role="menu" className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-2xl shadow-black/40">
-          <p className="px-3 pt-2 pb-1.5 text-[10px] uppercase tracking-[0.25em] text-muted">Thème inspiré de…</p>
+          <p className="px-3 pt-2 pb-1.5 text-xs text-muted">Thème</p>
           {THEMES.map((t) => (
             <button
               key={t.key}
@@ -65,14 +65,11 @@ export function ThemeSwitch({ initial }: { initial: Theme }) {
               <Swatch colors={t.swatch} />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm">{t.film}</span>
-                <span className="block text-xs text-muted">{t.director}, {t.year}</span>
+                <span className="block text-xs text-muted">{t.director}</span>
               </span>
               {t.key === theme && <span className="text-accent">●</span>}
             </button>
           ))}
-        <a href="/installer" className="mt-1 flex items-center gap-3 rounded-xl border-t border-border px-3 py-2.5 text-sm text-muted hover:bg-surface-2 hover:text-foreground">
-          <span className="text-lg">⬇</span> Installer l&apos;appli (ordi, iPhone, Android)
-        </a>
         </div>
       )}
     </div>

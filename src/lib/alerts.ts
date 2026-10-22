@@ -1,6 +1,6 @@
 import { currentUser, uid } from "./auth";
 import { db, ensureSchema, posterSql } from "./db";
-import { watchedForAlertsSql } from "./alert-sources";
+import { chosenFilter, watchedForAlertsSql } from "./alert-sources";
 import { pciCheck } from "./pariscine";
 import { tmdb } from "./tmdb";
 
@@ -161,7 +161,7 @@ export async function listAlerts(): Promise<Alert[]> {
   const { rows } = await db().execute(`
     SELECT a.*, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster,
       f.backdrop_path, json_extract(f.directors, '$[0]') AS director
-    FROM alerts a JOIN films f ON f.id = a.film_id WHERE a.user_id = ${u}
+    FROM alerts a JOIN films f ON f.id = a.film_id WHERE a.user_id = ${u} AND ${await chosenFilter(u)}
     ORDER BY a.seen, CASE a.kind WHEN 'paris' THEN 0 WHEN 'en_salle' THEN 1 WHEN 'ressortie' THEN 2 ELSE 3 END, a.release_date`);
   return rows.map((r) => ({
     tmdbId: Number(r.tmdb_id), filmId: Number(r.film_id), kind: r.kind as Alert["kind"], releaseDate: (r.release_date as string) ?? null,
@@ -175,7 +175,7 @@ export async function unseenAlerts() {
   try {
     const me = await currentUser();
     if (!me) return 0;
-    const { rows } = await db().execute({ sql: "SELECT COUNT(*) AS n FROM alerts WHERE seen = 0 AND user_id = ?", args: [me.id] });
+    const { rows } = await db().execute({ sql: `SELECT COUNT(*) AS n FROM alerts a WHERE a.seen = 0 AND a.user_id = ? AND ${await chosenFilter(me.id)}`, args: [me.id] });
     return Number(rows[0].n);
   } catch {
     return 0;

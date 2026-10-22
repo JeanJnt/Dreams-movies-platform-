@@ -94,7 +94,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
   return (
     <div className="space-y-6">
       {/* Barre d'état, toujours visible */}
-      <div className="sticky top-0 z-20 -mx-4 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:top-16 md:-mx-8 md:px-8">
+      <div className="sticky top-0 z-20 -mx-4 flex items-center gap-3 border-b border-border bg-background px-4 py-3 md:backdrop-blur md:top-16 md:-mx-8 md:px-8">
         <Link href={`/film/${filmId}`} className="text-sm text-muted hover:text-foreground">← {filmTitle}</Link>
         <span className="ml-auto text-xs text-muted">
           {dirty ? "Modifications non enregistrées…" : savedAt ? `Enregistré à ${new Date(savedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}` : ""}

@@ -185,14 +185,9 @@ function AlertCard({ alert: a, city, country }: { alert: Alert; city: string; co
               {formatLongDate(a.releaseDate)}
             </p>
           )}
-          <div className="mt-auto flex flex-wrap gap-2 pt-3">
-            {showtimeLinks(a.title, city, country).map((l) => (
-              <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className={l.main ? "rounded-full bg-foreground px-3 py-1.5 text-xs text-background" : "rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent"}>
-                {l.label}
-              </a>
-            ))}
-            <Link href={`/agenda?film=${a.filmId}`} className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent">Planifier</Link>
-          </div>
+          <a href={showtimeLinks(a.title, city, country)[0].href} target="_blank" rel="noreferrer" className="mt-auto self-start pt-3 text-sm text-accent">
+            Séances
+          </a>
         </div>
       </div>
     </article>

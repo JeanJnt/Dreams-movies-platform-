@@ -58,7 +58,7 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm md:items-center" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 md:items-center" onClick={() => setOpen(false)}>
           <div
             className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface md:rounded-3xl"
             onClick={(e) => e.stopPropagation()}

@@ -21,7 +21,6 @@ export default async function CritiquesPage() {
       <LibraryTabs />
       <div>
         <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Mes critiques</h1>
-        <p className="mt-2 text-muted">Les critiques Dreams sont écrites ici, sur la plateforme (tes reviews Letterboxd importées restent sur chaque fiche film). Pour écrire, ouvre un film et clique sur « Écrire ma critique ».</p>
       </div>
 
       {!critiques.length && (

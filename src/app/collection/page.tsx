@@ -65,7 +65,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
       {total === 0 ? (
         <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center">
           <h2 className="text-2xl">Ta collection est vide</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted">Range ici tes DVD, Blu-ray et éditions collector. Ajoute plusieurs films d&apos;un coup, ou scanne le code-barres d&apos;un boîtier.</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted">DVD, Blu-ray, éditions collector.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/collection/ajouter" className="rounded-full bg-accent px-6 py-3 text-on-accent">Commencer ma collection</Link>
             <Link href="/collection/scanner" className="rounded-full border border-border px-6 py-3 hover:border-accent">Scanner un boîtier</Link>

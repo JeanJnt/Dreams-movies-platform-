@@ -20,6 +20,7 @@ export function EventForm({ initialFilm, defaultDate, members = [] }: { initialF
   const [place, setPlace] = useState("");
   const [withWhom, setWithWhom] = useState("");
   const [note, setNote] = useState("");
+  const [link, setLink] = useState("");
   const [guests, setGuests] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -34,13 +35,14 @@ export function EventForm({ initialFilm, defaultDate, members = [] }: { initialF
   const submit = () =>
     startTransition(async () => {
       try {
-        await saveEventAction({ filmId: film?.id ?? null, title: film?.title ?? title, startsAt: `${date}T${time}`, place, withWhom, note, guestIds: guests });
+        await saveEventAction({ filmId: film?.id ?? null, title: film?.title ?? title, startsAt: `${date}T${time}`, place, withWhom, note, link, guestIds: guests });
         setOpen(false);
         setFilm(null);
         setTitle("");
         setPlace("");
         setWithWhom("");
         setNote("");
+        setLink("");
         setGuests([]);
         setError(null);
       } catch (e) {
@@ -109,7 +111,8 @@ export function EventForm({ initialFilm, defaultDate, members = [] }: { initialF
         </div>
       )}
       <input value={withWhom} onChange={(e) => setWithWhom(e.target.value)} placeholder="Avec qui d'autre ?" className="field w-full" />
-      <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (version restaurée, rencontre avec le réalisateur…)" className="field w-full" />
+      <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (version restaurée, rencontre…)" className="field w-full" />
+      <input value={link} onChange={(e) => setLink(e.target.value)} type="url" inputMode="url" placeholder="Lien (réservation, page de la séance…)" className="field w-full" />
       {error && <p className="text-sm text-heart">{error}</p>}
       <button onClick={submit} disabled={pending || (!film && !title.trim())} className="w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
         Ajouter à l&apos;agenda

@@ -30,8 +30,12 @@ function coreTitle(album: string) {
   return normalize(cut >= 0 ? noBrackets.slice(0, cut) : noBrackets);
 }
 
-export async function findSoundtrack(titles: (string | null | undefined)[]): Promise<Soundtrack | null> {
+// composers : les compositeurs du film (TMDB). S'ils sont connus, l'artiste de l'album doit être l'un d'eux :
+// sinon, pour un titre courant (« Dreams »), on tomberait sur la BO d'un autre film du même nom.
+export async function findSoundtrack(titles: (string | null | undefined)[], composers: string[] = []): Promise<Soundtrack | null> {
   const unique = [...new Set(titles.filter(Boolean) as string[])];
+  const lastNames = composers.map((c) => normalize(c).split(" ").pop()!).filter((n) => n.length > 2);
+  const byComposer = (a: Album) => !lastNames.length || lastNames.some((n) => normalize(a.artist.name).includes(n));
   const cache = { next: { revalidate: 60 * 60 * 24 * 7 } }; // une recherche par film et par semaine
 
   for (const title of unique) {
@@ -43,7 +47,7 @@ export async function findSoundtrack(titles: (string | null | undefined)[]): Pro
         if (!res.ok) continue;
         const albums: Album[] = (await res.json()).data ?? [];
         // Le titre de l'album, une fois nettoyé, doit être exactement celui du film, et ressembler à une BO.
-        const match = albums.find((a) => SOUNDTRACK.test(a.title) && !NOT_THE_FILM.test(a.title) && coreTitle(a.title) === t);
+        const match = albums.find((a) => SOUNDTRACK.test(a.title) && !NOT_THE_FILM.test(a.title) && coreTitle(a.title) === t && byComposer(a));
         if (match) {
           return { id: match.id, title: match.title, artist: match.artist.name, cover: match.cover_medium, link: match.link, tracks: match.nb_tracks };
         }

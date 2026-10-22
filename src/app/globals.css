@@ -28,7 +28,6 @@ body {
   background: var(--texture), var(--glow), var(--background);
   background-size: var(--texture-size, auto), auto, auto;
   background-repeat: var(--texture-repeat, repeat), no-repeat, no-repeat;
-  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
@@ -194,14 +193,9 @@ select.field {
 }
 /* Sur écran tactile : un léger retour quand on touche un lien ou un bouton, comme une appli native */
 @media (hover: none) {
-  a,
-  button {
-    transition: opacity 0.12s, transform 0.12s;
-  }
   a:active,
   button:active {
-    opacity: 0.7;
-    transform: scale(0.98);
+    opacity: 0.6;
   }
 }
 .no-scrollbar::-webkit-scrollbar {
@@ -221,6 +215,16 @@ select.field {
 }
 .disc {
   filter: drop-shadow(0 28px 34px #0009);
+}
+/* Sur téléphone : pas d'ombre ni de rotation continue (trop coûteux à l'affichage) */
+@media (max-width: 767px) {
+  .disc {
+    filter: none;
+  }
+  .disc--spin,
+  .spin-slow {
+    animation: none !important;
+  }
 }
 .disc--spin {
   animation: disc-spin 40s linear infinite;

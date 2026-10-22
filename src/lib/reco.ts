@@ -159,12 +159,15 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
   );
   if (!rows.length) return { picks: [], empty: "reco" };
 
-  // Les recos TMDB sont bruitées : on écarte les films peu vus ou mal notés, et on favorise les mieux notés.
+  // Les recos TMDB sont bruitées et tirent vers le grand public : on écarte les films peu vus ou moyens,
+  // on favorise les mieux notés, on freine les succès vus par tout le monde, et on pousse les cinéastes que j'aime.
   const ranked = rows
-    .filter((r) => Number(r.vote_count) >= 80 && Number(r.vote_average) >= 6.4 && Number(r.runtime) >= 60)
+    .filter((r) => Number(r.vote_count) >= 50 && Number(r.vote_average) >= 6.8 && Number(r.runtime) >= 60)
     .map((r) => {
-      const quality = Math.min(1.3, Math.max(0.2, (Number(r.vote_average) - 5.8) / 2));
-      return { r, rank: Number(r.score) * quality };
+      const quality = Math.min(1.5, Math.max(0.2, (Number(r.vote_average) - 6.2) / 1.4));
+      const mainstream = 1 / (1 + Math.max(0, Math.log10(Number(r.vote_count) / 3000)));
+      const auteur = parse<string[]>(r.directors, []).some((d) => (taste.directors.get(d) ?? 0) > 0) ? 1.6 : 1;
+      return { r, rank: Number(r.score) * quality * mainstream * auteur };
     })
     .sort((a, b) => b.rank - a.rank);
   const maxRank = ranked[0]?.rank ?? 1;
@@ -181,8 +184,19 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
     };
   });
   // Classement final : moitié « recommandé par mes favoris », moitié « colle à mon profil de goût ».
+  // On écarte les films à sketches (un cinéaste n'y signe qu'un segment), et on varie les cinéastes :
+  // pas plus de 2 films du même dans le haut de la liste (les autres viennent après).
   all.sort((a, b) => b.order - a.order);
-  return { picks: applyFilters(all, f, mine) };
+  const kept = all.filter((p) => p.directors.length <= 3);
+  const perDirector = new Map<string, number>();
+  const top: typeof kept = [], rest: typeof kept = [];
+  for (const p of kept) {
+    const d = p.directors[0] ?? "";
+    const n = perDirector.get(d) ?? 0;
+    (n < 2 || !d ? top : rest).push(p);
+    perDirector.set(d, n + 1);
+  }
+  return { picks: applyFilters([...top, ...rest], f, mine) };
 }
 
 async function seenTmdbIds(u: number) {

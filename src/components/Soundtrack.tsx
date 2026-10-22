@@ -1,9 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 import { findSoundtrack } from "@/lib/deezer";
+import { tmdb } from "@/lib/tmdb";
 
 // Encadré « Bande originale » de la fiche film : pochette, lien Deezer et lecteur intégré (dépliable).
-export async function Soundtrack({ titles }: { titles: (string | null)[] }) {
-  const ost = await findSoundtrack(titles);
+export async function Soundtrack({ titles, tmdbId }: { titles: (string | null)[]; tmdbId?: number | null }) {
+  // Les compositeurs du film, pour ne pas confondre avec la BO d'un autre film du même titre
+  const composers = tmdbId
+    ? await tmdb<{ crew: { name: string; job: string }[] }>(`/movie/${tmdbId}/credits`, {}, 2, { next: { revalidate: 60 * 60 * 24 * 7 } })
+        .then((c) => [...new Set(c.crew.filter((p) => /composer|music/i.test(p.job)).map((p) => p.name))])
+        .catch(() => [])
+    : [];
+  const ost = await findSoundtrack(titles, composers);
   const search = `https://www.deezer.com/search/${encodeURIComponent(`${titles.find(Boolean) ?? ""} soundtrack`)}`;
 
   if (!ost) {

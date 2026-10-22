@@ -2,7 +2,7 @@ import { quickCheck } from "@/lib/alerts";
 import { db, ensureSchema } from "@/lib/db";
 import { titlesBatch } from "@/lib/enrich";
 import { syncLetterboxd } from "@/lib/letterboxd-sync";
-import { notifyNewAlerts } from "@/lib/push";
+import { notifyNewAlerts, remindTodayEvents } from "@/lib/push";
 
 // Tâche planifiée (voir vercel.json), 4 fois par jour : pour chaque membre,
 // récupère ses nouveaux films Letterboxd, met à jour ses alertes « au cinéma » et le prévient des nouvelles.
@@ -20,6 +20,8 @@ export async function GET(req: Request) {
     const alertes = await quickCheck(Number(r.id)).catch(() => -1);
     // Notification sur le téléphone pour les films nouvellement à l'affiche
     const notifiees = await notifyNewAlerts(Number(r.id)).catch(() => 0);
+    // Rappel des séances du jour (notification qui reste sur l'écran de verrouillage)
+    await remindTodayEvents(Number(r.id)).catch(() => 0);
     results[String(r.id)] = { films: sync?.newFilms ?? 0, alertes, notifiees };
   }
   // Titres traduits des films qui n'en ont pas encore (un paquet par jour suffit pour les nouveaux).

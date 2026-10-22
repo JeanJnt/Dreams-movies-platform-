@@ -4,20 +4,6 @@ import { formatRuntime } from "@/lib/format";
 import type { Pick } from "@/lib/reco";
 import { poster } from "@/lib/tmdb";
 
-// Petit anneau qui se remplit selon le % de chances que le film me plaise.
-export function MatchRing({ value, size = 44 }: { value: number; size?: number }) {
-  const r = 16, c = 2 * Math.PI * r;
-  return (
-    <span className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }} title="Chances que ça te plaise">
-      <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90">
-        <circle cx="20" cy="20" r={r} fill="none" stroke="var(--surface-2)" strokeWidth="3.5" />
-        <circle cx="20" cy="20" r={r} fill="none" stroke="var(--accent)" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${(value / 100) * c} ${c}`} />
-      </svg>
-      <span className="text-[11px] font-semibold tabular-nums">{value}</span>
-    </span>
-  );
-}
-
 export function PickCard({ pick: p }: { pick: Pick }) {
   return (
     <Link href={p.href} className="group flex gap-4 rounded-2xl border border-border bg-surface p-3 transition hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg hover:shadow-black/20">
@@ -30,7 +16,6 @@ export function PickCard({ pick: p }: { pick: Pick }) {
             <h3 className="font-display text-xl leading-tight group-hover:text-accent">{p.title}</h3>
             <p className="mt-1 text-xs text-muted">{[p.year, p.directors[0], formatRuntime(p.runtime)].filter(Boolean).join(" · ")}</p>
           </div>
-          <MatchRing value={p.match} />
         </div>
         {p.genres.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
@@ -67,11 +52,10 @@ export function PickPoster({ pick: p }: { pick: Pick }) {
               <img key={pl.name} src={`https://image.tmdb.org/t/p/w92${pl.logo}`} alt={pl.name} className="size-5 rounded" />
             ))}
           </div>
-          <span className="rounded-full bg-accent px-1.5 text-[11px] font-semibold text-white">{p.match} %</span>
         </div>
       </div>
       <p className="mt-1.5 line-clamp-1 text-sm group-hover:text-accent">{p.title}</p>
-      <p className="text-xs text-muted">{[p.year, formatRuntime(p.runtime)].filter(Boolean).join(" · ")}</p>
+      <p className="line-clamp-1 text-xs text-muted">{[p.directors[0], p.year].filter(Boolean).join(" · ")}</p>
     </Link>
   );
 }

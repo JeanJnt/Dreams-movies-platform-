@@ -106,6 +106,11 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                   {[e.place, guestsLine(e), e.withWhom && `avec ${e.withWhom}`].filter(Boolean).join(" · ")}
                 </p>
                 {e.note && <p className="truncate text-xs text-muted italic">{e.note}</p>}
+                {e.link && (
+                  <a href={e.link} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-accent">
+                    {new URL(e.link).hostname.replace(/^www\./, "")}
+                  </a>
+                )}
               </div>
               <DeleteEventButton id={e.id} />
             </div>

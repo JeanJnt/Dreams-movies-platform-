@@ -3,35 +3,33 @@
 import { useState, useTransition } from "react";
 import { setAlertSourcesAction } from "@/app/actions";
 
-const SOURCES = [
-  { key: "watchlist", label: "Watchlist" },
-  { key: "likes", label: "Coups de cœur Letterboxd" },
-  { key: "top", label: "Films préférés" },
+const CHOICES = [
+  { label: "Tout", keys: ["watchlist", "likes", "top"] },
+  { label: "Watchlist", keys: ["watchlist"] },
+  { label: "Coups de cœur", keys: ["likes"] },
+  { label: "Préférés", keys: ["top"] },
 ];
 
-// Quels films surveiller pour les alertes cinéma.
+// Quels films afficher et notifier : un seul choix, appliqué tout de suite.
 export function AlertSettings({ initial }: { initial: string[] }) {
-  const [on, setOn] = useState(initial);
-  const [pending, start] = useTransition();
-
-  const toggle = (key: string) => {
-    const next = on.includes(key) ? on.filter((k) => k !== key) : [...on, key];
-    setOn(next);
-    start(() => setAlertSourcesAction(next));
-  };
+  const same = (a: string[], b: string[]) => a.length === b.length && a.every((k) => b.includes(k));
+  const [current, setCurrent] = useState(CHOICES.findIndex((c) => same(c.keys, initial)));
+  const [, start] = useTransition();
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-muted">M&apos;alerter pour :</span>
-      {SOURCES.map((s) => (
+    <div className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto px-4" role="radiogroup" aria-label="Films suivis">
+      {CHOICES.map((c, i) => (
         <button
-          key={s.key}
-          onClick={() => toggle(s.key)}
-          disabled={pending}
-          aria-pressed={on.includes(s.key)}
-          className={`rounded-full border px-3 py-1.5 text-sm transition ${on.includes(s.key) ? "border-accent bg-accent-soft text-accent" : "border-border text-muted"}`}
+          key={c.label}
+          role="radio"
+          aria-checked={current === i}
+          onClick={() => {
+            setCurrent(i);
+            start(() => setAlertSourcesAction(c.keys));
+          }}
+          className={`shrink-0 rounded-full px-4 py-2 text-sm ${current === i ? "bg-foreground text-background" : "text-muted"}`}
         >
-          {s.label}
+          {c.label}
         </button>
       ))}
     </div>

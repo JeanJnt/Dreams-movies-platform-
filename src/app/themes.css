@@ -24,7 +24,6 @@
   /* « Champ de blé aux corbeaux », Van Gogh (1890, domaine public), en haut de page */
   --backdrop: url("/themes/yume.jpg");
   --backdrop-pos: center 35%;
-  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 40%, transparent 90%);
   --backdrop-overlay: linear-gradient(to bottom, #101c5533 0, #101c5599 35%, #101c55e6 60%, #101c55 85%);
   color-scheme: dark;
 }
@@ -49,7 +48,6 @@
   /* Image officielle du Studio Ghibli (mise à disposition des fans) */
   --backdrop: url("/themes/vent.jpg");
   --backdrop-pos: center 35%;
-  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 50%, transparent 92%);
   --backdrop-overlay: linear-gradient(to bottom, transparent 0, transparent 35%, #eef3eab3 65%, #eef3ea 90%);
   color-scheme: light;
 }
@@ -212,8 +210,9 @@ h3 {
   z-index: -1;
   pointer-events: none;
   background: var(--backdrop, none) var(--backdrop-pos, center) / cover no-repeat;
-  -webkit-mask: var(--backdrop-mask, none);
-  mask: var(--backdrop-mask, none);
+  /* calque à part : le défilement ne redessine pas l'image */
+  transform: translateZ(0);
+  contain: strict;
 }
 .theme-backdrop::after {
   content: "";

@@ -44,7 +44,7 @@ export default async function ListsPage() {
         {mine.mine.length ? (
           <UserListGrid lists={mine.mine} />
         ) : (
-          <p className="text-sm text-muted">Crée tes propres listes (ton top de l&apos;année, un cycle à voir…) et partage-les par un lien.</p>
+          <p className="text-sm text-muted">Aucune liste pour l&apos;instant.</p>
         )}
       </section>
 

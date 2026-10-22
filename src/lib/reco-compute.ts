@@ -5,7 +5,8 @@ import { fetchMovie, saveProviders } from "./tmdb-film";
 /*
  * Calcul des recommandations d'un membre, en plusieurs étapes courtes
  * (chacune tient dans le temps limite d'une requête en ligne) :
- *   1. « graines » : ses films notés 4★+ et coups de cœur → recommandations TMDB → candidats classés
+ *   1. « graines » : ses films notés 4★+ et coups de cœur → recommandations TMDB → candidats classés,
+ *      plus la filmographie des cinéastes qu'il note le mieux (ce qu'un cinéphile cherche d'abord)
  *   2. « détails » : infos et plateformes des candidats, par paquets de 40
  *   3. « plateformes » : où voir les films de sa watchlist, par paquets de 80
  * La file d'attente est gardée dans settings (clé reco_queue) entre deux étapes.
@@ -69,6 +70,28 @@ export async function recoSeeds(userId: number) {
       candidates.set(m.id, c);
     });
   }, 10);
+
+  // Les cinéastes que je note le mieux (au moins 2 films, 4★ de moyenne) : leurs films que je n'ai pas vus.
+  const { rows: dirRows } = await db().execute(`
+    SELECT d.value AS director, AVG(r.rating) AS avg, COUNT(*) AS n
+    FROM ratings r JOIN films f ON f.id = r.film_id, json_each(f.directors) d
+    WHERE r.user_id = ${u} AND f.media_type = 'movie'
+    GROUP BY d.value HAVING n >= 2 AND avg >= 4 ORDER BY avg DESC, n DESC LIMIT 30`);
+  await pool(dirRows, async (d) => {
+    const name = String(d.director);
+    const people = await tmdb<{ results: { id: number; known_for_department?: string }[] }>("/search/person", { query: name });
+    const person = people.results.find((p) => p.known_for_department === "Directing") ?? people.results[0];
+    if (!person) return;
+    const credits = await tmdb<{ crew: { id: number; job: string; vote_count: number; release_date?: string }[] }>(`/person/${person.id}/movie_credits`);
+    const weight = 1 + (Number(d.avg) - 4) * 2; // 4★ → 1, 5★ → 3
+    for (const m of credits.crew) {
+      if (m.job !== "Director" || seen.has(m.id) || m.vote_count < 30 || !m.release_date) continue;
+      const c = candidates.get(m.id) ?? { score: 0, reasons: [] };
+      c.score += weight * 1.5;
+      c.reasons.push({ title: `Un film de ${name}`, weight: weight + 5 });
+      candidates.set(m.id, c);
+    }
+  }, 6);
 
   const queue: Candidate[] = [...candidates.entries()]
     .sort((a, b) => b[1].score - a[1].score)

@@ -9,6 +9,7 @@ export type CinemaEvent = {
   place: string | null;
   withWhom: string | null;
   note: string | null;
+  link: string | null; // réservation, page de la salle…
   poster: string | null;
   runtime: number | null;
   mine: boolean; // séance que j'ai créée (sinon, un membre m'y a invité)
@@ -27,6 +28,7 @@ const toEvent = (r: Record<string, unknown>): CinemaEvent => ({
   place: (r.place as string) ?? null,
   withWhom: (r.with_whom as string) ?? null,
   note: (r.note as string) ?? null,
+  link: (r.link as string) ?? null,
   poster: (r.poster as string) ?? null,
   runtime: r.runtime == null ? null : Number(r.runtime),
   mine: Boolean(r.mine),
@@ -62,19 +64,21 @@ export async function allEvents(userId?: number) {
 
 // Les invités peuvent aussi modifier la séance : la modification se voit chez tout le monde (c'est la même séance).
 // guestIds : seul l'organisateur choisit les membres invités.
-export async function saveEvent(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null; guestIds?: number[] }) {
+export async function saveEvent(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null; link?: string | null; guestIds?: number[] }) {
   await schema();
   const u = await uid();
-  const args = [e.filmId, e.title.trim(), e.startsAt, e.place?.trim() || null, e.withWhom?.trim() || null, e.note?.trim() || null];
+  // Le lien doit être une adresse web (https://…)
+  const link = e.link?.trim() && /^https?:\/\/\S+$/.test(e.link.trim()) ? e.link.trim().slice(0, 500) : null;
+  const args = [e.filmId, e.title.trim(), e.startsAt, e.place?.trim() || null, e.withWhom?.trim() || null, e.note?.trim() || null, link];
   if (e.id) {
     await db().execute({
-      sql: "UPDATE events SET film_id = ?, title = ?, starts_at = ?, place = ?, with_whom = ?, note = ? WHERE id = ? AND (user_id = ? OR id IN (SELECT event_id FROM event_guests WHERE user_id = ?))",
+      sql: "UPDATE events SET film_id = ?, title = ?, starts_at = ?, place = ?, with_whom = ?, note = ?, link = ? WHERE id = ? AND (user_id = ? OR id IN (SELECT event_id FROM event_guests WHERE user_id = ?))",
       args: [...args, e.id, u, u],
     });
     if (e.guestIds) await setGuests(e.id, e.guestIds, u);
     return e.id;
   }
-  const res = await db().execute({ sql: "INSERT INTO events (film_id, title, starts_at, place, with_whom, note, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)", args: [...args, u] });
+  const res = await db().execute({ sql: "INSERT INTO events (film_id, title, starts_at, place, with_whom, note, link, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", args: [...args, u] });
   const id = Number(res.lastInsertRowid);
   if (e.guestIds?.length) await setGuests(id, e.guestIds, u);
   return id;
@@ -132,7 +136,8 @@ export function toIcs(events: CinemaEvent[], origin: string) {
       `DTEND;TZID=Europe/Paris:${endLocal}`,
       `SUMMARY:${escape(`🎬 ${e.title}`)}`,
       e.place ? `LOCATION:${escape(e.place)}` : "",
-      `DESCRIPTION:${escape([e.withWhom && `Avec ${e.withWhom}`, e.note, e.filmId && `${origin}/film/${e.filmId}`].filter(Boolean).join("\n"))}`,
+      `DESCRIPTION:${escape([e.withWhom && `Avec ${e.withWhom}`, e.note, e.link, e.filmId && `${origin}/film/${e.filmId}`].filter(Boolean).join("\n"))}`,
+      e.link ? `URL:${e.link}` : "",
       "BEGIN:VALARM", "TRIGGER:-PT1H", "ACTION:DISPLAY", `DESCRIPTION:${escape(`${e.title} dans 1 h`)}`, "END:VALARM",
       "END:VEVENT",
     );

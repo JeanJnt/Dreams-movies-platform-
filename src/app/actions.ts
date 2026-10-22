@@ -16,7 +16,6 @@ import { mediaPath, blobEnabled } from "@/lib/storage";
 import { posterOptions, setCustomPoster, setUploadedPoster, uploadPoster } from "@/lib/posters";
 import { searchMyFilms } from "@/lib/queries";
 import { ALERT_SOURCES } from "@/lib/alert-sources";
-import { quickCheck } from "@/lib/alerts";
 import { deleteUserList, saveUserList, setListShare } from "@/lib/user-lists";
 import { PLATFORMS, setMyPlatforms } from "@/lib/reco";
 
@@ -88,7 +87,7 @@ export async function addScannedAction(tmdbId: number, item: { format: string; c
 
 // --- Agenda des séances ---
 
-export async function saveEventAction(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null; guestIds?: number[] }) {
+export async function saveEventAction(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null; link?: string | null; guestIds?: number[] }) {
   await requireUser();
   if (!e.title.trim() || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(e.startsAt)) throw new Error("Titre et date obligatoires");
   const id = await saveEvent(e);
@@ -277,7 +276,6 @@ export async function setAlertSourcesAction(keys: string[]) {
   const me = await requireUser();
   const valid = ALERT_SOURCES.filter((s) => keys.includes(s.key)).map((s) => s.key);
   await db().execute({ sql: "UPDATE users SET alert_sources = ? WHERE id = ?", args: [valid.join(","), me.id] });
-  await quickCheck(me.id).catch(() => 0); // recalcule tout de suite les alertes avec ces réglages
   revalidatePath("/alertes");
   revalidatePath("/", "layout");
 }
