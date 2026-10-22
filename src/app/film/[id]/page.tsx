@@ -95,7 +95,7 @@ export default async function FilmPage({ params }: Props) {
           {film.overview && <p className="max-w-prose leading-relaxed text-foreground/90">{film.overview}</p>}
 
           <section>
-            <h2 className="mb-4 flex items-center gap-3 font-display text-3xl">Ma critique <TextKind kind="critique" /></h2>
+            <h2 className="mb-4 flex items-center gap-3 text-xl md:text-2xl">Ma critique <TextKind kind="critique" /></h2>
             {critique ? (
               <Link
                 href={critique.status === "published" ? `/critiques/${critique.id}` : `/film/${id}/critique`}
@@ -124,7 +124,7 @@ export default async function FilmPage({ params }: Props) {
           </Suspense>
 
           <section>
-            <h2 className="mb-1 font-display text-3xl">Lire des critiques</h2>
+            <h2 className="mb-1 text-xl md:text-2xl">Lire des critiques</h2>
             <p className="mb-4 text-sm text-muted">Les critiques de ce film chez les meilleures revues.</p>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {ARTICLE_SOURCES.map((s) => (
@@ -139,7 +139,7 @@ export default async function FilmPage({ params }: Props) {
           </section>
 
           <section>
-            <h2 className="mb-4 flex items-center gap-3 font-display text-3xl">Mes reviews <TextKind kind="review" /></h2>
+            <h2 className="mb-4 flex items-center gap-3 text-xl md:text-2xl">Mes reviews <TextKind kind="review" /></h2>
             {reviews.length ? (
               <div className="space-y-4">
                 {reviews.map((r, i) => (
@@ -164,7 +164,7 @@ export default async function FilmPage({ params }: Props) {
 
           {film.cast.length > 0 && (
             <section>
-              <h2 className="mb-4 font-display text-3xl">Casting</h2>
+              <h2 className="mb-4 text-xl md:text-2xl">Casting</h2>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
                 {film.cast.map((c) => (
                   <li key={c.name + c.character}>
@@ -310,7 +310,7 @@ async function Videos({ film }: { film: FilmDetail }) {
   const director = film.directors[0] ?? "";
   return (
     <section>
-      <h2 className="font-display text-3xl">Analyses vidéo</h2>
+      <h2 className="text-xl md:text-2xl">Analyses vidéo</h2>
       <p className="mt-1 mb-4 text-sm text-muted">
         Uniquement des sources reconnues : Arte, Cahiers du cinéma, Cinémathèque, France Culture, Criterion, BFI, Every Frame a Painting…
       </p>
@@ -344,7 +344,7 @@ async function Videos({ film }: { film: FilmDetail }) {
 function VideosSkeleton() {
   return (
     <section>
-      <h2 className="mb-4 font-display text-3xl">Analyses vidéo</h2>
+      <h2 className="mb-4 text-xl md:text-2xl">Analyses vidéo</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {[0, 1].map((i) => <div key={i} className="aspect-video animate-pulse rounded-lg bg-surface-2" />)}
       </div>
@@ -359,7 +359,7 @@ async function Members({ filmId }: { filmId: number }) {
   return (
     <section>
       <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 className="font-display text-3xl">Les membres</h2>
+        <h2 className="text-xl md:text-2xl">Les membres</h2>
         {c.average != null && <span className="text-sm text-muted">moyenne <span className="font-display text-xl text-accent">{c.average.toFixed(1).replace(".", ",")}★</span></span>}
       </div>
       {c.critiques.length > 0 && (

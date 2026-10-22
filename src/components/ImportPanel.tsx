@@ -61,7 +61,7 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
 
   return (
     <section className={`rounded-3xl border p-5 md:p-6 ${welcome ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>
-      <h2 className="text-2xl md:text-3xl">{welcome ? "Bienvenue ! Importe ton Letterboxd" : "Importer depuis Letterboxd"}</h2>
+      <h2 className="text-xl md:text-2xl">{welcome ? "Bienvenue ! Importe ton Letterboxd" : "Importer depuis Letterboxd"}</h2>
       <p className="mt-2 text-sm text-muted">
         Sur Letterboxd : <b>Settings → Import &amp; Export → Export your data</b>. Tu reçois un fichier .zip, dépose-le ici.
         Tu peux réimporter quand tu veux : tes critiques Dreams, ta collection et ton agenda sont conservés.

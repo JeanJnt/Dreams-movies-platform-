@@ -99,7 +99,7 @@ export function InstallGuide() {
       </div>
 
       <section className="rounded-3xl border border-border bg-surface p-6">
-        <h2 className="text-3xl">{guide.title}</h2>
+        <h2 className="text-xl md:text-2xl">{guide.title}</h2>
         <ol className="mt-5 space-y-4">
           {guide.steps.map((s, i) => (
             <li key={i} className="flex gap-4">

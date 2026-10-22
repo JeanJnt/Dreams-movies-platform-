@@ -49,7 +49,7 @@ export default async function AlertsPage() {
         if (!list.length) return null;
         return (
           <section key={kind}>
-            <h2 className="mb-4 text-3xl">{KINDS[kind].title}</h2>
+            <h2 className="mb-4 text-xl md:text-2xl">{KINDS[kind].title}</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {list.map((a) => <AlertCard key={a.tmdbId} alert={a} city={me.city} country={me.country} />)}
             </div>
@@ -59,7 +59,7 @@ export default async function AlertsPage() {
 
       {playing.length > 0 && (
         <section>
-          <h2 className="mb-1 text-3xl">À l&apos;affiche en ce moment</h2>
+          <h2 className="mb-1 text-xl md:text-2xl">À l&apos;affiche en ce moment</h2>
           <p className="mb-4 text-sm text-muted">Les films en salle en ce moment, les plus vus d&apos;abord. Touche une affiche pour ses séances à {me.city}.</p>
           <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
             {playing.map((p) => (

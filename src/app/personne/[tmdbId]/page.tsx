@@ -75,7 +75,7 @@ export default async function PersonPage({ params }: Props) {
         films.length ? (
           <section key={title}>
             <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-3xl md:text-4xl">{title}</h2>
+              <h2 className="text-xl md:text-2xl">{title}</h2>
               <span className="text-sm text-muted">{films.filter((f) => f.seen).length} / {films.length} vus</span>
             </div>
             <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7">

@@ -49,7 +49,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
   return (
     <section>
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="font-display text-3xl">Galerie</h2>
+        <h2 className="text-xl md:text-2xl">Galerie</h2>
         <button onClick={() => setAdding(!adding)} className="text-sm text-muted hover:text-accent">
           {adding ? "Annuler" : "+ Ajouter"}
         </button>

@@ -31,7 +31,7 @@ async function withPhotos(people: Awaited<ReturnType<typeof topPeople>>, role: R
 function Ranking({ title, people, role }: { title: string; people: Awaited<ReturnType<typeof withPhotos>>; role: Role }) {
   return (
     <section>
-      <h2 className="mb-5 text-3xl md:text-4xl">{title}</h2>
+      <h2 className="mb-5 text-xl md:text-2xl">{title}</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {people.map((p, i) => {
           const photo = profileUrl(p.person?.profile_path ?? null);

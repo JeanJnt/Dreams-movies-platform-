@@ -73,7 +73,7 @@ export default async function MemberPage({ params }: Props) {
 
       {favorites.length > 0 && (
         <section>
-          <h2 className="mb-4 text-3xl">Coups de cœur</h2>
+          <h2 className="mb-4 text-xl md:text-2xl">Coups de cœur</h2>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
             {favorites.slice(0, 12).map((f) => <FilmCard key={f.id} film={f} />)}
           </div>
@@ -83,7 +83,7 @@ export default async function MemberPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
         <div className="space-y-12">
           <section>
-            <h2 className="mb-4 text-3xl">Critiques Dreams</h2>
+            <h2 className="mb-4 text-xl md:text-2xl">Critiques Dreams</h2>
             {critiques.length ? (
               <div className="space-y-3">
                 {critiques.map((c) => (
@@ -105,7 +105,7 @@ export default async function MemberPage({ params }: Props) {
           </section>
 
           <section>
-            <h2 className="mb-4 text-3xl">Activité récente</h2>
+            <h2 className="mb-4 text-xl md:text-2xl">Activité récente</h2>
             <ActivityFeed items={feed} />
           </section>
         </div>

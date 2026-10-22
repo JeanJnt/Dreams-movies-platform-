@@ -65,7 +65,7 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
           >
             <div className="flex items-center justify-between gap-4 border-b border-border p-5">
               <div>
-                <h2 className="font-display text-3xl leading-none">Choisir l&apos;affiche</h2>
+                <h2 className="text-xl md:text-2xl leading-none">Choisir l&apos;affiche</h2>
                 <p className="mt-1 text-sm text-muted">Affiches du monde entier (TMDB), ou la tienne.</p>
               </div>
               <button onClick={() => setOpen(false)} className="flex size-9 items-center justify-center rounded-full border border-border" aria-label="Fermer">✕</button>

@@ -37,7 +37,7 @@ export default async function CritiquesPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           <div className="absolute bottom-0 max-w-3xl p-5 md:p-8">
             <p className="text-xs uppercase tracking-[0.2em] text-accent">{featured.filmTitleFr ?? featured.filmName} · {featured.year}</p>
-            <h2 className="mt-2 font-display text-3xl leading-tight md:text-5xl">{featured.title || "Sans titre"}</h2>
+            <h2 className="mt-2 text-xl md:text-2xl leading-tight md:text-5xl">{featured.title || "Sans titre"}</h2>
             {featured.lede && <p className="mt-2 line-clamp-2 text-foreground/80">{featured.lede}</p>}
           </div>
         </Link>
@@ -51,7 +51,7 @@ export default async function CritiquesPage() {
 
       {drafts.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-3xl">Brouillons</h2>
+          <h2 className="mb-4 text-xl md:text-2xl">Brouillons</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {drafts.map((c) => <CritiqueCard key={c.id} c={c} href={`/film/${c.filmId}/critique`} />)}
           </div>
@@ -60,7 +60,7 @@ export default async function CritiquesPage() {
 
       {others.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-3xl">Les critiques des membres</h2>
+          <h2 className="mb-4 text-xl md:text-2xl">Les critiques des membres</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {others.map((o) => (
               <Link key={o.id} href={`/critiques/${o.id}`} className="group flex gap-4 rounded-xl border border-border bg-surface p-4 transition hover:border-accent/50">

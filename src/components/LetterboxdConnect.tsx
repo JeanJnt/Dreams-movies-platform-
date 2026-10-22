@@ -32,7 +32,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
   return (
     <section className={`space-y-4 rounded-3xl border p-5 md:p-6 ${highlight ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>
       <div>
-        <h2 className="text-2xl md:text-3xl">{highlight ? "Dernière étape : connecte ton Letterboxd" : "Synchronisation Letterboxd"}</h2>
+        <h2 className="text-xl md:text-2xl">{highlight ? "Dernière étape : connecte ton Letterboxd" : "Synchronisation Letterboxd"}</h2>
         <p className="mt-2 text-sm text-muted">
           Chaque matin, Dreams récupère tes <b>nouveaux films</b> et tes <b>reviews</b> depuis ton profil Letterboxd. Plus besoin de réimporter à chaque fois.
           Ton profil Letterboxd doit être public.

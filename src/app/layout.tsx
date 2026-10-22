@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bagel_Fat_One, Bodoni_Moda, Fraunces, Geist, Kaisei_Decol, Lalezar, Limelight, Syncopate } from "next/font/google";
+import { Abril_Fatface, Bagel_Fat_One, Bodoni_Moda, Fraunces, Geist, Kaisei_Decol, Lalezar, Limelight, Syncopate } from "next/font/google";
 import { cookies } from "next/headers";
 import { Nav } from "@/components/Nav";
 import { PwaSetup } from "@/components/PwaSetup";
@@ -17,6 +17,7 @@ const bodoni = Bodoni_Moda({ variable: "--font-bodoni", subsets: ["latin"], styl
 const syncopate = Syncopate({ variable: "--font-syncopate", subsets: ["latin"], weight: ["400", "700"], preload: false });
 const lalezar = Lalezar({ variable: "--font-lalezar", subsets: ["latin"], weight: "400", preload: false });
 const kaisei = Kaisei_Decol({ variable: "--font-kaisei", subsets: ["latin"], weight: ["500", "700"], preload: false });
+const abril = Abril_Fatface({ variable: "--font-abril", subsets: ["latin"], weight: "400", preload: false });
 const limelight = Limelight({ variable: "--font-limelight", subsets: ["latin"], weight: "400", preload: false });
 
 export const metadata: Metadata = {
@@ -39,13 +40,16 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const theme: Theme = THEMES.some((t) => t.key === saved) ? (saved as Theme) : "yume";
   const user = await currentUser();
   const alerts = user ? await unseenAlerts() : 0;
-  const fonts = [geistSans, fraunces, fat, bodoni, syncopate, lalezar, kaisei, limelight].map((f) => f.variable).join(" ");
+  const fonts = [geistSans, fraunces, fat, bodoni, syncopate, lalezar, kaisei, limelight, abril].map((f) => f.variable).join(" ");
 
   return (
     // Les variables de police sont posées sur <html>, là où les thèmes les utilisent (--display).
     <html lang="fr" data-theme={theme} className={fonts}>
       <body className="antialiased">
         <PwaSetup />
+        {/* Image de fond du thème (tableau, rideau, soie…) et grain de pellicule : décor seulement */}
+        <div className="theme-backdrop" aria-hidden />
+        <div className="theme-grain" aria-hidden />
         {/* La navigation n'apparaît qu'une fois connecté */}
         {user && <Nav theme={theme} alerts={alerts} user={{ name: user.username ?? user.name, isAdmin: user.isAdmin }} />}
         <main className="mx-auto max-w-6xl px-4 pb-safe md:px-8">{children}</main>

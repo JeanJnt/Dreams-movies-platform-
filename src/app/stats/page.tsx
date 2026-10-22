@@ -101,7 +101,7 @@ function Tile({ value, label, note }: { value: string; label: string; note?: str
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section className="rounded-3xl border border-border bg-surface p-5 md:p-6">
-      <h2 className="text-2xl md:text-3xl">{title}</h2>
+      <h2 className="text-xl md:text-2xl">{title}</h2>
       {subtitle && <p className="mt-1 mb-5 text-sm text-muted">{subtitle}</p>}
       {children}
     </section>

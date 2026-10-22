@@ -130,3 +130,10 @@ Useful scripts:
 ## Credits
 
 This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability data by JustWatch. Soundtracks via Deezer. Video essays via YouTube. Showtimes: Allociné, Paris Ciné Info.
+
+Theme backgrounds (`public/themes/`):
+- *Yume* — Vincent van Gogh, *Wheatfield with Crows* (1890), public domain, via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg).
+- *Ghibli* — official still from *My Neighbor Totoro* © Studio Ghibli, shared by the studio for fans ([ghibli.jp](https://www.ghibli.jp/works/totoro/)).
+- *Twin Peaks* — red stage curtain by team voyas on [Unsplash](https://unsplash.com/photos/bvHWrljtz8U).
+- *In the Mood for Love* — floral satin from [Pexels](https://www.pexels.com/photo/floral-pattern-on-satin-16132468/), recoloured crimson.
+- *Le Bonheur* — sunflower field by Pascal Debrunner on [Unsplash](https://unsplash.com/photos/VS4u45MStlQ).

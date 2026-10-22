@@ -37,7 +37,7 @@ export default async function ListsPage() {
 
       <section>
         <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="text-3xl">Listes de référence</h2>
+          <h2 className="text-xl md:text-2xl">Listes de référence</h2>
           {me?.isAdmin && <Link href="/admin" className="text-sm text-muted hover:text-accent">+ Ajouter une liste</Link>}
         </div>
         {references.length ? (
@@ -66,7 +66,7 @@ export default async function ListsPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-3xl">Mes listes Letterboxd</h2>
+        <h2 className="mb-4 text-xl md:text-2xl">Mes listes Letterboxd</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {lists.map((l) => (
             <Link key={l.slug} href={`/listes/${l.slug}`} className="group rounded-xl border border-border bg-surface p-3 transition hover:border-accent/50">

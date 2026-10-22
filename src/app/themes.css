@@ -20,10 +20,13 @@
   --heart: #ff8a5c;
   --display: var(--font-fraunces);
   --display-weight: 900;
-  /* Coups de pinceau tourbillonnants, comme le ciel de Van Gogh */
-  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.022' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.65 0 0 0 0 1 0 0 0 0.9 -0.42'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-  --glow: radial-gradient(ellipse 70% 45% at 85% -5%, #f2c23038, transparent 70%),
-    radial-gradient(ellipse 90% 40% at 0% 110%, #e8a23a2a, transparent 70%);
+  --texture: none;
+  --glow: none;
+  /* « Champ de blé aux corbeaux », Van Gogh (1890, domaine public), en haut de page */
+  --backdrop: url("/themes/yume.jpg");
+  --backdrop-pos: center 35%;
+  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 40%, transparent 90%);
+  --backdrop-overlay: linear-gradient(to bottom, #101c5533 0, #101c5599 35%, #101c55e6 60%, #101c55 85%);
   color-scheme: dark;
 }
 
@@ -43,9 +46,12 @@
   --display: var(--font-kaisei);
   --display-weight: 700;
   --texture: none;
-  --glow: radial-gradient(ellipse 40% 18% at 20% 4%, #ffffffee, transparent 70%),
-    radial-gradient(ellipse 35% 14% at 75% 9%, #ffffffdd, transparent 70%),
-    linear-gradient(to bottom, #bfe0f2 0, #e6f1ec 520px);
+  --glow: none;
+  /* Image officielle du Studio Ghibli (mise à disposition des fans), en haut de page */
+  --backdrop: url("/themes/totoro.jpg");
+  --backdrop-pos: center 30%;
+  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 25%, transparent 75%);
+  --backdrop-overlay: linear-gradient(to bottom, #e6f1ec40 0, #e6f1ecc7 40%, #e6f1ec 75%);
   color-scheme: light;
 }
 
@@ -64,11 +70,12 @@
   --heart: #e9d7a6;
   --display: var(--font-limelight);
   --display-weight: 400;
-  /* Les plis des rideaux rouges, en haut de page */
-  --texture: repeating-linear-gradient(90deg, #00000000 0 26px, #00000055 34px, #ffffff08 44px, #00000000 52px);
-  --texture-size: 100% 460px;
-  --texture-repeat: repeat-x;
-  --glow: linear-gradient(to bottom, #6a0c11 0, #3a0609 260px, transparent 520px);
+  --texture: none;
+  --glow: none;
+  /* Un vrai rideau de velours rouge, assombri au centre, là où se trouve le contenu */
+  --backdrop: url("/themes/lynch.jpg");
+  --backdrop-pos: center top;
+  --backdrop-overlay: radial-gradient(ellipse 50% 80% at 50% 40%, #0d0303f0 0, #0d0303c7 55%, #0d030366 100%);
   color-scheme: dark;
 }
 
@@ -108,8 +115,11 @@
   --display: var(--font-bodoni);
   --display-weight: 600;
   --texture: none;
-  --glow: radial-gradient(ellipse 50% 40% at 15% 0%, #e0a84e22, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 100% 100%, #0f3b2e66, transparent 70%);
+  --glow: none;
+  /* Un vrai satin imprimé de fleurs, comme les qipao du film, sur tout l'écran */
+  --backdrop: url("/themes/mood.jpg");
+  --backdrop-pos: center;
+  --backdrop-overlay: linear-gradient(to bottom, #22080b8c 0, #22080bb3 60%, #22080bcc 100%);
   color-scheme: dark;
 }
 
@@ -150,26 +160,93 @@
   --display: var(--font-lalezar);
   --display-weight: 400;
   --texture: none;
-  --glow: radial-gradient(ellipse 90% 60% at 50% -20%, #fffaf0aa, transparent 70%);
+  --glow: radial-gradient(ellipse 90% 60% at 50% -20%, #fffaf0aa, transparent 70%),
+    radial-gradient(ellipse 90% 85% at 50% 50%, transparent 60%, #6b4a2230 100%);
   color-scheme: light;
 }
 
-/* --- La police de titres, partout : titres, navigation, boutons, onglets --- */
+/* LE BONHEUR — Agnès Varda (1965)
+   Les tournesols, les prés d'Île-de-France, le violet des fondus. */
+[data-theme="varda"] {
+  --background: #fbf6e9;
+  --surface: #fffdf7;
+  --surface-2: #f3ead3;
+  --border: #e6d9b8;
+  --foreground: #2b2340;
+  --muted: #776c86;
+  --accent: #7b3fa6;
+  --accent-soft: #7b3fa61c;
+  --on-accent: #fff;
+  --heart: #e8930c;
+  --display: var(--font-abril);
+  --display-weight: 400;
+  --texture: none;
+  --glow: none;
+  --backdrop: url("/themes/varda.jpg");
+  --backdrop-pos: center top;
+  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 25%, transparent 75%);
+  --backdrop-overlay: linear-gradient(to bottom, #fbf6e914 0, #fbf6e980 30%, #fbf6e9e0 55%, #fbf6e9 75%);
+  color-scheme: light;
+}
+
+/* --- Typographie : la police du film pour les grands titres seulement, tout le reste en sans-serif --- */
 h1,
-h2,
-h3,
-.font-display,
-nav a,
-.tab-label {
+.font-display {
   font-family: var(--display), serif;
   font-weight: var(--display-weight);
 }
-nav a {
-  letter-spacing: 0.01em;
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* --- Image de fond du thème (voir layout) : fixe, derrière le contenu --- */
+.theme-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--backdrop, none) var(--backdrop-pos, center) / cover no-repeat;
+  -webkit-mask: var(--backdrop-mask, none);
+  mask: var(--backdrop-mask, none);
+}
+.theme-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--backdrop-overlay, none);
+}
+/* Close-Up : grain de pellicule 16 mm, léger, qui vibre */
+.theme-grain {
+  display: none;
+}
+[data-theme="closeup"] .theme-grain {
+  display: block;
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.08 0 0 0 1.4 -0.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  animation: grain 0.8s steps(4) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); }
+  75% { transform: translate(-1%, 2%); }
+  100% { transform: translate(2%, -1%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="closeup"] .theme-grain {
+    animation: none;
+  }
 }
 
 /* Réglages typographiques propres à chaque thème */
-[data-theme="yume"] :is(h1, h2, h3, .font-display) {
+[data-theme="yume"] :is(h1, .font-display) {
   font-variation-settings: "SOFT" 100, "WONK" 1;
   letter-spacing: -0.025em;
 }
@@ -177,15 +254,15 @@ nav a {
 [data-theme="yume"] .hero-title {
   font-style: italic;
 }
-[data-theme="pierrot"] :is(h1, h2, h3, .font-display) {
+[data-theme="pierrot"] :is(h1, .font-display) {
   letter-spacing: -0.01em;
   line-height: 0.95;
 }
-[data-theme="mood"] :is(h1, h2, h3, .font-display) {
+[data-theme="mood"] :is(h1, .font-display) {
   font-style: italic;
   letter-spacing: -0.01em;
 }
-[data-theme="odyssey"] :is(h1, h2, h3, .font-display, nav a) {
+[data-theme="odyssey"] :is(h1, .font-display) {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -193,10 +270,10 @@ nav a {
   font-size: clamp(2rem, 6vw, 4rem);
   letter-spacing: 0.12em;
 }
-[data-theme="lynch"] :is(h1, h2, h3, .font-display) {
+[data-theme="lynch"] :is(h1, .font-display) {
   letter-spacing: 0.02em;
 }
-[data-theme="closeup"] :is(h1, h2, h3, .font-display) {
+[data-theme="closeup"] :is(h1, .font-display) {
   letter-spacing: 0;
   line-height: 1;
 }
@@ -214,68 +291,36 @@ nav a {
   box-shadow: 0 8px 24px -12px #3f7d4e40;
 }
 
-/* --- Motif sous les grands titres de page --- */
+/* --- Un seul petit clin d'œil sous les grands titres, pour deux thèmes --- */
 .page-title::after {
   content: "";
   display: block;
-  margin-top: 0.8rem;
+  margin-top: 0.9rem;
 }
-/* Yume : trois corbeaux qui s'envolent au-dessus des blés */
-[data-theme="yume"] .page-title::after,
-:root:not([data-theme]) .page-title::after {
-  width: 5rem;
-  height: 22px;
-  background: var(--accent);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 22'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M2 12 Q8 4 13 11 Q18 4 24 12'/%3E%3Cpath d='M32 8 Q36 3 40 7 Q44 3 48 8'/%3E%3Cpath d='M56 17 Q62 9 67 16 Q72 9 78 17'/%3E%3C/g%3E%3C/svg%3E") no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 22'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M2 12 Q8 4 13 11 Q18 4 24 12'/%3E%3Cpath d='M32 8 Q36 3 40 7 Q44 3 48 8'/%3E%3Cpath d='M56 17 Q62 9 67 16 Q72 9 78 17'/%3E%3C/g%3E%3C/svg%3E") no-repeat;
-}
-/* Totoro : une noiraude (susuwatari), boule de suie aux grands yeux */
-[data-theme="totoro"] .page-title::after {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 45%, #fff 0 3px, #111 3.5px 4.5px, transparent 5px),
-    radial-gradient(circle at 65% 45%, #fff 0 3px, #111 3.5px 4.5px, transparent 5px),
-    radial-gradient(circle, #1a1a1a 55%, transparent 72%);
-  filter: drop-shadow(0 0 1px #1a1a1a) drop-shadow(0 0 1px #1a1a1a);
-}
-/* Twin Peaks : le sol à chevrons noir et blanc de la Chambre rouge */
+/* Twin Peaks : le sol à chevrons de la Chambre rouge */
 [data-theme="lynch"] .page-title::after {
-  width: 9rem;
-  height: 14px;
-  background:
-    linear-gradient(135deg, #f1ece1 25%, transparent 25%) -7px 0 / 14px 14px,
-    linear-gradient(225deg, #f1ece1 25%, transparent 25%) -7px 0 / 14px 14px,
-    linear-gradient(315deg, #f1ece1 25%, transparent 25%) 0 0 / 14px 14px,
-    linear-gradient(45deg, #f1ece1 25%, #0b0b0b 25%) 0 0 / 14px 14px;
-}
-/* Pierrot : un gros trait noir */
-[data-theme="pierrot"] .page-title::after {
-  width: 100%;
-  height: 6px;
-  background: var(--foreground);
-}
-/* In the Mood for Love : deux filets dorés */
-[data-theme="mood"] .page-title::after {
   width: 6rem;
-  height: 5px;
-  border-top: 1px solid var(--accent);
-  border-bottom: 1px solid var(--accent);
+  height: 10px;
+  background:
+    linear-gradient(135deg, #f1ece1 25%, transparent 25%) -5px 0 / 10px 10px,
+    linear-gradient(225deg, #f1ece1 25%, transparent 25%) -5px 0 / 10px 10px,
+    linear-gradient(315deg, #f1ece1 25%, transparent 25%) 0 0 / 10px 10px,
+    linear-gradient(45deg, #f1ece1 25%, #0b0b0b 25%) 0 0 / 10px 10px;
 }
-/* 2001 : l'œil rouge de HAL */
+/* 2001 : l'œil rouge de HAL 9000 */
 [data-theme="odyssey"] .page-title::after {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, #ffd36b 0 12%, #e10600 35%, #5a0000 100%);
-  box-shadow: 0 0 12px #e1060088;
-}
-/* Close-Up : le chemin en zigzag des collines de Koker */
-[data-theme="closeup"] .page-title::after {
-  width: 5.5rem;
+  width: 12px;
   height: 12px;
-  background: var(--accent);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 88 12'%3E%3Cpath d='M1 11 L12 1 L23 11 L34 1 L45 11 L56 1 L67 11 L78 1 L87 9' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 88 12'%3E%3Cpath d='M1 11 L12 1 L23 11 L34 1 L45 11 L56 1 L67 11 L78 1 L87 9' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #ffd36b 0 12%, #e10600 38%, #4a0000 100%);
+  box-shadow: 0 0 10px #e1060088;
+}
+
+/* Thèmes sans image de fond (sinon ils hériteraient de celle de Yume, le thème par défaut) */
+[data-theme="closeup"],
+[data-theme="pierrot"],
+[data-theme="odyssey"] {
+  --backdrop: none;
+  --backdrop-mask: none;
+  --backdrop-overlay: none;
 }

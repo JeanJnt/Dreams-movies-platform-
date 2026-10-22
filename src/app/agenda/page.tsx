@@ -59,7 +59,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
         <section className="rounded-3xl border border-border bg-surface p-4 md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <Link href={`/agenda?mois=${key(prev)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois précédent">←</Link>
-            <h2 className="text-2xl capitalize md:text-3xl">{first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</h2>
+            <h2 className="text-2xl capitalize md:text-xl md:text-2xl">{first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</h2>
             <Link href={`/agenda?mois=${key(next)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois suivant">→</Link>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted">

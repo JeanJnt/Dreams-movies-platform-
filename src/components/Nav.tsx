@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { Theme } from "@/lib/theme";
 import { Logo } from "./Logo";
+import { SearchBox } from "./SearchBox";
 import { ThemeSwitch } from "./ThemeSwitch";
 
 const ICONS = {
@@ -16,29 +18,46 @@ const ICONS = {
   search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5",
   bell: "M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0",
   people: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M17 11a3 3 0 1 0 0-6M22 21v-1a5 5 0 0 0-4-4.9",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
+  list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+  disc: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  bookmark: "M6 3h12v18l-6-4-6 4z",
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
+  download: "M12 3v12M7 10l5 5 5-5M5 21h14",
 };
 
-// Barre du haut (ordinateur) et onglets du bas (mobile).
+// Ordinateur : une seule rangée de liens, sobre.
 const DESKTOP = [
   { href: "/", label: "Accueil" },
   { href: "/films", label: "Films" },
   { href: "/conseils", label: "Conseils" },
   { href: "/critiques", label: "Critiques" },
   { href: "/agenda", label: "Agenda" },
-  { href: "/stats", label: "Stats" },
   { href: "/activite", label: "Communauté" },
 ];
+// Mobile : 4 onglets + « Plus », comme une appli native.
 const MOBILE = [
   { href: "/", label: "Accueil", icon: ICONS.home },
   { href: "/films", label: "Films", icon: ICONS.films },
+  { href: "/recherche", label: "Chercher", icon: ICONS.search },
   { href: "/conseils", label: "Conseils", icon: ICONS.star },
-  { href: "/agenda", label: "Agenda", icon: ICONS.calendar },
-  { href: "/stats", label: "Stats", icon: ICONS.chart },
 ];
-// Ces pages sont des sous-onglets de « Films » (voir LibraryTabs).
-// Pages de la communauté
+// Tout le reste, dans le panneau « Plus » (mobile)
+const MORE = [
+  { href: "/critiques", label: "Critiques", icon: ICONS.pen },
+  { href: "/agenda", label: "Agenda", icon: ICONS.calendar },
+  { href: "/alertes", label: "Au cinéma", icon: ICONS.bell },
+  { href: "/stats", label: "Stats", icon: ICONS.chart },
+  { href: "/watchlist", label: "Watchlist", icon: ICONS.bookmark },
+  { href: "/listes", label: "Listes", icon: ICONS.list },
+  { href: "/collection", label: "Collection", icon: ICONS.disc },
+  { href: "/activite", label: "Communauté", icon: ICONS.people },
+  { href: "/compte", label: "Mon compte", icon: ICONS.user },
+  { href: "/installer", label: "Installer", icon: ICONS.download },
+];
+// Pages rangées sous « Films » et sous « Communauté »
+const LIBRARY = ["/films", "/watchlist", "/collection", "/listes", "/personnes", "/personne"];
 const COMMUNITY = ["/activite", "/membres", "/membre"];
-const LIBRARY = ["/films", "/watchlist", "/collection", "/listes", "/personnes", "/personne", "/critiques"];
 
 function Icon({ d, className = "size-5" }: { d: string; className?: string }) {
   return (
@@ -50,81 +69,102 @@ function Icon({ d, className = "size-5" }: { d: string; className?: string }) {
 
 type NavUser = { name: string; isAdmin: boolean };
 
-function HeaderIcons({ alerts, user }: { alerts: number; user: NavUser }) {
+function Bell({ alerts }: { alerts: number }) {
   return (
-    <div className="flex items-center gap-1">
-      <Link href="/activite" className="flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-foreground md:hidden" aria-label="Communauté">
-        <Icon d={ICONS.people} />
-      </Link>
-      <Link href="/recherche" className="flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-foreground" aria-label="Rechercher">
-        <Icon d={ICONS.search} />
-      </Link>
-      <Link href="/alertes" className="relative flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-foreground" aria-label={`Au cinéma${alerts ? ` : ${alerts} nouvelle(s) alerte(s)` : ""}`}>
-        <Icon d={ICONS.bell} />
-        {alerts > 0 && (
-          <span className="absolute top-0.5 right-0.5 flex min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] leading-4 font-bold text-on-accent">{alerts}</span>
-        )}
-      </Link>
-      <Link href="/compte" className="font-display ml-1 flex size-8 items-center justify-center rounded-full bg-accent text-sm text-on-accent" title={`${user.name} · mon compte`} aria-label="Mon compte">
-        {user.name.slice(0, 1).toUpperCase()}
-      </Link>
-    </div>
+    <Link href="/alertes" className="relative flex size-9 items-center justify-center rounded-full text-muted transition hover:text-foreground" aria-label={`Au cinéma${alerts ? ` : ${alerts} nouvelle(s) alerte(s)` : ""}`}>
+      <Icon d={ICONS.bell} />
+      {alerts > 0 && <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-accent ring-2 ring-background" />}
+    </Link>
+  );
+}
+
+function Avatar({ user }: { user: NavUser }) {
+  return (
+    <Link href="/compte" className="flex size-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-on-accent" title={`${user.name} · mon compte`} aria-label="Mon compte">
+      {user.name.slice(0, 1).toUpperCase()}
+    </Link>
   );
 }
 
 export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; user: NavUser }) {
   const path = usePathname();
+  const [more, setMore] = useState(false);
+  useEffect(() => setMore(false), [path]);
+
   const active = (href: string) =>
     href === "/" ? path === "/" : href === "/films" ? LIBRARY.some((l) => path.startsWith(l)) : href === "/activite" ? COMMUNITY.some((l) => path.startsWith(l)) : path.startsWith(href);
-  const activeDesktop = (href: string) => (href === "/films" ? active(href) && !path.startsWith("/critiques") : active(href));
+  const moreActive = MORE.some((l) => path.startsWith(l.href)) && !MOBILE.some((l) => active(l.href));
 
   return (
     <>
-      {/* Ordinateur : barre en haut */}
-      <header className="sticky top-0 z-30 hidden border-b border-border bg-background/85 backdrop-blur md:block">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-8">
-          <Link href="/" aria-label="Dreams, accueil">
+      {/* Ordinateur : logo, liens, recherche avec suggestions, alertes, compte, thème */}
+      <header className="sticky top-0 z-30 hidden bg-background/80 backdrop-blur-xl md:block">
+        <nav className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-8">
+          <Link href="/" aria-label="Dreams, accueil" className="shrink-0">
             <Logo />
           </Link>
-          <div className="flex gap-0.5">
+          <div className="flex h-full items-center gap-6">
             {DESKTOP.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`rounded-full px-3.5 py-1.5 text-sm transition-colors ${activeDesktop(l.href) ? "bg-surface-2 text-foreground" : "text-muted hover:text-foreground"}`}
+                className={`relative flex h-full items-center text-sm transition-colors ${active(l.href) ? "font-medium text-foreground" : "text-muted hover:text-foreground"}`}
               >
                 {l.label}
+                {active(l.href) && <span className="absolute inset-x-0 bottom-3 h-0.5 rounded-full bg-accent" />}
               </Link>
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <HeaderIcons alerts={alerts} user={user} />
+            <div className="w-56 lg:w-64">
+              <SearchBox compact key={path} />
+            </div>
+            <Bell alerts={alerts} />
+            <Avatar user={user} />
             <ThemeSwitch initial={theme} />
           </div>
         </nav>
       </header>
 
-      {/* Mobile : logo + icônes en haut, onglets en bas comme une appli native */}
-      <header className="flex items-center justify-between gap-2 px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-2 md:hidden">
+      {/* Mobile : logo en haut, onglets en bas */}
+      <header className="flex items-center justify-between gap-2 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-2 md:hidden">
         <Link href="/" aria-label="Dreams, accueil">
           <Logo />
         </Link>
         <div className="flex items-center gap-1">
-          <HeaderIcons alerts={alerts} user={user} />
+          <Bell alerts={alerts} />
           <ThemeSwitch initial={theme} />
         </div>
       </header>
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-        {MOBILE.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] ${active(l.href) ? "text-accent" : "text-muted"}`}
+
+      {more && (
+        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMore(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            className="absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] grid grid-cols-3 gap-1 rounded-3xl border border-border bg-surface p-3 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
           >
+            {MORE.map((l) => (
+              <Link key={l.href} href={l.href} className={`flex flex-col items-center gap-1.5 rounded-2xl py-3 text-xs ${path.startsWith(l.href) ? "bg-surface-2 text-accent" : "text-foreground"}`}>
+                <Icon d={l.icon} />
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+        {MOBILE.map((l) => (
+          <Link key={l.href} href={l.href} className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] ${active(l.href) && !more ? "text-accent" : "text-muted"}`}>
             <Icon d={l.icon} />
             {l.label}
           </Link>
         ))}
+        <button onClick={() => setMore(!more)} aria-expanded={more} className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] ${more || moreActive ? "text-accent" : "text-muted"}`}>
+          <Icon d={ICONS.more} className="size-5" />
+          Plus
+        </button>
       </nav>
     </>
   );

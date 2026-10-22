@@ -9,7 +9,8 @@ import { longEnough } from "@/lib/titles";
 const img = (p: string | null) => (!p ? null : p.startsWith("/media/") ? p : `https://image.tmdb.org/t/p/w92${p}`);
 
 // Barre de recherche avec suggestions pendant la frappe (films dans toutes les langues, réalisateurs, acteurs…).
-export function SearchBox({ defaultValue = "" }: { defaultValue?: string }) {
+// compact : version de la barre de menu (plus petite, sans focus automatique).
+export function SearchBox({ defaultValue = "", compact = false }: { defaultValue?: string; compact?: boolean }) {
   const router = useRouter();
   const [q, setQ] = useState(defaultValue);
   const [hits, setHits] = useState<{ films: FilmHit[]; people: PersonHit[] }>({ films: [], people: [] });
@@ -90,18 +91,23 @@ export function SearchBox({ defaultValue = "" }: { defaultValue?: string }) {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKey}
-          autoFocus
+          autoFocus={!compact}
           autoComplete="off"
           role="combobox"
           aria-expanded={show}
           aria-controls="search-suggestions"
-          placeholder="Un film, dans n'importe quelle langue : Rêves, 夢, Close-Up, Cléo de 5 à 7…"
-          className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-lg outline-none focus:border-accent"
+          placeholder={compact ? "Rechercher un film, une personne…" : "Un film, dans n'importe quelle langue : Rêves, 夢, Close-Up, Cléo de 5 à 7…"}
+          aria-label="Rechercher"
+          className={
+            compact
+              ? "w-full rounded-full border border-transparent bg-surface-2/70 px-4 py-1.5 text-sm outline-none transition placeholder:text-muted focus:border-accent focus:bg-surface"
+              : "w-full rounded-xl border border-border bg-surface px-4 py-3 text-lg outline-none focus:border-accent"
+          }
         />
       </form>
 
       {show && (
-        <div id="search-suggestions" role="listbox" className="absolute inset-x-0 top-full z-30 mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-surface py-1 shadow-2xl shadow-black/40">
+        <div id="search-suggestions" role="listbox" className={`absolute top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-surface py-1 shadow-2xl shadow-black/40 ${compact ? "right-0 w-[26rem] max-w-[90vw]" : "inset-x-0"}`}>
           {!items.length && <p className="px-3 py-2 text-sm text-muted">Aucune suggestion. Appuie sur Entrée pour chercher.</p>}
           {hits.films.map((f, i) => (
             <button key={f.key} type="button" role="option" aria-selected={i === active} onMouseEnter={() => setActive(i)} onClick={() => go(f.href)} className={row(i)}>
