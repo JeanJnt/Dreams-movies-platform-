@@ -1,0 +1,37 @@
+import fs from "node:fs";
+import path from "node:path";
+import { Readable } from "node:stream";
+import { currentUser } from "@/lib/auth";
+import { canView, MEDIA_DIR, MIME } from "@/lib/media";
+
+// Sert les images et vidéos des membres, uniquement aux membres connectés qui ont le droit de les voir.
+// Gère les requêtes « Range » pour pouvoir avancer dans une vidéo.
+export async function GET(req: Request, { params }: { params: Promise<{ userId: string; filmId: string; file: string }> }) {
+  const { userId, filmId, file } = await params;
+  // Pas de « ../ » possible : identifiants numériques et nom de fichier simple uniquement.
+  if (!/^\d+$/.test(userId) || !/^\d+$/.test(filmId) || !/^[\w-]+\.\w+$/.test(file)) return new Response("Introuvable", { status: 404 });
+  const viewer = await currentUser();
+  if (!viewer) return new Response("Connexion requise", { status: 401 });
+  if (!(await canView(viewer.id, Number(userId), file))) return new Response("Introuvable", { status: 404 });
+
+  const full = path.join(MEDIA_DIR, userId, filmId, file);
+  const stat = await fs.promises.stat(full).catch(() => null);
+  if (!stat) return new Response("Introuvable", { status: 404 });
+
+  const type = MIME[path.extname(file).toLowerCase()] ?? "application/octet-stream";
+  // « private » : jamais gardé en cache par un serveur intermédiaire
+  const headers = { "Content-Type": type, "Accept-Ranges": "bytes", "Cache-Control": "private, max-age=86400", "X-Content-Type-Options": "nosniff" };
+  const range = req.headers.get("range")?.match(/bytes=(\d*)-(\d*)/);
+
+  if (range) {
+    const start = range[1] ? Number(range[1]) : 0;
+    const end = range[2] ? Math.min(Number(range[2]), stat.size - 1) : stat.size - 1;
+    const stream = Readable.toWeb(fs.createReadStream(full, { start, end })) as ReadableStream;
+    return new Response(stream, {
+      status: 206,
+      headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${stat.size}`, "Content-Length": String(end - start + 1) },
+    });
+  }
+  const stream = Readable.toWeb(fs.createReadStream(full)) as ReadableStream;
+  return new Response(stream, { headers: { ...headers, "Content-Length": String(stat.size) } });
+}

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { Nav } from "@/components/Nav";
 import { PwaSetup } from "@/components/PwaSetup";
 import { unseenAlerts } from "@/lib/alerts";
+import { currentUser } from "@/lib/auth";
 import { THEMES, type Theme } from "@/lib/theme";
 import "./globals.css";
 
@@ -34,7 +35,8 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const saved = (await cookies()).get("theme")?.value;
   const theme: Theme = THEMES.some((t) => t.key === saved) ? (saved as Theme) : "yume";
-  const alerts = await unseenAlerts();
+  const user = await currentUser();
+  const alerts = user ? await unseenAlerts() : 0;
   const fonts = [geistSans, fraunces, fat, bodoni, syncopate, lalezar, kaisei, limelight].map((f) => f.variable).join(" ");
 
   return (
@@ -42,7 +44,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="fr" data-theme={theme} className={fonts}>
       <body className="antialiased">
         <PwaSetup />
-        <Nav theme={theme} alerts={alerts} />
+        {/* La navigation n'apparaît qu'une fois connecté */}
+        {user && <Nav theme={theme} alerts={alerts} user={{ name: user.name, isAdmin: user.isAdmin }} />}
         <main className="mx-auto max-w-6xl px-4 pb-safe md:px-8">{children}</main>
       </body>
     </html>

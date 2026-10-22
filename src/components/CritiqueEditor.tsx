@@ -28,6 +28,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
   const [body, setBody] = useState(initial?.body ?? "");
   const [rating, setRating] = useState<number | null>(initial?.rating ?? defaultRating);
   const [status, setStatus] = useState<"draft" | "published">(initial?.status ?? "draft");
+  const [visibility, setVisibility] = useState<"membres" | "prive">(initial?.visibility ?? "membres");
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -41,7 +42,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
   // Les sauvegardes passent l'une après l'autre, pour ne jamais créer la critique en double.
   const save = (nextStatus = status) => {
     saving.current = saving.current.then(async () => {
-      const res = await saveCritiqueAction({ id: idRef.current, filmId, title, lede, body, rating, status: nextStatus });
+      const res = await saveCritiqueAction({ id: idRef.current, filmId, title, lede, body, rating, status: nextStatus, visibility });
       idRef.current = res.id;
       setId(res.id);
       setSavedAt(res.savedAt);
@@ -56,7 +57,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
     const t = setTimeout(() => save(), 1500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, lede, body, rating, dirty]);
+  }, [title, lede, body, rating, visibility, dirty]);
 
   const edit = <T,>(setter: (v: T) => void) => (v: T) => {
     setter(v);
@@ -116,6 +117,19 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
         <span className={`rounded-full px-2.5 py-0.5 text-xs ${status === "published" ? "bg-accent-soft text-accent" : "bg-surface-2 text-muted"}`}>
           {status === "published" ? "Publiée" : "Brouillon"}
         </span>
+        {/* Qui peut lire cette critique une fois publiée */}
+        <div className="flex rounded-full border border-border bg-surface p-0.5 text-xs">
+          {(["membres", "prive"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => edit(setVisibility)(v)}
+              title={v === "membres" ? "Les autres membres de Dreams peuvent la lire" : "Toi seul peux la lire"}
+              className={`rounded-full px-2.5 py-1 ${visibility === v ? "bg-foreground text-background" : "text-muted"}`}
+            >
+              {v === "membres" ? "👥 Membres" : "🔒 Privée"}
+            </button>
+          ))}
+        </div>
         <RatingPicker value={rating} onChange={edit(setRating)} />
       </div>
 

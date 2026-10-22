@@ -9,6 +9,8 @@ import { OwnButton } from "@/components/OwnButton";
 import { PosterPicker } from "@/components/PosterPicker";
 import { Soundtrack } from "@/components/Soundtrack";
 import { Stars } from "@/components/Stars";
+import { TextKind } from "@/components/ActivityFeed";
+import { filmCommunity } from "@/lib/social";
 import { VideoCard } from "@/components/VideoCard";
 import { CASE_TYPES, FORMATS, ownedItem } from "@/lib/collection";
 import { critiqueForFilm, readingTime } from "@/lib/critiques";
@@ -90,7 +92,7 @@ export default async function FilmPage({ params }: Props) {
           {film.overview && <p className="max-w-prose leading-relaxed text-foreground/90">{film.overview}</p>}
 
           <section>
-            <h2 className="mb-4 font-display text-3xl">Ma critique</h2>
+            <h2 className="mb-4 flex items-center gap-3 font-display text-3xl">Ma critique <TextKind kind="critique" /></h2>
             {critique ? (
               <Link
                 href={critique.status === "published" ? `/critiques/${critique.id}` : `/film/${id}/critique`}
@@ -134,7 +136,7 @@ export default async function FilmPage({ params }: Props) {
           </section>
 
           <section>
-            <h2 className="mb-4 font-display text-3xl">Mes notes Letterboxd</h2>
+            <h2 className="mb-4 flex items-center gap-3 font-display text-3xl">Mes reviews <TextKind kind="review" /></h2>
             {reviews.length ? (
               <div className="space-y-4">
                 {reviews.map((r, i) => (
@@ -152,6 +154,10 @@ export default async function FilmPage({ params }: Props) {
               <p className="text-muted">Aucune review Letterboxd pour ce film.</p>
             )}
           </section>
+
+          <Suspense fallback={null}>
+            <Members filmId={id} />
+          </Suspense>
 
           {film.cast.length > 0 && (
             <section>
@@ -332,6 +338,54 @@ function VideosSkeleton() {
       <div className="grid gap-4 sm:grid-cols-2">
         {[0, 1].map((i) => <div key={i} className="aspect-video animate-pulse rounded-lg bg-surface-2" />)}
       </div>
+    </section>
+  );
+}
+
+// « Les membres » : ce que les autres ont pensé de ce film (notes, reviews Letterboxd, critiques Dreams partagées).
+async function Members({ filmId }: { filmId: number }) {
+  const c = await filmCommunity(filmId);
+  if (!c.people.length && !c.critiques.length) return null;
+  return (
+    <section>
+      <div className="mb-4 flex items-baseline justify-between gap-4">
+        <h2 className="font-display text-3xl">Les membres</h2>
+        {c.average != null && <span className="text-sm text-muted">moyenne <span className="font-display text-xl text-accent">{c.average.toFixed(1).replace(".", ",")}★</span></span>}
+      </div>
+      {c.critiques.length > 0 && (
+        <div className="mb-5 space-y-3">
+          {c.critiques.map((k) => (
+            <Link key={k.id} href={`/critiques/${k.id}`} className="group block rounded-2xl border border-accent/30 bg-accent-soft p-4 hover:border-accent">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                <TextKind kind="critique" />
+                <span className="text-foreground">{k.author}</span>
+                {k.rating != null && <Stars rating={k.rating} />}
+              </div>
+              <h3 className="mt-2 text-2xl leading-tight group-hover:text-accent">{k.title || k.filmTitle}</h3>
+              {k.lede && <p className="mt-1 line-clamp-2 text-sm text-foreground/80">{k.lede}</p>}
+            </Link>
+          ))}
+        </div>
+      )}
+      <ul className="space-y-2">
+        {c.people.map((p) => (
+          <li key={p.id} className="rounded-2xl border border-border bg-surface p-3">
+            <div className="flex items-center gap-3 text-sm">
+              <Link href={`/membre/${p.id}`} className="font-display flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent">{p.name.slice(0, 1).toUpperCase()}</Link>
+              <Link href={`/membre/${p.id}`} className="hover:text-accent">{p.name}</Link>
+              {p.rating != null && <Stars rating={p.rating} />}
+              {p.liked && <span className="text-heart">♥</span>}
+              {p.lastSeen && <span className="ml-auto text-xs text-muted">vu le {formatLongDate(p.lastSeen.slice(0, 10))}</span>}
+            </div>
+            {p.letterboxdReview && (
+              <div className="mt-2 border-l-2 border-border pl-3">
+                <TextKind kind="review" />
+                <p className="mt-1 line-clamp-4 whitespace-pre-line text-sm text-foreground/80">{p.letterboxdReview}</p>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

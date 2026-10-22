@@ -18,7 +18,7 @@ export default async function EditCritiquePage({ params }: { params: Promise<{ i
         filmId={filmId}
         filmTitle={film.title_fr ?? film.name}
         defaultRating={film.rating}
-        initial={critique && { id: critique.id, title: critique.title, lede: critique.lede, body: critique.body, rating: critique.rating, status: critique.status }}
+        initial={critique && { id: critique.id, title: critique.title, lede: critique.lede, body: critique.body, rating: critique.rating, status: critique.status, visibility: critique.visibility }}
       />
     </div>
   );

@@ -15,6 +15,7 @@ const ICONS = {
   chart: "M4 20V10M10 20V4M16 20v-7M22 20H2",
   search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5",
   bell: "M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0",
+  people: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M17 11a3 3 0 1 0 0-6M22 21v-1a5 5 0 0 0-4-4.9",
 };
 
 // Barre du haut (ordinateur) et onglets du bas (mobile).
@@ -25,6 +26,7 @@ const DESKTOP = [
   { href: "/critiques", label: "Critiques" },
   { href: "/agenda", label: "Agenda" },
   { href: "/stats", label: "Stats" },
+  { href: "/activite", label: "Communauté" },
 ];
 const MOBILE = [
   { href: "/", label: "Accueil", icon: ICONS.home },
@@ -34,6 +36,8 @@ const MOBILE = [
   { href: "/stats", label: "Stats", icon: ICONS.chart },
 ];
 // Ces pages sont des sous-onglets de « Films » (voir LibraryTabs).
+// Pages de la communauté
+const COMMUNITY = ["/activite", "/membres", "/membre"];
 const LIBRARY = ["/films", "/watchlist", "/collection", "/listes", "/personnes", "/personne", "/critiques"];
 
 function Icon({ d, className = "size-5" }: { d: string; className?: string }) {
@@ -44,9 +48,14 @@ function Icon({ d, className = "size-5" }: { d: string; className?: string }) {
   );
 }
 
-function HeaderIcons({ alerts }: { alerts: number }) {
+type NavUser = { name: string; isAdmin: boolean };
+
+function HeaderIcons({ alerts, user }: { alerts: number; user: NavUser }) {
   return (
     <div className="flex items-center gap-1">
+      <Link href="/activite" className="flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-foreground md:hidden" aria-label="Communauté">
+        <Icon d={ICONS.people} />
+      </Link>
       <Link href="/recherche" className="flex size-9 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-foreground" aria-label="Rechercher">
         <Icon d={ICONS.search} />
       </Link>
@@ -56,14 +65,17 @@ function HeaderIcons({ alerts }: { alerts: number }) {
           <span className="absolute top-0.5 right-0.5 flex min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] leading-4 font-bold text-on-accent">{alerts}</span>
         )}
       </Link>
+      <Link href="/compte" className="font-display ml-1 flex size-8 items-center justify-center rounded-full bg-accent text-sm text-on-accent" title={`${user.name} · mon compte`} aria-label="Mon compte">
+        {user.name.slice(0, 1).toUpperCase()}
+      </Link>
     </div>
   );
 }
 
-export function Nav({ theme, alerts }: { theme: Theme; alerts: number }) {
+export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; user: NavUser }) {
   const path = usePathname();
   const active = (href: string) =>
-    href === "/" ? path === "/" : href === "/films" ? LIBRARY.some((l) => path.startsWith(l)) : path.startsWith(href);
+    href === "/" ? path === "/" : href === "/films" ? LIBRARY.some((l) => path.startsWith(l)) : href === "/activite" ? COMMUNITY.some((l) => path.startsWith(l)) : path.startsWith(href);
   const activeDesktop = (href: string) => (href === "/films" ? active(href) && !path.startsWith("/critiques") : active(href));
 
   return (
@@ -86,7 +98,7 @@ export function Nav({ theme, alerts }: { theme: Theme; alerts: number }) {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <HeaderIcons alerts={alerts} />
+            <HeaderIcons alerts={alerts} user={user} />
             <ThemeSwitch initial={theme} />
           </div>
         </nav>
@@ -98,7 +110,7 @@ export function Nav({ theme, alerts }: { theme: Theme; alerts: number }) {
           <Logo />
         </Link>
         <div className="flex items-center gap-1">
-          <HeaderIcons alerts={alerts} />
+          <HeaderIcons alerts={alerts} user={user} />
           <ThemeSwitch initial={theme} />
         </div>
       </header>

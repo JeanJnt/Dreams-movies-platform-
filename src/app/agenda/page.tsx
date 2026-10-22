@@ -4,7 +4,8 @@ import Link from "next/link";
 import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { EventForm } from "@/components/EventForm";
 import { eventsBetween, upcomingEvents, type CinemaEvent } from "@/lib/agenda";
-import { db } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
+import { db, posterSql } from "@/lib/db";
 import { poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Agenda" };
@@ -15,6 +16,9 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 export default async function AgendaPage({ searchParams }: { searchParams: Promise<{ mois?: string; film?: string }> }) {
   const { mois, film } = await searchParams;
+  const user = await requireUser();
+  const tokenRow = await db().execute({ sql: "SELECT calendar_token FROM users WHERE id = ?", args: [user.id] });
+  const calendarUrl = `/agenda/ics?token=${tokenRow.rows[0]?.calendar_token ?? ""}`;
   const today = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Paris" }).slice(0, 10);
   const [y, m] = (mois && /^\d{4}-\d{2}$/.test(mois) ? mois : today.slice(0, 7)).split("-").map(Number);
   const first = new Date(y, m - 1, 1);
@@ -25,7 +29,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const [monthEvents, upcoming, prefill] = await Promise.all([
     eventsBetween(`${key(first)}-01`, `${key(next)}-01`),
     upcomingEvents(12),
-    film ? db().execute({ sql: "SELECT id, COALESCE(title_fr, name) AS title, year, COALESCE(custom_poster, poster_path) AS poster FROM films WHERE id = ?", args: [Number(film)] }) : null,
+    film ? db().execute({ sql: `SELECT f.id, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(user.id)} AS poster FROM films f WHERE f.id = ?`, args: [Number(film)] }) : null,
   ]);
   const initialFilm = prefill?.rows[0]
     ? { id: Number(prefill.rows[0].id), title: String(prefill.rows[0].title), year: prefill.rows[0].year == null ? null : Number(prefill.rows[0].year), poster: (prefill.rows[0].poster as string) ?? null }
@@ -46,7 +50,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     <div className="space-y-8 pt-2 md:pt-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Agenda</h1>
-        <a href="/agenda/ics" className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
+        <a href={calendarUrl} className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
           📅 Exporter vers mon calendrier
         </a>
       </div>

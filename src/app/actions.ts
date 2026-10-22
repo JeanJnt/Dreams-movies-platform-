@@ -4,12 +4,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deleteEvent, saveEvent } from "@/lib/agenda";
+import { requireUser } from "@/lib/auth";
 import { quickCheck } from "@/lib/alerts";
 import { lookupBarcode, searchFilms } from "@/lib/barcode";
 import { CASE_TYPES, FORMATS, setOwned, type CaseType } from "@/lib/collection";
 import { ensureFilmFromTmdb } from "@/lib/tmdb-film";
 import { deleteCritique, saveCritique } from "@/lib/critiques";
-import { addFile, addYoutube, deleteMedia, saveImage } from "@/lib/media";
+import { addFile, addYoutube, deleteMedia, saveImage, setMediaVisibility } from "@/lib/media";
 import { posterOptions, setCustomPoster, uploadPoster } from "@/lib/posters";
 import { searchMyFilms } from "@/lib/queries";
 import { PLATFORMS, setMyPlatforms } from "@/lib/reco";
@@ -22,11 +23,14 @@ export type CritiqueInput = {
   body: string;
   rating: number | null;
   status: "draft" | "published";
+  visibility: "membres" | "prive";
 };
 
 export async function saveCritiqueAction(input: CritiqueInput) {
+  await requireUser();
   const rating = input.rating != null && input.rating >= 0.5 && input.rating <= 5 ? Math.round(input.rating * 2) / 2 : null;
-  const id = await saveCritique({ ...input, rating });
+  const visibility = input.visibility === "prive" ? "prive" : "membres";
+  const id = await saveCritique({ ...input, rating, visibility });
   revalidatePath(`/film/${input.filmId}`);
   revalidatePath("/critiques");
   revalidatePath(`/critiques/${id}`);
@@ -34,6 +38,7 @@ export async function saveCritiqueAction(input: CritiqueInput) {
 }
 
 export async function setOwnedAction(filmId: number, item: { format: string; caseType: string; edition: string | null; cover: string | null; ean?: string | null } | null) {
+  await requireUser();
   if (item) {
     if (!(FORMATS as readonly string[]).includes(item.format)) throw new Error("Format inconnu");
     if (!CASE_TYPES.some((c) => c.key === item.caseType)) throw new Error("Boîtier inconnu");
@@ -58,16 +63,19 @@ export async function uploadCoverAction(filmId: number, formData: FormData): Pro
 // --- Scanner de code-barres ---
 
 export async function lookupBarcodeAction(ean: string) {
+  await requireUser();
   if (!/^\d{8,14}$/.test(ean)) throw new Error("Code-barres invalide");
   const product = await lookupBarcode(ean);
   return { product, candidates: await searchFilms(product.query) };
 }
 
 export async function searchFilmsAction(query: string) {
+  await requireUser();
   return searchFilms(query.slice(0, 120));
 }
 
 export async function addScannedAction(tmdbId: number, item: { format: string; caseType: string; edition: string | null; cover: string | null; ean: string | null }) {
+  await requireUser();
   const filmId = await ensureFilmFromTmdb(tmdbId);
   await setOwnedAction(filmId, item);
   return filmId;
@@ -76,6 +84,7 @@ export async function addScannedAction(tmdbId: number, item: { format: string; c
 // --- Agenda des séances ---
 
 export async function saveEventAction(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null }) {
+  await requireUser();
   if (!e.title.trim() || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(e.startsAt)) throw new Error("Titre et date obligatoires");
   const id = await saveEvent(e);
   revalidatePath("/agenda");
@@ -84,18 +93,21 @@ export async function saveEventAction(e: { id?: number; filmId: number | null; t
 }
 
 export async function deleteEventAction(id: number) {
+  await requireUser();
   await deleteEvent(id);
   revalidatePath("/agenda");
   revalidatePath("/");
 }
 
 export async function searchMyFilmsAction(q: string) {
+  await requireUser();
   return searchMyFilms(q.slice(0, 80));
 }
 
 // --- Alertes cinéma ---
 
 export async function refreshAlertsAction() {
+  await requireUser();
   const n = await quickCheck();
   revalidatePath("/alertes");
   revalidatePath("/", "layout");
@@ -103,6 +115,7 @@ export async function refreshAlertsAction() {
 }
 
 export async function setPlatformsAction(keys: string[]) {
+  await requireUser();
   const valid = PLATFORMS.map((p) => p.key as string);
   await setMyPlatforms(keys.filter((k) => valid.includes(k)));
   revalidatePath("/conseils");
@@ -113,8 +126,9 @@ export async function addMediaAction(filmId: number, formData: FormData): Promis
     const caption = String(formData.get("caption") ?? "").trim() || null;
     const link = String(formData.get("youtube") ?? "").trim();
     const files = formData.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
-    if (link) await addYoutube(filmId, link, caption);
-    for (const file of files) await addFile(filmId, file, caption);
+    const visibility = formData.get("visibility") === "prive" ? "prive" : "membres";
+    if (link) await addYoutube(filmId, link, caption, visibility);
+    for (const file of files) await addFile(filmId, file, caption, visibility);
     if (!link && !files.length) return { error: "Choisis un fichier ou colle un lien YouTube." };
   } catch (e) {
     return { error: (e as Error).message };
@@ -124,15 +138,24 @@ export async function addMediaAction(filmId: number, formData: FormData): Promis
 }
 
 export async function deleteMediaAction(id: number) {
+  await requireUser();
   const filmId = await deleteMedia(id);
   if (filmId) revalidatePath(`/film/${filmId}`);
 }
 
+export async function setMediaVisibilityAction(id: number, filmId: number, visibility: "membres" | "prive") {
+  await requireUser();
+  await setMediaVisibility(id, visibility === "prive" ? "prive" : "membres");
+  revalidatePath(`/film/${filmId}`);
+}
+
 export async function posterOptionsAction(filmId: number) {
+  await requireUser();
   return posterOptions(filmId);
 }
 
 export async function setPosterAction(filmId: number, posterPath: string | null) {
+  await requireUser();
   await setCustomPoster(filmId, posterPath);
   revalidatePath("/", "layout"); // l'affiche apparaît sur beaucoup de pages
 }
@@ -150,6 +173,7 @@ export async function uploadPosterAction(filmId: number, formData: FormData): Pr
 }
 
 export async function deleteCritiqueAction(id: number, filmId: number) {
+  await requireUser();
   await deleteCritique(id);
   revalidatePath(`/film/${filmId}`);
   revalidatePath("/critiques");

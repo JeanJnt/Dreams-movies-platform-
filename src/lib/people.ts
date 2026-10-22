@@ -1,3 +1,4 @@
+import { uid, viewedUser } from "./auth";
 import { db } from "./db";
 import { tmdb } from "./tmdb";
 
@@ -7,7 +8,8 @@ export type Role = "director" | "actor";
 
 // --- Mes cinéastes et acteurs les plus vus (calculé à partir de mes films) ---
 
-export async function topPeople(role: Role, limit = 24) {
+export async function topPeople(role: Role, limit = 24, userId?: number) {
+  const u = await viewedUser(userId);
   const column = role === "director" ? "f.directors" : "f.cast_list";
   const value = role === "director" ? "j.value" : "json_extract(j.value, '$.name')";
   // DISTINCT : TMDB liste parfois la même personne plusieurs fois pour un film (un crédit par segment).
@@ -16,8 +18,8 @@ export async function topPeople(role: Role, limit = 24) {
           FROM (
             SELECT DISTINCT ${value} AS name, f.id, r.rating, (l.film_id IS NOT NULL) AS liked
             FROM watched w JOIN films f ON f.id = w.film_id, json_each(${column}) j
-            LEFT JOIN ratings r ON r.film_id = f.id LEFT JOIN likes l ON l.film_id = f.id
-            ${role === "actor" ? "WHERE j.key < 6" /* seulement les rôles principaux */ : ""}
+            LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u} LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}
+            WHERE w.user_id = ${u} ${role === "actor" ? "AND j.key < 6" /* seulement les rôles principaux */ : ""}
           )
           GROUP BY name HAVING seen >= 2
           ORDER BY seen DESC, avg_rating DESC LIMIT ?`,
@@ -67,6 +69,7 @@ export type PersonFilm = {
 };
 
 export async function personDetail(tmdbId: number) {
+  const u = await uid();
   type Raw = {
     id: number;
     name: string;
@@ -91,8 +94,8 @@ export async function personDetail(tmdbId: number) {
   if (ids.length) {
     const { rows } = await db().execute({
       sql: `SELECT f.id, f.tmdb_id, (w.film_id IS NOT NULL) AS seen, r.rating, (wl.film_id IS NOT NULL) AS watchlist
-            FROM films f LEFT JOIN watched w ON w.film_id = f.id LEFT JOIN ratings r ON r.film_id = f.id
-            LEFT JOIN watchlist wl ON wl.film_id = f.id
+            FROM films f LEFT JOIN watched w ON w.film_id = f.id AND w.user_id = ${u} LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u}
+            LEFT JOIN watchlist wl ON wl.film_id = f.id AND wl.user_id = ${u}
             WHERE f.tmdb_id IN (${ids.map(() => "?").join(",")})`,
       args: ids,
     });

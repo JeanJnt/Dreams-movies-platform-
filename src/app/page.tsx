@@ -7,6 +7,8 @@ import { Stars } from "@/components/Stars";
 import { formatShortDate } from "@/lib/format";
 import { favoriteFilms, overview, recentDiary } from "@/lib/queries";
 import { picks } from "@/lib/reco";
+import { activity } from "@/lib/social";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { backdrop, poster } from "@/lib/tmdb";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +26,7 @@ export default async function Home() {
     picks({ mode: "pour-toi" }),
     picks({ mode: "watchlist" }),
   ]);
+  const feed = await activity({ limit: 6 });
   const hero = recent.find((f) => f.backdrop_path);
 
   if (stats.watched === 0) {
@@ -77,6 +80,16 @@ export default async function Home() {
         <Row title="Ta watchlist, disponible maintenant" subtitle={`${watchlist.picks.length} films à portée de clic`} href="/conseils?mode=watchlist">
           {watchlist.picks.slice(0, 14).map((p) => <PickPoster key={p.key} pick={p} />)}
         </Row>
+      )}
+
+      {feed.length > 0 && (
+        <section>
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <h2 className="font-display text-2xl leading-tight md:text-3xl">Chez les membres</h2>
+            <Link href="/activite" className="shrink-0 text-sm text-muted hover:text-accent">Tout voir →</Link>
+          </div>
+          <ActivityFeed items={feed} compact />
+        </section>
       )}
 
       <Row title="Journal récent" href="/films">

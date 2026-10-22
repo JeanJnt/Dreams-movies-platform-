@@ -1,15 +1,16 @@
-import { db, ensureSchema } from "./db";
+import { currentUser, uid } from "./auth";
+import { db, ensureSchema, posterSql } from "./db";
 import { tmdb } from "./tmdb";
 
 // Alertes « au cinéma » : un film de ma watchlist ou de mes coups de cœur est (ou va être) en salle en France.
 
 type Mine = { tmdbId: number; filmId: number; source: "watchlist" | "coup_de_coeur"; year: number | null };
 
-async function myFilms(): Promise<Mine[]> {
+async function myFilms(u: number): Promise<Mine[]> {
   const { rows } = await db().execute(`
-    SELECT f.tmdb_id, f.id, f.year, 'watchlist' AS source FROM watchlist w JOIN films f ON f.id = w.film_id WHERE f.tmdb_id IS NOT NULL
+    SELECT f.tmdb_id, f.id, f.year, 'watchlist' AS source FROM watchlist w JOIN films f ON f.id = w.film_id WHERE w.user_id = ${u} AND f.tmdb_id IS NOT NULL
     UNION
-    SELECT f.tmdb_id, f.id, f.year, 'coup_de_coeur' AS source FROM likes l JOIN films f ON f.id = l.film_id WHERE f.tmdb_id IS NOT NULL`);
+    SELECT f.tmdb_id, f.id, f.year, 'coup_de_coeur' AS source FROM likes l JOIN films f ON f.id = l.film_id WHERE l.user_id = ${u} AND f.tmdb_id IS NOT NULL`);
   const map = new Map<number, Mine>();
   for (const r of rows) {
     const id = Number(r.tmdb_id);
@@ -18,20 +19,22 @@ async function myFilms(): Promise<Mine[]> {
   return [...map.values()];
 }
 
-async function upsert(m: Mine, kind: string, releaseDate: string | null, note: string | null) {
+async function upsert(u: number, m: Mine, kind: string, releaseDate: string | null, note: string | null) {
   await db().execute({
-    sql: `INSERT INTO alerts (tmdb_id, film_id, kind, release_date, note, source) VALUES (?, ?, ?, ?, ?, ?)
-          ON CONFLICT(tmdb_id) DO UPDATE SET kind = excluded.kind, release_date = excluded.release_date,
+    sql: `INSERT INTO alerts (user_id, tmdb_id, film_id, kind, release_date, note, source) VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(user_id, tmdb_id) DO UPDATE SET kind = excluded.kind, release_date = excluded.release_date,
             note = COALESCE(excluded.note, alerts.note),
             seen = CASE WHEN alerts.kind = excluded.kind THEN alerts.seen ELSE 0 END`,
-    args: [m.tmdbId, m.filmId, kind, releaseDate, note, m.source],
+    args: [u, m.tmdbId, m.filmId, kind, releaseDate, note, m.source],
   });
 }
 
 // Vérification rapide (une dizaine d'appels) : les listes « à l'affiche » et « prochainement » de TMDB pour la France.
-export async function quickCheck() {
+// userId : fourni par la tâche automatique quotidienne ; sinon, le membre connecté.
+export async function quickCheck(userId?: number) {
   await ensureSchema();
-  const mine = new Map((await myFilms()).map((m) => [m.tmdbId, m]));
+  const u = userId ?? (await uid());
+  const mine = new Map((await myFilms(u)).map((m) => [m.tmdbId, m]));
   let found = 0;
   for (const [list, kind, pages] of [["now_playing", "en_salle", 6], ["upcoming", "bientot", 4]] as const) {
     for (let page = 1; page <= pages; page++) {
@@ -39,21 +42,22 @@ export async function quickCheck() {
       for (const r of res.results) {
         const m = mine.get(r.id);
         if (m) {
-          await upsert(m, kind, r.release_date ?? null, null);
+          await upsert(u, m, kind, r.release_date ?? null, null);
           found++;
         }
       }
       if (page >= res.total_pages) break;
     }
   }
-  await cleanup();
+  await cleanup(u);
   return found;
 }
 
 // Vérification complète (un appel par film) : détecte aussi les ressorties en salle (versions restaurées…).
-export async function fullCheck(onProgress?: (done: number, total: number) => void) {
+export async function fullCheck(onProgress?: (done: number, total: number) => void, userId?: number) {
   await ensureSchema();
-  const mine = await myFilms();
+  const u = userId ?? (await uid());
+  const mine = await myFilms(u);
   const today = Date.now();
   const DAY = 86_400_000;
   let done = 0, found = 0;
@@ -72,7 +76,7 @@ export async function fullCheck(onProgress?: (done: number, total: number) => vo
         if (theatrical) {
           const isOld = m.year != null && m.year < new Date().getFullYear() - 1;
           const kind = isOld ? "ressortie" : theatrical.t <= today ? "en_salle" : "bientot";
-          await upsert(m, kind, theatrical.release_date.slice(0, 10), theatrical.note || null);
+          await upsert(u, m, kind, theatrical.release_date.slice(0, 10), theatrical.note || null);
           found++;
         }
       } catch {
@@ -82,13 +86,13 @@ export async function fullCheck(onProgress?: (done: number, total: number) => vo
     }
   };
   await Promise.all(Array.from({ length: 8 }, worker));
-  await cleanup();
+  await cleanup(u);
   return found;
 }
 
 // On oublie les alertes trop anciennes (sorties depuis plus de 2 mois).
-async function cleanup() {
-  await db().execute("DELETE FROM alerts WHERE release_date IS NOT NULL AND release_date < date('now', '-60 days')");
+async function cleanup(u: number) {
+  await db().execute(`DELETE FROM alerts WHERE user_id = ${u} AND release_date IS NOT NULL AND release_date < date('now', '-60 days')`);
 }
 
 export type Alert = {
@@ -108,10 +112,11 @@ export type Alert = {
 
 export async function listAlerts(): Promise<Alert[]> {
   await ensureSchema();
+  const u = await uid();
   const { rows } = await db().execute(`
-    SELECT a.*, COALESCE(f.title_fr, f.name) AS title, f.year, COALESCE(f.custom_poster, f.poster_path) AS poster,
+    SELECT a.*, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster,
       f.backdrop_path, json_extract(f.directors, '$[0]') AS director
-    FROM alerts a JOIN films f ON f.id = a.film_id
+    FROM alerts a JOIN films f ON f.id = a.film_id WHERE a.user_id = ${u}
     ORDER BY a.seen, CASE a.kind WHEN 'en_salle' THEN 0 WHEN 'ressortie' THEN 1 ELSE 2 END, a.release_date`);
   return rows.map((r) => ({
     tmdbId: Number(r.tmdb_id), filmId: Number(r.film_id), kind: r.kind as Alert["kind"], releaseDate: (r.release_date as string) ?? null,
@@ -123,7 +128,9 @@ export async function listAlerts(): Promise<Alert[]> {
 
 export async function unseenAlerts() {
   try {
-    const { rows } = await db().execute("SELECT COUNT(*) AS n FROM alerts WHERE seen = 0");
+    const me = await currentUser();
+    if (!me) return 0;
+    const { rows } = await db().execute({ sql: "SELECT COUNT(*) AS n FROM alerts WHERE seen = 0 AND user_id = ?", args: [me.id] });
     return Number(rows[0].n);
   } catch {
     return 0;
@@ -131,5 +138,5 @@ export async function unseenAlerts() {
 }
 
 export async function markAlertsSeen() {
-  await db().execute("UPDATE alerts SET seen = 1 WHERE seen = 0");
+  await db().execute({ sql: "UPDATE alerts SET seen = 1 WHERE seen = 0 AND user_id = ?", args: [await uid()] });
 }

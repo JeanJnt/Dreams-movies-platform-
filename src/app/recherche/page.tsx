@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { uid } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { poster, tmdb } from "@/lib/tmdb";
 
@@ -19,7 +20,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     // Les films déjà dans Dreams ouvrent directement leur fiche.
     if (results.length) {
       const { rows } = await db().execute({
-        sql: `SELECT f.id, f.tmdb_id, (w.film_id IS NOT NULL) AS seen FROM films f LEFT JOIN watched w ON w.film_id = f.id
+        sql: `SELECT f.id, f.tmdb_id, (w.film_id IS NOT NULL) AS seen FROM films f LEFT JOIN watched w ON w.film_id = f.id AND w.user_id = ${await uid()}
               WHERE f.tmdb_id IN (${results.map(() => "?").join(",")})`,
         args: results.map((r) => r.id),
       });

@@ -1,4 +1,5 @@
-import { db, ensureSchema } from "./db";
+import { uid } from "./auth";
+import { db, ensureSchema, posterSql } from "./db";
 import { tmdb } from "./tmdb";
 import type { ProviderLite } from "./tmdb-film";
 
@@ -22,15 +23,15 @@ const schema = () => (ready ??= ensureSchema());
 
 export async function getMyPlatforms(): Promise<string[]> {
   await schema();
-  const { rows } = await db().execute("SELECT value FROM settings WHERE key = 'platforms'");
+  const { rows } = await db().execute({ sql: "SELECT value FROM settings WHERE user_id = ? AND key = 'platforms'", args: [await uid()] });
   return rows[0] ? JSON.parse(String(rows[0].value)) : DEFAULT_PLATFORMS;
 }
 
 export async function setMyPlatforms(keys: string[]) {
   await schema();
   await db().execute({
-    sql: "INSERT INTO settings (key, value) VALUES ('platforms', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-    args: [JSON.stringify(keys)],
+    sql: "INSERT INTO settings (user_id, key, value) VALUES (?, 'platforms', ?) ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value",
+    args: [await uid(), JSON.stringify(keys)],
   });
 }
 
@@ -44,9 +45,9 @@ const onMyPlatforms = (flatrate: ProviderLite[], mine: string[]) =>
 
 type Taste = { genres: Map<string, number>; directors: Map<string, number> };
 
-async function tasteProfile(): Promise<Taste> {
+async function tasteProfile(u: number): Promise<Taste> {
   const { rows } = await db().execute(
-    `SELECT f.genres, f.directors, r.rating FROM ratings r JOIN films f ON f.id = r.film_id WHERE f.genres IS NOT NULL`,
+    `SELECT f.genres, f.directors, r.rating FROM ratings r JOIN films f ON f.id = r.film_id WHERE r.user_id = ${u} AND f.genres IS NOT NULL`,
   );
   const avg = rows.reduce((s, r) => s + Number(r.rating), 0) / Math.max(rows.length, 1);
   const acc = (map: Map<string, number[]>, key: string, v: number) => map.set(key, [...(map.get(key) ?? []), v]);
@@ -109,16 +110,18 @@ const parse = <T>(v: unknown, fallback: T): T => (typeof v === "string" ? JSON.p
 
 export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?: string; empty?: "reco" }> {
   await schema();
-  const [mine, taste] = await Promise.all([getMyPlatforms(), tasteProfile()]);
-  const wl = await db().execute("SELECT f.tmdb_id FROM watchlist w JOIN films f ON f.id = w.film_id WHERE f.tmdb_id IS NOT NULL");
+  const u = await uid();
+  const [mine, taste] = await Promise.all([getMyPlatforms(), tasteProfile(u)]);
+  const wl = await db().execute(`SELECT f.tmdb_id FROM watchlist w JOIN films f ON f.id = w.film_id WHERE w.user_id = ${u} AND f.tmdb_id IS NOT NULL`);
   const watchlistIds = new Set(wl.rows.map((r) => Number(r.tmdb_id)));
 
   if (f.mode === "watchlist") {
     const { rows } = await db().execute(
-      `SELECT f.id, f.tmdb_id, COALESCE(f.title_fr, f.name) AS title, f.year, COALESCE(f.custom_poster, f.poster_path) AS poster_path, f.runtime, f.genres, f.directors,
+      `SELECT f.id, f.tmdb_id, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster_path, f.runtime, f.genres, f.directors,
          p.flatrate, rc.score
        FROM watchlist w JOIN films f ON f.id = w.film_id
-       LEFT JOIN providers p ON p.tmdb_id = f.tmdb_id LEFT JOIN reco rc ON rc.tmdb_id = f.tmdb_id`,
+       LEFT JOIN providers p ON p.tmdb_id = f.tmdb_id LEFT JOIN reco rc ON rc.tmdb_id = f.tmdb_id AND rc.user_id = ${u}
+       WHERE w.user_id = ${u}`,
     );
     const all = rows.map((r) => {
       const genres = parse<string[]>(r.genres, []), directors = parse<string[]>(r.directors, []);
@@ -138,7 +141,7 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
     const film = await db().execute({ sql: "SELECT tmdb_id, COALESCE(title_fr, name) AS title FROM films WHERE id = ?", args: [Number(f.from)] });
     const tmdbId = film.rows[0]?.tmdb_id;
     if (!tmdbId) return { picks: [] };
-    const seen = await seenTmdbIds();
+    const seen = await seenTmdbIds(u);
     const recos = await tmdb<{ results: { id: number }[] }>(`/movie/${tmdbId}/recommendations`, {}, 3, { next: { revalidate: 86400 } });
     const details = await Promise.all(
       recos.results.filter((r) => !seen.has(r.id)).slice(0, 20).map((r) => movieLite(r.id)),
@@ -152,7 +155,7 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
   }
 
   const { rows } = await db().execute(
-    `SELECT rc.*, p.flatrate FROM reco rc LEFT JOIN providers p ON p.tmdb_id = rc.tmdb_id ORDER BY rc.score DESC`,
+    `SELECT rc.*, p.flatrate FROM reco rc LEFT JOIN providers p ON p.tmdb_id = rc.tmdb_id WHERE rc.user_id = ${u} ORDER BY rc.score DESC`,
   );
   if (!rows.length) return { picks: [], empty: "reco" };
 
@@ -182,8 +185,8 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
   return { picks: applyFilters(all, f, mine) };
 }
 
-async function seenTmdbIds() {
-  const { rows } = await db().execute("SELECT f.tmdb_id FROM watched w JOIN films f ON f.id = w.film_id WHERE f.tmdb_id IS NOT NULL");
+async function seenTmdbIds(u: number) {
+  const { rows } = await db().execute(`SELECT f.tmdb_id FROM watched w JOIN films f ON f.id = w.film_id WHERE w.user_id = ${u} AND f.tmdb_id IS NOT NULL`);
   return new Set(rows.map((r) => Number(r.tmdb_id)));
 }
 

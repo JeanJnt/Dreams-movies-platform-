@@ -1,4 +1,5 @@
-import { db, ensureSchema } from "./db";
+import { uid } from "./auth";
+import { db, ensureSchema, posterSql } from "./db";
 
 export type CinemaEvent = {
   id: number;
@@ -27,41 +28,44 @@ const toEvent = (r: Record<string, unknown>): CinemaEvent => ({
   runtime: r.runtime == null ? null : Number(r.runtime),
 });
 
-const SELECT = `SELECT e.*, COALESCE(f.custom_poster, f.poster_path) AS poster, f.runtime FROM events e LEFT JOIN films f ON f.id = e.film_id`;
+// Seulement mes séances.
+const select = (u: number) => `SELECT e.*, ${posterSql(u)} AS poster, f.runtime FROM events e LEFT JOIN films f ON f.id = e.film_id WHERE e.user_id = ${u}`;
 
 export async function eventsBetween(from: string, to: string) {
   await schema();
-  const { rows } = await db().execute({ sql: `${SELECT} WHERE e.starts_at >= ? AND e.starts_at < ? ORDER BY e.starts_at`, args: [from, to] });
+  const { rows } = await db().execute({ sql: `${select(await uid())} AND e.starts_at >= ? AND e.starts_at < ? ORDER BY e.starts_at`, args: [from, to] });
   return rows.map(toEvent);
 }
 
 export async function upcomingEvents(limit = 20) {
   await schema();
   const now = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Paris" }).slice(0, 16).replace(" ", "T");
-  const { rows } = await db().execute({ sql: `${SELECT} WHERE e.starts_at >= ? ORDER BY e.starts_at LIMIT ?`, args: [now, limit] });
+  const { rows } = await db().execute({ sql: `${select(await uid())} AND e.starts_at >= ? ORDER BY e.starts_at LIMIT ?`, args: [now, limit] });
   return rows.map(toEvent);
 }
 
-export async function allEvents() {
+// userId fourni seulement pour l'abonnement .ics (lien secret, sans session).
+export async function allEvents(userId?: number) {
   await schema();
-  const { rows } = await db().execute(`${SELECT} ORDER BY e.starts_at`);
+  const { rows } = await db().execute(`${select(userId ?? (await uid()))} ORDER BY e.starts_at`);
   return rows.map(toEvent);
 }
 
 export async function saveEvent(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null }) {
   await schema();
+  const u = await uid();
   const args = [e.filmId, e.title.trim(), e.startsAt, e.place?.trim() || null, e.withWhom?.trim() || null, e.note?.trim() || null];
   if (e.id) {
-    await db().execute({ sql: "UPDATE events SET film_id = ?, title = ?, starts_at = ?, place = ?, with_whom = ?, note = ? WHERE id = ?", args: [...args, e.id] });
+    await db().execute({ sql: "UPDATE events SET film_id = ?, title = ?, starts_at = ?, place = ?, with_whom = ?, note = ? WHERE id = ? AND user_id = ?", args: [...args, e.id, u] });
     return e.id;
   }
-  const res = await db().execute({ sql: "INSERT INTO events (film_id, title, starts_at, place, with_whom, note) VALUES (?, ?, ?, ?, ?, ?)", args });
+  const res = await db().execute({ sql: "INSERT INTO events (film_id, title, starts_at, place, with_whom, note, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)", args: [...args, u] });
   return Number(res.lastInsertRowid);
 }
 
 export async function deleteEvent(id: number) {
   await schema();
-  await db().execute({ sql: "DELETE FROM events WHERE id = ?", args: [id] });
+  await db().execute({ sql: "DELETE FROM events WHERE id = ? AND user_id = ?", args: [id, await uid()] });
 }
 
 // --- Export iCalendar (.ics) : pour ajouter les séances au calendrier du téléphone ---

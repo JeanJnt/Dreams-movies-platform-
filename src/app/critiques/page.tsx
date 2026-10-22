@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LibraryTabs } from "@/components/LibraryTabs";
 import { Stars } from "@/components/Stars";
 import { allCritiques, readingTime } from "@/lib/critiques";
+import { sharedCritiques } from "@/lib/social";
 import { formatLongDate } from "@/lib/format";
 import { backdrop, poster } from "@/lib/tmdb";
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "Mes critiques" };
 export const dynamic = "force-dynamic";
 
 export default async function CritiquesPage() {
-  const critiques = await allCritiques();
+  const [critiques, others] = await Promise.all([allCritiques(), sharedCritiques({ excludeMine: true, limit: 30 })]);
   const [featured, ...rest] = critiques.filter((c) => c.status === "published");
   const drafts = critiques.filter((c) => c.status === "draft");
 
@@ -20,7 +21,7 @@ export default async function CritiquesPage() {
       <LibraryTabs />
       <div>
         <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Mes critiques</h1>
-        <p className="mt-2 text-muted">Pour écrire, ouvre la fiche d&apos;un film et clique sur « Écrire ma critique ».</p>
+        <p className="mt-2 text-muted">Les critiques Dreams sont écrites ici, sur la plateforme (tes reviews Letterboxd importées restent sur chaque fiche film). Pour écrire, ouvre un film et clique sur « Écrire ma critique ».</p>
       </div>
 
       {!critiques.length && (
@@ -53,6 +54,28 @@ export default async function CritiquesPage() {
           <h2 className="mb-4 font-display text-3xl">Brouillons</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {drafts.map((c) => <CritiqueCard key={c.id} c={c} href={`/film/${c.filmId}/critique`} />)}
+          </div>
+        </section>
+      )}
+
+      {others.length > 0 && (
+        <section>
+          <h2 className="mb-4 font-display text-3xl">Les critiques des membres</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {others.map((o) => (
+              <Link key={o.id} href={`/critiques/${o.id}`} className="group flex gap-4 rounded-xl border border-border bg-surface p-4 transition hover:border-accent/50">
+                {o.poster && <img src={poster(o.poster, "w185")!} alt="" className="aspect-[2/3] w-20 shrink-0 rounded-md object-cover" />}
+                <div className="min-w-0">
+                  <p className="text-xs text-muted"><span className="text-foreground">{o.author}</span> · {o.filmTitle} · {o.year}</p>
+                  <h3 className="mt-1 font-display text-2xl leading-tight group-hover:text-accent">{o.title || o.filmTitle}</h3>
+                  {o.lede && <p className="mt-1 line-clamp-2 text-sm text-muted">{o.lede}</p>}
+                  <div className="mt-2 flex items-center gap-2 text-xs text-muted">
+                    {o.rating != null && <Stars rating={o.rating} />}
+                    <span>{formatLongDate(o.updatedAt.slice(0, 10))} · {readingTime(o.body)} min</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}

@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { addMediaAction, deleteMediaAction } from "@/app/actions";
+import { addMediaAction, deleteMediaAction, setMediaVisibilityAction } from "@/app/actions";
 import type { Media } from "@/lib/media";
 
 export function MediaGallery({ filmId, media }: { filmId: number; media: Media[] }) {
@@ -25,7 +25,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
   return (
     <section>
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="font-display text-3xl">Ma galerie</h2>
+        <h2 className="font-display text-3xl">Galerie</h2>
         <button onClick={() => setAdding(!adding)} className="text-sm text-muted hover:text-accent">
           {adding ? "Annuler" : "+ Ajouter"}
         </button>
@@ -38,6 +38,10 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
             <input name="files" type="file" multiple accept="image/*,video/mp4,video/webm,video/quicktime" className="mt-2 block w-full text-xs file:mr-3 file:rounded file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-foreground" />
           </label>
           <input name="youtube" placeholder="…ou colle un lien YouTube" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
+          <div className="flex gap-4 text-sm">
+            <label className="flex items-center gap-2"><input type="radio" name="visibility" value="membres" defaultChecked /> 👥 Visible des membres</label>
+            <label className="flex items-center gap-2"><input type="radio" name="visibility" value="prive" /> 🔒 Rien que pour moi</label>
+          </div>
           <input name="caption" placeholder="Légende (facultatif)" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
           {error && <p className="text-sm text-heart">{error}</p>}
           <button disabled={pending} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent disabled:opacity-50">
@@ -61,14 +65,28 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
                 {m.kind === "video" && <video src={m.url} controls preload="metadata" className="size-full bg-black object-contain" />}
                 {m.kind === "youtube" && <iframe src={m.url} title={m.caption ?? "Vidéo"} allowFullScreen loading="lazy" className="size-full" />}
               </div>
-              {m.caption && <figcaption className="mt-1 text-xs text-muted">{m.caption}</figcaption>}
+              <figcaption className="mt-1 flex items-center gap-2 text-xs text-muted">
+                <span className="truncate">{m.caption}</span>
+                <span className="ml-auto shrink-0">{m.mine ? (m.visibility === "prive" ? "🔒 moi" : "👥 moi") : m.author}</span>
+              </figcaption>
+              {m.mine && (
+              <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
+              <button
+                onClick={() => startTransition(() => setMediaVisibilityAction(m.id, filmId, m.visibility === "prive" ? "membres" : "prive"))}
+                className="rounded-full bg-black/70 px-2 py-0.5 text-xs text-white"
+                title={m.visibility === "prive" ? "Partager avec les membres" : "Rendre privé"}
+              >
+                {m.visibility === "prive" ? "🔒" : "👥"}
+              </button>
               <button
                 onClick={() => confirm("Retirer ce média de la galerie ?") && startTransition(() => deleteMediaAction(m.id))}
-                className="absolute top-1.5 right-1.5 rounded-full bg-black/70 px-2 py-0.5 text-xs text-white opacity-0 transition group-hover:opacity-100 focus:opacity-100"
+                className="rounded-full bg-black/70 px-2 py-0.5 text-xs text-white"
                 aria-label="Supprimer"
               >
                 ✕
               </button>
+              </div>
+              )}
             </figure>
           ))}
         </div>
