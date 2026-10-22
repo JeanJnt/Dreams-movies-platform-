@@ -1,5 +1,6 @@
 import { currentUser, uid } from "./auth";
 import { db, ensureSchema, posterSql } from "./db";
+import { pciCheck } from "./pariscine";
 import { tmdb } from "./tmdb";
 
 // Alertes « au cinéma » : un film de ma watchlist ou de mes coups de cœur est (ou va être) en salle en France.
@@ -24,14 +25,16 @@ async function upsert(u: number, m: Mine, kind: string, releaseDate: string | nu
     sql: `INSERT INTO alerts (user_id, tmdb_id, film_id, kind, release_date, note, source) VALUES (?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(user_id, tmdb_id) DO UPDATE SET kind = excluded.kind, release_date = excluded.release_date,
             note = COALESCE(excluded.note, alerts.note),
-            seen = CASE WHEN alerts.kind = excluded.kind THEN alerts.seen ELSE 0 END`,
+            seen = CASE WHEN alerts.kind = excluded.kind THEN alerts.seen ELSE 0 END
+          WHERE alerts.kind != 'paris'`,
     args: [u, m.tmdbId, m.filmId, kind, releaseDate, note, m.source],
   });
 }
 
 // Vérification rapide (une dizaine d'appels) : les listes « à l'affiche » et « prochainement » de TMDB pour la France.
 // userId : fourni par la tâche automatique quotidienne ; sinon, le membre connecté.
-export async function quickCheck(userId?: number) {
+// pciMax : nombre d'appels à Paris Ciné Info autorisés (plus élevé pour la tâche du matin, qui a 5 minutes).
+export async function quickCheck(userId?: number, pciMax = 25) {
   await ensureSchema();
   const u = userId ?? (await uid());
   const mine = new Map((await myFilms(u)).map((m) => [m.tmdbId, m]));
@@ -50,6 +53,9 @@ export async function quickCheck(userId?: number) {
       if (page >= res.total_pages) break;
     }
   }
+  // À Paris : le programme de toutes les salles (classiques et rétrospectives comprises) via Paris Ciné Info.
+  const { rows } = await db().execute({ sql: "SELECT city FROM users WHERE id = ?", args: [u] });
+  if (/^paris$/i.test(String(rows[0]?.city ?? "Paris").trim())) found += await pciCheck(u, pciMax).catch(() => 0);
   await cleanup(u);
   return found;
 }
@@ -134,7 +140,8 @@ async function cleanup(u: number) {
 export type Alert = {
   tmdbId: number;
   filmId: number;
-  kind: "en_salle" | "bientot" | "ressortie";
+  kind: "paris" | "en_salle" | "bientot" | "ressortie";
+  showtimes: { movId: number; times: { start: string; cinema: string; version: string; book: string | null }[] } | null;
   releaseDate: string | null;
   note: string | null;
   source: "watchlist" | "coup_de_coeur";
@@ -153,12 +160,13 @@ export async function listAlerts(): Promise<Alert[]> {
     SELECT a.*, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster,
       f.backdrop_path, json_extract(f.directors, '$[0]') AS director
     FROM alerts a JOIN films f ON f.id = a.film_id WHERE a.user_id = ${u}
-    ORDER BY a.seen, CASE a.kind WHEN 'en_salle' THEN 0 WHEN 'ressortie' THEN 1 ELSE 2 END, a.release_date`);
+    ORDER BY a.seen, CASE a.kind WHEN 'paris' THEN 0 WHEN 'en_salle' THEN 1 WHEN 'ressortie' THEN 2 ELSE 3 END, a.release_date`);
   return rows.map((r) => ({
     tmdbId: Number(r.tmdb_id), filmId: Number(r.film_id), kind: r.kind as Alert["kind"], releaseDate: (r.release_date as string) ?? null,
     note: (r.note as string) ?? null, source: r.source as Alert["source"], seen: Boolean(r.seen), title: String(r.title),
     year: r.year == null ? null : Number(r.year), poster: (r.poster as string) ?? null, backdrop: (r.backdrop_path as string) ?? null,
     director: (r.director as string) ?? null,
+    showtimes: typeof r.showtimes === "string" ? JSON.parse(r.showtimes) : null,
   }));
 }
 

@@ -119,7 +119,7 @@
   /* Un vrai satin imprimé de fleurs, comme les qipao du film, sur tout l'écran */
   --backdrop: url("/themes/mood.jpg");
   --backdrop-pos: center;
-  --backdrop-overlay: linear-gradient(to bottom, #22080b8c 0, #22080bb3 60%, #22080bcc 100%);
+  --backdrop-overlay: linear-gradient(to bottom, #22080bbf 0, #22080bc7 60%, #22080bd1 100%);
   color-scheme: dark;
 }
 

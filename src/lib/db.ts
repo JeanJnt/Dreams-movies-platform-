@@ -43,6 +43,8 @@ const SHARED = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_films_tmdb ON films(tmdb_id)`,
   `CREATE INDEX IF NOT EXISTS idx_films_status ON films(tmdb_status)`,
+  // Horaires Paris Ciné Info déjà récupérés (partagés entre les membres, gardés 12 h) : on ménage leur site.
+  `CREATE TABLE IF NOT EXISTS pci_showtimes (mov_id INTEGER PRIMARY KEY, data TEXT NOT NULL, fetched_at TEXT NOT NULL)`,
   // Plateformes d'abonnement en France pour chaque film TMDB : JSON [{ name, logo }].
   `CREATE TABLE IF NOT EXISTS providers (tmdb_id INTEGER PRIMARY KEY, flatrate TEXT NOT NULL, fetched_at TEXT NOT NULL DEFAULT (datetime('now')))`,
 
@@ -226,6 +228,8 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
   // Titres du film dans plusieurs langues (JSON { fr, en, ja… }) et texte de recherche sans accents
   ["films", "titles", "TEXT"],
   ["films", "search_text", "TEXT"],
+  // Horaires Paris Ciné Info d'une alerte (JSON { movId, times: [{ start, cinema, version, book }] })
+  ["alerts", "showtimes", "TEXT"],
 ];
 
 // Index sur les colonnes ajoutées ci-dessus (créés une fois les colonnes en place).
