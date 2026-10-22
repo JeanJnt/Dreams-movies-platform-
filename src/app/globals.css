@@ -17,6 +17,12 @@
   --font-display: var(--display);
 }
 
+/* Rien ne doit dépasser en largeur : sinon, sur téléphone, la page se dézoome et la barre du bas change de hauteur */
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   /* 3 couches : la texture du thème (pinceau, rideaux…), une lueur, puis la couleur de fond */
   background: var(--texture), var(--glow), var(--background);
@@ -174,6 +180,29 @@ select.field {
 
 .no-scrollbar {
   scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+/* Rangées qu'on fait défiler du doigt sur téléphone (grilles sur ordinateur) */
+@media (max-width: 639px) {
+  .swipe-row {
+    scroll-snap-type: x mandatory;
+  }
+  .swipe-row > * {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+  }
+}
+/* Sur écran tactile : un léger retour quand on touche un lien ou un bouton, comme une appli native */
+@media (hover: none) {
+  a,
+  button {
+    transition: opacity 0.12s, transform 0.12s;
+  }
+  a:active,
+  button:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;

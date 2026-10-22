@@ -75,7 +75,7 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
               <DvdCase film={{ ...film, format: saved.format, caseType: saved.caseType, cover: saved.cover ?? film.poster }} compact />
             </div>
             <div className="min-w-0">
-              <p className="font-display text-lg">📀 Dans ma collection</p>
+              <p className="font-display text-lg">Dans ma collection</p>
               <p className="mt-1 text-sm text-muted">
                 {saved.format} · {caseTypes.find((c) => c.key === saved.caseType)?.label}
               </p>
@@ -127,7 +127,7 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
         </button>
         <form action={upload}>
           <label className={`${chip(Boolean(cover?.startsWith("/media/")))} inline-block cursor-pointer`}>
-            📷 Photo de ma jaquette
+            Photo de ma jaquette
             <input name="cover" type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.currentTarget.form?.requestSubmit()} />
           </label>
         </form>
@@ -147,7 +147,7 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
       {error && <p className="text-sm text-heart">{error}</p>}
 
       <div className="flex items-center gap-3 pt-1">
-        <button onClick={save} disabled={pending} className="font-display rounded-full bg-accent px-5 py-2 text-sm text-on-accent">
+        <button onClick={save} disabled={pending} className="rounded-full bg-accent px-5 py-2 text-sm text-on-accent">
           {saved ? "Enregistrer" : "Ajouter à ma collection"}
         </button>
         {saved && <button onClick={remove} className="text-xs text-muted hover:text-heart">Retirer de la collection</button>}

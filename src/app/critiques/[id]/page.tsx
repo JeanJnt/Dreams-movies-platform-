@@ -52,7 +52,7 @@ export default async function CritiquePage({ params }: Props) {
           <span>·</span>
           <span>{readingTime(c.body)} min de lecture</span>
           {c.status === "draft" && <span className="rounded bg-surface-2 px-1.5 text-xs">brouillon</span>}
-          {c.mine && c.visibility === "prive" && <span className="text-xs">🔒 privée</span>}
+          {c.mine && c.visibility === "prive" && <span className="text-xs">privée</span>}
           {c.mine && <Link href={`/film/${c.filmId}/critique`} className="ml-auto hover:text-accent">Modifier</Link>}
         </div>
 

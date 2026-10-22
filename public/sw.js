@@ -1,5 +1,5 @@
 // Service worker de Dreams : l'appli se lance même sans réseau (dernières pages vues + page hors ligne).
-const VERSION = "dreams-v1";
+const VERSION = "dreams-v2";
 const OFFLINE = "/hors-ligne";
 const PRECACHE = [OFFLINE, "/icon-192.png", "/icon-512.png", "/manifest.webmanifest"];
 
@@ -48,4 +48,29 @@ self.addEventListener("fetch", (event) => {
       ),
     );
   }
+});
+
+// Notifications (Web Push) : affichage, puis ouverture de la bonne page quand on touche la notification.
+self.addEventListener("push", (event) => {
+  let data = { title: "Dreams", body: "", url: "/" };
+  try {
+    data = { ...data, ...event.data.json() };
+  } catch {
+    // message vide ou illisible : notification par défaut
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, { body: data.body, icon: "/icon-192.png", badge: "/icon-192.png", tag: data.tag, data: { url: data.url } }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      const open = list.find((c) => c.url.startsWith(self.location.origin));
+      if (open) return open.navigate(url).then((c) => c && c.focus());
+      return self.clients.openWindow(url);
+    }),
+  );
 });

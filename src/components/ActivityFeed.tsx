@@ -65,7 +65,7 @@ export function ActivityFeed({ items, compact = false }: { items: Activity[]; co
               <Link href={`/critiques/${a.refId}`} className="mt-2 block rounded-xl bg-surface-2 p-3 hover:bg-accent-soft">
                 <span className="font-display block text-lg leading-tight">{a.text}</span>
                 {a.extra && a.extra !== a.text && <span className="mt-1 line-clamp-2 block text-xs text-muted">{a.extra}</span>}
-                <span className="mt-1 block text-xs text-accent">Lire la critique →</span>
+                <span className="mt-1 block text-xs text-accent">Lire la critique</span>
               </Link>
             )}
             {!compact && a.kind === "review" && a.text && <p className="mt-2 line-clamp-3 text-sm text-foreground/80 italic">« {a.text} »</p>}

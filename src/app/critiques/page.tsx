@@ -27,7 +27,7 @@ export default async function CritiquesPage() {
       {!critiques.length && (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-muted">
           Aucune critique pour l&apos;instant.{" "}
-          <Link href="/films" className="text-accent hover:underline">Choisis un film →</Link>
+          <Link href="/films" className="text-accent hover:underline">Choisis un film</Link>
         </div>
       )}
 

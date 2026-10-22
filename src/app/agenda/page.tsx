@@ -6,6 +6,7 @@ import { EventForm } from "@/components/EventForm";
 import { eventsBetween, upcomingEvents, type CinemaEvent } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
 import { db, posterSql } from "@/lib/db";
+import { members } from "@/lib/social";
 import { poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Agenda" };
@@ -26,11 +27,13 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const prev = new Date(y, m - 2, 1);
   const key = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 
-  const [monthEvents, upcoming, prefill] = await Promise.all([
+  const [monthEvents, upcoming, prefill, everyone] = await Promise.all([
     eventsBetween(`${key(first)}-01`, `${key(next)}-01`),
     upcomingEvents(12),
     film ? db().execute({ sql: `SELECT f.id, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(user.id)} AS poster FROM films f WHERE f.id = ?`, args: [Number(film)] }) : null,
+    members(),
   ]);
+  const others = everyone.filter((m) => m.id !== user.id).map((m) => ({ id: m.id, name: m.name }));
   const initialFilm = prefill?.rows[0]
     ? { id: Number(prefill.rows[0].id), title: String(prefill.rows[0].title), year: prefill.rows[0].year == null ? null : Number(prefill.rows[0].year), poster: (prefill.rows[0].poster as string) ?? null }
     : null;
@@ -51,11 +54,11 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Agenda</h1>
         <a href={calendarUrl} className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
-          📅 Exporter vers mon calendrier
+          Exporter vers mon calendrier
         </a>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section className="rounded-3xl border border-border bg-surface p-4 md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <Link href={`/agenda?mois=${key(prev)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois précédent">←</Link>
@@ -88,7 +91,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
         </section>
 
         <aside className="space-y-4">
-          <EventForm key={initialFilm?.id ?? "new"} initialFilm={initialFilm} defaultDate={today} />
+          <EventForm key={initialFilm?.id ?? "new"} initialFilm={initialFilm} defaultDate={today} members={others} />
           <h2 className="pt-2 text-2xl">Prochaines séances</h2>
           {upcoming.length === 0 && <p className="text-sm text-muted">Rien de prévu pour l&apos;instant.</p>}
           {upcoming.map((e) => (
@@ -99,7 +102,9 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                   {new Date(`${e.startsAt}:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} · {e.startsAt.slice(11).replace(":", "h")}
                 </p>
                 <Link href={e.filmId ? `/film/${e.filmId}` : "#"} className="font-display block truncate text-lg hover:text-accent">{e.title}</Link>
-                <p className="truncate text-xs text-muted">{[e.place, e.withWhom && `avec ${e.withWhom}`].filter(Boolean).join(" · ")}</p>
+                <p className="truncate text-xs text-muted">
+                  {[e.place, guestsLine(e), e.withWhom && `avec ${e.withWhom}`].filter(Boolean).join(" · ")}
+                </p>
                 {e.note && <p className="truncate text-xs text-muted italic">{e.note}</p>}
               </div>
               <DeleteEventButton id={e.id} />
@@ -109,4 +114,10 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       </div>
     </div>
   );
+}
+
+// « avec @lea, @tom » pour l'organisateur ; « invité par @lea » pour un invité
+function guestsLine(e: CinemaEvent) {
+  if (!e.mine) return `invité par @${e.host}`;
+  return e.guests.length ? `avec ${e.guests.map((g) => `@${g.name}`).join(", ")}` : null;
 }

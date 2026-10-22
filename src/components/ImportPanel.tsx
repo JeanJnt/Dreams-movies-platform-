@@ -69,8 +69,8 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
 
       {(phase === "idle" || phase === "error") && (
         <form action={run} className="mt-4 flex flex-wrap items-center gap-3">
-          <input name="zip" type="file" accept=".zip,application/zip" required className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:py-2 file:text-foreground" />
-          <button className="font-display rounded-full bg-accent px-5 py-2 text-on-accent">Importer</button>
+          <input name="zip" type="file" accept=".zip,application/zip" required className="w-full min-w-0 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:py-2 file:text-foreground" />
+          <button className="rounded-full bg-accent px-5 py-2 text-on-accent">Importer</button>
         </form>
       )}
       {error && <p className="mt-3 text-sm text-heart">{error}</p>}
@@ -98,8 +98,8 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
         </div>
       )}
       {phase === "done" && (
-        <button onClick={() => router.push("/")} className="font-display mt-4 rounded-full bg-accent px-5 py-2 text-on-accent">
-          Découvrir mon Dreams →
+        <button onClick={() => router.push("/")} className="mt-4 rounded-full bg-accent px-5 py-2 text-on-accent">
+          Découvrir mon Dreams
         </button>
       )}
     </section>

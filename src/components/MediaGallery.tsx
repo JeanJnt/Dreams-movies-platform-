@@ -58,13 +58,13 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
       {adding && (
         <form ref={form} action={submit} className="mb-6 space-y-3 rounded-xl border border-border bg-surface p-4">
           <label className="block cursor-pointer rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted hover:border-accent">
-            📁 Choisir des images ou des vidéos
+            Choisir des images ou des vidéos
             <input name="files" type="file" multiple accept="image/*,video/mp4,video/webm,video/quicktime" className="mt-2 block w-full text-xs file:mr-3 file:rounded file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-foreground" />
           </label>
           <input name="youtube" placeholder="…ou colle un lien YouTube" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
           <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-2"><input type="radio" name="visibility" value="membres" defaultChecked /> 👥 Visible des membres</label>
-            <label className="flex items-center gap-2"><input type="radio" name="visibility" value="prive" /> 🔒 Rien que pour moi</label>
+            <label className="flex items-center gap-2"><input type="radio" name="visibility" value="membres" defaultChecked /> Visible des membres</label>
+            <label className="flex items-center gap-2"><input type="radio" name="visibility" value="prive" /> Rien que pour moi</label>
           </div>
           <input name="caption" placeholder="Légende (facultatif)" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
           {error && <p className="text-sm text-heart">{error}</p>}
@@ -91,7 +91,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
               </div>
               <figcaption className="mt-1 flex items-center gap-2 text-xs text-muted">
                 <span className="truncate">{m.caption}</span>
-                <span className="ml-auto shrink-0">{m.mine ? (m.visibility === "prive" ? "🔒 moi" : "👥 moi") : m.author}</span>
+                <span className="ml-auto shrink-0">{m.mine ? (m.visibility === "prive" ? "moi · privé" : "moi") : m.author}</span>
               </figcaption>
               {m.mine && (
               <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
@@ -100,7 +100,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
                 className="rounded-full bg-black/70 px-2 py-0.5 text-xs text-white"
                 title={m.visibility === "prive" ? "Partager avec les membres" : "Rendre privé"}
               >
-                {m.visibility === "prive" ? "🔒" : "👥"}
+                {m.visibility === "prive" ? "Privé" : "Membres"}
               </button>
               <button
                 onClick={() => confirm("Retirer ce média de la galerie ?") && startTransition(() => deleteMediaAction(m.id))}

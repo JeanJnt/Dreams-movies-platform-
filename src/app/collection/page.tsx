@@ -3,8 +3,7 @@ import Link from "next/link";
 import { DiscCarousel, type Disc } from "@/components/DiscCarousel";
 import { DvdCase, Shelf, type CaseFilm } from "@/components/DvdCase";
 import { LibraryTabs } from "@/components/LibraryTabs";
-import { FORMATS, ownedCounts, ownedFilms, type OwnedFilm } from "@/lib/collection";
-import { favoriteFilms, type Film } from "@/lib/queries";
+import { FORMATS, ownedCounts, ownedFilms } from "@/lib/collection";
 import { backdrop, poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Ma collection" };
@@ -22,9 +21,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const unseen = owned.filter((f) => !f.seen).length;
 
-  // Collection vide : une vitrine de tes coups de cœur en DVD, pour donner envie de la remplir.
-  const source: (Film & Partial<OwnedFilm>)[] = total ? owned : await favoriteFilms(18);
-  const films: CaseFilm[] = source.map((f) => ({
+  const films: CaseFilm[] = owned.map((f) => ({
     id: f.id,
     href: `/film/${f.id}`,
     title: f.title_fr ?? f.name,
@@ -34,7 +31,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     cover: f.cover || poster(f.poster_path, "w500"), // ma vraie jaquette si je l'ai ajoutée
     caseType: f.caseType,
     image: backdrop(f.backdrop_path),
-    format: f.format ?? (total ? undefined : "DVD"),
+    format: f.format,
     seen: f.seen,
   }));
   const discs: Disc[] = films.map((f) => ({ ...f, image: f.image ?? f.cover, badge: f.format }));
@@ -53,8 +50,9 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
           {total > 0 && <p className="mt-3 text-sm text-muted">{total} films{unseen ? ` · ${unseen} pas encore vus` : ""}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-        <Link href="/collection/scanner" className="font-display rounded-full bg-accent px-4 py-1.5 text-sm text-on-accent">📷 Scanner</Link>
-        <div className="flex rounded-full border border-border bg-surface p-0.5 text-xs">
+        <Link href="/collection/ajouter" className="rounded-full bg-accent px-4 py-1.5 text-sm text-on-accent">Ajouter des films</Link>
+        <Link href="/collection/scanner" className="rounded-full border border-border px-4 py-1.5 text-sm hover:border-accent">Scanner</Link>
+        <div className={`flex rounded-full border border-border bg-surface p-0.5 text-xs ${total ? "" : "hidden"}`}>
           {VIEWS.map((v) => (
             <Link key={v.key} href={link({ vue: v.key })} className={`rounded-full px-3.5 py-1.5 ${vue === v.key ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
               {v.label}
@@ -64,22 +62,25 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
         </div>
       </div>
 
-      {total > 0 ? (
+      {total === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center">
+          <h2 className="text-2xl">Ta collection est vide</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted">Range ici tes DVD, Blu-ray et éditions collector. Ajoute plusieurs films d&apos;un coup, ou scanne le code-barres d&apos;un boîtier.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href="/collection/ajouter" className="rounded-full bg-accent px-6 py-3 text-on-accent">Commencer ma collection</Link>
+            <Link href="/collection/scanner" className="rounded-full border border-border px-6 py-3 hover:border-accent">Scanner un boîtier</Link>
+          </div>
+        </div>
+      ) : (
         <div className="flex flex-wrap gap-1.5">
           <FormatChip href={link({ format: undefined })} active={!format} label={`Tout (${total})`} />
           {FORMATS.filter((f) => counts[f]).map((f) => (
             <FormatChip key={f} href={link({ format: f })} active={format === f} label={`${f} (${counts[f]})`} />
           ))}
         </div>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted">
-          Ta collection est vide : voici une vitrine de tes coups de cœur. Sur la fiche d&apos;un film, clique sur « Je possède ce film »
-          pour le ranger ici avec son format (DVD, Blu-ray, 4K…).{" "}
-          <Link href="/recherche" className="text-accent hover:underline">Rechercher un film →</Link>
-        </div>
       )}
 
-      {vue === "etagere" ? (
+      {total === 0 ? null : vue === "etagere" ? (
         <Shelf films={films} />
       ) : vue === "disques" ? (
         <DiscCarousel key={format ?? "all"} discs={discs} label="Ma collection en disques" />

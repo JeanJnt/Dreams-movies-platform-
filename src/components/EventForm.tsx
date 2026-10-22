@@ -9,7 +9,8 @@ type FilmHit = { id: number; title: string; year: number | null; poster: string 
 const posterUrl = (p: string | null) => (!p ? null : p.startsWith("/media/") || p.startsWith("http") ? p : `https://image.tmdb.org/t/p/w92${p}`);
 
 // Ajouter une séance : un film (de ma base), une date, un lieu, avec qui.
-export function EventForm({ initialFilm, defaultDate }: { initialFilm?: FilmHit | null; defaultDate: string }) {
+// members : les autres membres, qu'on peut inviter (la séance apparaît alors aussi dans leur agenda).
+export function EventForm({ initialFilm, defaultDate, members = [] }: { initialFilm?: FilmHit | null; defaultDate: string; members?: { id: number; name: string }[] }) {
   const [open, setOpen] = useState(Boolean(initialFilm));
   const [film, setFilm] = useState<FilmHit | null>(initialFilm ?? null);
   const [title, setTitle] = useState(initialFilm?.title ?? "");
@@ -19,6 +20,7 @@ export function EventForm({ initialFilm, defaultDate }: { initialFilm?: FilmHit 
   const [place, setPlace] = useState("");
   const [withWhom, setWithWhom] = useState("");
   const [note, setNote] = useState("");
+  const [guests, setGuests] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -32,13 +34,14 @@ export function EventForm({ initialFilm, defaultDate }: { initialFilm?: FilmHit 
   const submit = () =>
     startTransition(async () => {
       try {
-        await saveEventAction({ filmId: film?.id ?? null, title: film?.title ?? title, startsAt: `${date}T${time}`, place, withWhom, note });
+        await saveEventAction({ filmId: film?.id ?? null, title: film?.title ?? title, startsAt: `${date}T${time}`, place, withWhom, note, guestIds: guests });
         setOpen(false);
         setFilm(null);
         setTitle("");
         setPlace("");
         setWithWhom("");
         setNote("");
+        setGuests([]);
         setError(null);
       } catch (e) {
         setError((e as Error).message);
@@ -47,7 +50,7 @@ export function EventForm({ initialFilm, defaultDate }: { initialFilm?: FilmHit 
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="font-display w-full rounded-2xl border border-dashed border-border p-5 text-lg transition hover:border-accent hover:text-accent">
+      <button onClick={() => setOpen(true)} className="w-full rounded-2xl border border-dashed border-border p-5 text-lg transition hover:border-accent hover:text-accent">
         + Planifier une séance
       </button>
     );
@@ -90,10 +93,25 @@ export function EventForm({ initialFilm, defaultDate }: { initialFilm?: FilmHit 
       <datalist id="places">
         {["À la maison", "La Cinémathèque française", "Le Champo", "Le Grand Action", "Christine Cinéma Club", "Le Louxor", "MK2 Bibliothèque", "UGC Ciné Cité Les Halles", "Le Max Linder", "L'Archipel", "Le Reflet Médicis", "Studio des Ursulines"].map((p) => <option key={p} value={p} />)}
       </datalist>
-      <input value={withWhom} onChange={(e) => setWithWhom(e.target.value)} placeholder="Avec qui ?" className="field w-full" />
+      {members.length > 0 && (
+        <div>
+          <p className="mb-2 text-sm text-muted">Inviter des membres (la séance s&apos;ajoute à leur agenda)</p>
+          <div className="flex flex-wrap gap-2">
+            {members.map((m) => {
+              const on = guests.includes(m.id);
+              return (
+                <button key={m.id} type="button" onClick={() => setGuests(on ? guests.filter((g) => g !== m.id) : [...guests, m.id])} className={`rounded-full border px-3 py-1.5 text-sm ${on ? "border-accent bg-accent text-on-accent" : "border-border"}`}>
+                  @{m.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <input value={withWhom} onChange={(e) => setWithWhom(e.target.value)} placeholder="Avec qui d'autre ?" className="field w-full" />
       <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (version restaurée, rencontre avec le réalisateur…)" className="field w-full" />
       {error && <p className="text-sm text-heart">{error}</p>}
-      <button onClick={submit} disabled={pending || (!film && !title.trim())} className="font-display w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
+      <button onClick={submit} disabled={pending || (!film && !title.trim())} className="w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
         Ajouter à l&apos;agenda
       </button>
     </div>

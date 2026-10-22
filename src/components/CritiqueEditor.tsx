@@ -126,7 +126,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
               title={v === "membres" ? "Les autres membres de Dreams peuvent la lire" : "Toi seul peux la lire"}
               className={`rounded-full px-2.5 py-1 ${visibility === v ? "bg-foreground text-background" : "text-muted"}`}
             >
-              {v === "membres" ? "👥 Membres" : "🔒 Privée"}
+              {v === "membres" ? "Membres" : "Privée"}
             </button>
           ))}
         </div>

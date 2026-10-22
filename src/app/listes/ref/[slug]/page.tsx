@@ -29,7 +29,7 @@ export default async function RefListPage({ params, searchParams }: { params: Pr
           <a href={vus === "non" ? "?" : "?vus=non"} className="rounded-full border border-border px-3 py-1 text-xs hover:border-accent">
             {vus === "non" ? "Voir tous les films" : "Seulement ceux à voir"}
           </a>
-          {list.sourceUrl && <a href={list.sourceUrl} target="_blank" rel="noreferrer" className="text-xs hover:text-accent">Source ↗</a>}
+          {list.sourceUrl && <a href={list.sourceUrl} target="_blank" rel="noreferrer" className="text-xs hover:text-accent">Source</a>}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">

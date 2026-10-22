@@ -29,6 +29,7 @@ export type FilmDetail = Film & {
   tmdb_id: number | null;
   original_title: string | null;
   titles: string | null; // JSON des titres traduits
+  media_type: "movie" | "tv";
   overview: string | null;
   genres: string[];
   directors: string[];
@@ -128,7 +129,10 @@ export async function recentDiary(limit = 12, userId?: number): Promise<DiaryEnt
   return rows.map((r) => ({ ...toFilm(r), watched_date: String(r.watched_date), rewatch: Boolean(r.rewatch) }));
 }
 
+// Les films préférés : le top choisi dans Dreams s'il existe (dans son ordre), sinon les coups de cœur Letterboxd les mieux notés.
 export async function favoriteFilms(limit = 12, userId?: number) {
+  const top = await topFilms(userId);
+  if (top.length) return top.slice(0, limit);
   const u = await viewedUser(userId);
   const { rows } = await db().execute({
     sql: `SELECT ${filmColumns(u)} FROM likes l JOIN films f ON f.id = l.film_id LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u}
@@ -136,6 +140,13 @@ export async function favoriteFilms(limit = 12, userId?: number) {
           ORDER BY r.rating DESC NULLS LAST, l.date DESC LIMIT ?`,
     args: [limit],
   });
+  return rows.map(toFilm);
+}
+
+export async function topFilms(userId?: number) {
+  const u = await viewedUser(userId);
+  const { rows } = await db().execute(`SELECT ${filmColumns(u)} FROM top_films t JOIN films f ON f.id = t.film_id ${filmJoins(u)}
+    WHERE t.user_id = ${u} ORDER BY t.position LIMIT 10`);
   return rows.map(toFilm);
 }
 
@@ -178,6 +189,7 @@ export async function filmDetail(id: number): Promise<FilmDetail | null> {
     tmdb_id: r.tmdb_id == null ? null : Number(r.tmdb_id),
     original_title: (r.original_title as string) ?? null,
     titles: (r.titles as string) ?? null,
+    media_type: r.media_type === "tv" ? "tv" : "movie",
     overview: (r.overview as string) ?? null,
     runtime: r.runtime == null ? null : Number(r.runtime),
     genres: json(r.genres, []),

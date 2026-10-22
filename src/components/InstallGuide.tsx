@@ -5,11 +5,11 @@ import { useEffect, useState } from "react";
 type Platform = "iphone" | "android" | "mac" | "windows";
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 
-const PLATFORMS: { key: Platform; label: string; icon: string }[] = [
-  { key: "iphone", label: "iPhone / iPad", icon: "" },
-  { key: "android", label: "Android", icon: "🤖" },
-  { key: "windows", label: "Windows", icon: "⊞" },
-  { key: "mac", label: "Mac", icon: "⌘" },
+const PLATFORMS: { key: Platform; label: string }[] = [
+  { key: "iphone", label: "iPhone / iPad" },
+  { key: "android", label: "Android" },
+  { key: "windows", label: "Windows" },
+  { key: "mac", label: "Mac" },
 ];
 
 const STEPS: Record<Platform, { title: string; steps: string[]; note?: string }> = {
@@ -93,7 +93,7 @@ export function InstallGuide() {
             onClick={() => setPlatform(p.key)}
             className={`rounded-full border px-4 py-2 text-sm transition ${platform === p.key ? "border-accent bg-accent text-on-accent" : "border-border bg-surface text-muted hover:text-foreground"}`}
           >
-            {p.icon} {p.label}
+            {p.label}
           </button>
         ))}
       </div>

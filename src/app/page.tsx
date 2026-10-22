@@ -5,7 +5,7 @@ import { FilmCard } from "@/components/FilmCard";
 import { PickPoster } from "@/components/PickCard";
 import { Stars } from "@/components/Stars";
 import { formatShortDate } from "@/lib/format";
-import { favoriteFilms, overview, recentDiary } from "@/lib/queries";
+import { favoriteFilms, overview, recentDiary, topFilms } from "@/lib/queries";
 import { picks } from "@/lib/reco";
 import { activity } from "@/lib/social";
 import { ActivityFeed } from "@/components/ActivityFeed";
@@ -26,7 +26,8 @@ export default async function Home() {
     picks({ mode: "pour-toi" }),
     picks({ mode: "watchlist" }),
   ]);
-  const feed = await activity({ limit: 3 });
+  const [feed, top] = await Promise.all([activity({ limit: 3 }), topFilms()]);
+  const hasTop = top.length > 0;
   const hero = recent.find((f) => f.backdrop_path);
 
   if (stats.watched === 0) {
@@ -84,7 +85,7 @@ export default async function Home() {
         <section>
           <div className="mb-2 flex items-end justify-between gap-4">
             <h2 className="text-xl md:text-2xl">Coups de cœur</h2>
-            <Link href="/films?sort=rating" className="shrink-0 text-sm text-muted hover:text-accent">Tout voir →</Link>
+            <Link href="/preferes" className="shrink-0 text-sm text-muted hover:text-accent">{hasTop ? "Modifier" : "Choisir mes 10 films"}</Link>
           </div>
           <DiscCarousel
             label="Mes coups de cœur"
@@ -97,7 +98,7 @@ export default async function Home() {
         <section>
           <div className="mb-4 flex items-end justify-between gap-4">
             <h2 className="text-xl md:text-2xl">Chez les membres</h2>
-            <Link href="/activite" className="shrink-0 text-sm text-muted hover:text-accent">Tout voir →</Link>
+            <Link href="/activite" className="shrink-0 text-sm text-muted hover:text-accent">Tout voir</Link>
           </div>
           <ActivityFeed items={feed} compact />
         </section>
@@ -113,7 +114,7 @@ function Row({ title, href, children }: { title: string; href: string; children:
       <div className="mb-4 flex items-end justify-between gap-4">
         <h2 className="text-xl md:text-2xl">{title}</h2>
         <Link href={href} className="shrink-0 text-sm text-muted hover:text-accent">
-          Tout voir →
+          Tout voir
         </Link>
       </div>
       <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:-mx-8 md:gap-4 md:px-8 [&>*]:snap-start">{children}</div>

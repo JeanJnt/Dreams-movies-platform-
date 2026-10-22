@@ -1,17 +1,18 @@
 import { currentUser, uid } from "./auth";
 import { db, ensureSchema, posterSql } from "./db";
+import { watchedForAlertsSql } from "./alert-sources";
 import { pciCheck } from "./pariscine";
 import { tmdb } from "./tmdb";
 
 // Alertes « au cinéma » : un film de ma watchlist ou de mes coups de cœur est (ou va être) en salle en France.
 
-type Mine = { tmdbId: number; filmId: number; source: "watchlist" | "coup_de_coeur"; year: number | null };
+type Mine = { tmdbId: number; filmId: number; source: "watchlist" | "coup_de_coeur" | "prefere"; year: number | null };
 
+// Les films que je surveille (selon mes réglages : watchlist, coups de cœur, films préférés).
 async function myFilms(u: number): Promise<Mine[]> {
-  const { rows } = await db().execute(`
-    SELECT f.tmdb_id, f.id, f.year, 'watchlist' AS source FROM watchlist w JOIN films f ON f.id = w.film_id WHERE w.user_id = ${u} AND f.tmdb_id IS NOT NULL
-    UNION
-    SELECT f.tmdb_id, f.id, f.year, 'coup_de_coeur' AS source FROM likes l JOIN films f ON f.id = l.film_id WHERE l.user_id = ${u} AND f.tmdb_id IS NOT NULL`);
+  const sql = await watchedForAlertsSql(u, "f.tmdb_id, f.id, f.year");
+  if (!sql) return [];
+  const { rows } = await db().execute(sql);
   const map = new Map<number, Mine>();
   for (const r of rows) {
     const id = Number(r.tmdb_id);
@@ -132,9 +133,11 @@ export async function nowPlaying(): Promise<NowPlaying[]> {
   });
 }
 
-// On oublie les alertes trop anciennes (sorties depuis plus de 2 mois).
+// On oublie les alertes trop anciennes (sorties depuis plus de 2 mois), et celles des films que je ne surveille plus.
 async function cleanup(u: number) {
   await db().execute(`DELETE FROM alerts WHERE user_id = ${u} AND release_date IS NOT NULL AND release_date < date('now', '-60 days')`);
+  const sql = await watchedForAlertsSql(u, "f.tmdb_id");
+  await db().execute(`DELETE FROM alerts WHERE user_id = ${u}${sql ? ` AND tmdb_id NOT IN (SELECT tmdb_id FROM (${sql}))` : ""}`);
 }
 
 export type Alert = {
@@ -143,7 +146,7 @@ export type Alert = {
   kind: "paris" | "en_salle" | "bientot" | "ressortie";
   releaseDate: string | null;
   note: string | null;
-  source: "watchlist" | "coup_de_coeur";
+  source: "watchlist" | "coup_de_coeur" | "prefere";
   seen: boolean;
   title: string;
   year: number | null;

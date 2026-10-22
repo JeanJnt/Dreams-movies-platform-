@@ -16,12 +16,12 @@ export function BrushYume({ className = "", title = "夢" }: { className?: strin
   );
 }
 
-// Le logo : un bloc noir, le 夢 et « Dreams » en rouge vif. Il reste le même quel que soit le thème.
+// Le logo du site suit le thème (le 夢 dans la couleur d'accent). L'icône de l'appli, elle, est noire et rouge.
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-2 rounded-lg bg-[#0a0a0a] py-1 pr-3 pl-1.5 text-[#ff1a1a] ${className}`}>
-      <BrushYume className="h-8 w-auto overflow-visible" />
-      <span className="text-lg leading-none font-black tracking-tight uppercase">Dreams</span>
+    <span className={`inline-flex items-center gap-2 ${className}`}>
+      <BrushYume className="h-8 w-auto overflow-visible text-accent" />
+      <span className="font-display text-xl leading-none">Dreams</span>
     </span>
   );
 }

@@ -53,13 +53,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
         <h2 className="text-2xl">Mon profil</h2>
         <p className="text-sm text-muted">Les autres membres voient ton profil : films vus, notes, coups de cœur, stats, collection, et tes critiques réglées sur « Membres ».</p>
-        <Link href={`/membre/${me.id}`} className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Voir mon profil comme les autres le voient →</Link>
+        <Link href="/preferes" className="mr-2 inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Mes 10 films préférés</Link>
+        <Link href={`/membre/${me.id}`} className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Voir mon profil comme les autres le voient</Link>
       </section>
 
       <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
         <h2 className="text-2xl">Agenda dans mon téléphone</h2>
         <p className="text-sm text-muted">Abonne ton calendrier (iPhone, Google Agenda, Outlook) à tes séances : elles s&apos;y ajoutent toutes seules. Ce lien est secret, ne le partage pas.</p>
-        <a href={calendar} className="inline-block rounded-full bg-accent px-4 py-2 text-sm text-on-accent">📅 S&apos;abonner à mon agenda</a>
+        <a href={calendar} className="inline-block rounded-full bg-accent px-4 py-2 text-sm text-on-accent">S&apos;abonner à mon agenda</a>
       </section>
 
       <section className="space-y-4 rounded-3xl border border-border bg-surface p-5 md:p-6">

@@ -159,6 +159,38 @@ const PER_USER: { name: string; create: string; columns: string[]; indexes?: str
     columns: ["film_id", "title", "starts_at", "place", "with_whom", "note", "created_at"],
     indexes: [`CREATE INDEX IF NOT EXISTS idx_events_user ON events(user_id, starts_at)`],
   },
+  // Mes films préférés (10 au plus, dans l'ordre) : ils remplacent les coups de cœur Letterboxd dans Dreams
+  {
+    name: "top_films",
+    create: `CREATE TABLE IF NOT EXISTS top_films (user_id INTEGER NOT NULL, film_id INTEGER NOT NULL, position INTEGER NOT NULL, PRIMARY KEY (user_id, film_id))`,
+    columns: ["film_id", "position"],
+  },
+  // Mes listes, créées dans Dreams (visibles des membres, ou privées ; partageables par un lien secret)
+  {
+    name: "user_lists",
+    create: `CREATE TABLE IF NOT EXISTS user_lists (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, name TEXT NOT NULL, description TEXT,
+      visibility TEXT NOT NULL DEFAULT 'membres', share_token TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))`,
+    columns: ["name", "description", "visibility", "share_token", "created_at", "updated_at"],
+  },
+  {
+    name: "user_list_items",
+    create: `CREATE TABLE IF NOT EXISTS user_list_items (user_id INTEGER NOT NULL, list_id INTEGER NOT NULL, film_id INTEGER NOT NULL, position INTEGER NOT NULL,
+      PRIMARY KEY (list_id, film_id))`,
+    columns: ["list_id", "film_id", "position"],
+  },
+  // Abonnements aux notifications (un par appareil où je les ai activées)
+  {
+    name: "push_subscriptions",
+    create: `CREATE TABLE IF NOT EXISTS push_subscriptions (user_id INTEGER NOT NULL, endpoint TEXT PRIMARY KEY, p256dh TEXT NOT NULL, auth TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')))`,
+    columns: ["endpoint", "p256dh", "auth", "created_at"],
+  },
+  // Membres invités à une séance de l'agenda : la séance apparaît (et se met à jour) chez chacun
+  {
+    name: "event_guests",
+    create: `CREATE TABLE IF NOT EXISTS event_guests (user_id INTEGER NOT NULL, event_id INTEGER NOT NULL, PRIMARY KEY (user_id, event_id))`,
+    columns: ["event_id"],
+  },
   {
     // Films de la watchlist ou des coups de cœur qui passent en salle
     name: "alerts",
@@ -226,9 +258,15 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
   ["users", "city", "TEXT NOT NULL DEFAULT 'Paris'"],
   ["users", "country", "TEXT NOT NULL DEFAULT 'FR'"],
   ["users", "alerts_checked_at", "TEXT"], // dernière mise à jour des alertes cinéma (affichée sur la page)
+  // Films à surveiller pour les alertes : watchlist, likes (coups de cœur Letterboxd), top (mes films préférés)
+  ["users", "alert_sources", "TEXT NOT NULL DEFAULT 'watchlist,likes,top'"],
+  ["alerts", "notified", "INTEGER NOT NULL DEFAULT 0"], // notification envoyée sur le téléphone
   // Titres du film dans plusieurs langues (JSON { fr, en, ja… }) et texte de recherche sans accents
   ["films", "titles", "TEXT"],
   ["films", "search_text", "TEXT"],
+  // Séries : 'tv' et l'identifiant TMDB de la série (tmdb_id reste réservé aux films)
+  ["films", "media_type", "TEXT NOT NULL DEFAULT 'movie'"],
+  ["films", "tmdb_tv_id", "INTEGER"],
 ];
 
 // Index sur les colonnes ajoutées ci-dessus (créés une fois les colonnes en place).

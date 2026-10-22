@@ -10,7 +10,7 @@ export function InviteForm() {
     <form action={action} className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <input name="note" placeholder="Pour qui ? (facultatif)" maxLength={80} className="field flex-1" />
-        <button disabled={pending} className="font-display rounded-full bg-accent px-5 py-2 text-on-accent">+ Créer une invitation</button>
+        <button disabled={pending} className="rounded-full bg-accent px-5 py-2 text-on-accent">+ Créer une invitation</button>
       </div>
       {state?.error && <p className="text-sm text-heart">{state.error}</p>}
       {state?.ok && (

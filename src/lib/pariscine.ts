@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { watchedForAlertsSql } from "./alert-sources";
 import { normalize } from "./titles";
 
 /*
@@ -27,12 +28,11 @@ async function pciMovies(): Promise<PciMovie[]> {
 
 type Mine = { tmdbId: number; filmId: number; source: string; year: number | null; titles: string[]; lbSlug: string | null };
 
-// Mes films (watchlist et coups de cœur) avec tous leurs titres, pour les retrouver dans le programme.
+// Les films que je surveille (selon mes réglages) avec tous leurs titres, pour les retrouver dans le programme.
 async function myFilms(u: number): Promise<Mine[]> {
-  const { rows } = await db().execute(`
-    SELECT f.tmdb_id, f.id, f.year, f.name, f.title_fr, f.original_title, f.titles, f.lb_uri, 'watchlist' AS source FROM watchlist w JOIN films f ON f.id = w.film_id WHERE w.user_id = ${u} AND f.tmdb_id IS NOT NULL
-    UNION
-    SELECT f.tmdb_id, f.id, f.year, f.name, f.title_fr, f.original_title, f.titles, f.lb_uri, 'coup_de_coeur' AS source FROM likes l JOIN films f ON f.id = l.film_id WHERE l.user_id = ${u} AND f.tmdb_id IS NOT NULL`);
+  const sql = await watchedForAlertsSql(u, "f.tmdb_id, f.id, f.year, f.name, f.title_fr, f.original_title, f.titles, f.lb_uri");
+  if (!sql) return [];
+  const { rows } = await db().execute(sql);
   const seen = new Set<number>();
   return rows
     .filter((r) => !seen.has(Number(r.tmdb_id)) && seen.add(Number(r.tmdb_id)))
@@ -82,4 +82,15 @@ export async function pciCheck(u: number) {
     args: [u],
   });
   return found.length;
+}
+
+// Recherche dans tout le programme de Paris Ciné Info (pas seulement mes films) : « est-ce que ce film passe ? »
+export async function searchPci(q: string) {
+  const wanted = normalize(q);
+  if (wanted.length < 2) return [];
+  const movies = await pciMovies().catch(() => [] as PciMovie[]);
+  return movies
+    .filter((p) => [p.ti, p.o_ti, p.en_ti].some((t) => t && normalize(t).includes(wanted)))
+    .slice(0, 12)
+    .map((p) => ({ title: p.ti, original: p.o_ti || null, year: Number(p.ye) || null, cinemas: p.co, retro: Boolean(p.ret) }));
 }

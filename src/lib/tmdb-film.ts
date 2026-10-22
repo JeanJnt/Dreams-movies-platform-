@@ -116,3 +116,41 @@ export async function ensureFilmFromTmdb(tmdbId: number): Promise<number> {
   await applyMovieToFilm(id, movie);
   return id;
 }
+
+// --- Séries (Letterboxd contient aussi des séries et mini-séries : Twin Peaks: The Return, Chernobyl…) ---
+// Leur identifiant TMDB de série va dans tmdb_tv_id (tmdb_id reste vide : il désigne toujours un film).
+
+type RawTv = {
+  name: string;
+  original_name: string;
+  overview: string;
+  episode_run_time?: number[];
+  first_air_date?: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  original_language: string;
+  genres: { name: string }[];
+  production_countries?: { name: string }[];
+  created_by?: { name: string }[];
+  credits: { cast: { name: string; character: string }[]; crew: { name: string; job: string }[] };
+  translations?: { translations: { iso_639_1: string; iso_3166_1: string; data?: { name?: string } }[] };
+};
+
+export async function applyTvToFilm(filmId: number, tvId: number) {
+  const d = await tmdb<RawTv>(`/tv/${tvId}`, { append_to_response: "credits,translations" });
+  // Les créateurs de la série tiennent lieu de réalisateurs (sinon, les réalisateurs crédités)
+  const directors = d.created_by?.length ? d.created_by.map((c) => c.name) : [...new Set(d.credits.crew.filter((c) => c.job === "Director").map((c) => c.name))];
+  const translations = (d.translations?.translations ?? []).map((t) => ({ ...t, data: { title: t.data?.name } }));
+  const titles = pickTranslations(translations, { language: d.original_language, title: d.original_name });
+  await db().execute({
+    sql: `UPDATE films SET tmdb_id = NULL, tmdb_tv_id = ?, media_type = 'tv', title_fr = ?, original_title = ?, overview = ?, runtime = ?,
+          poster_path = ?, backdrop_path = ?, original_language = ?, genres = ?, countries = ?, directors = ?, cast_list = ?, titles = ?,
+          tmdb_status = 'ok' WHERE id = ?`,
+    args: [
+      tvId, d.name, d.original_name, d.overview || null, d.episode_run_time?.[0] ?? null, d.poster_path, d.backdrop_path, d.original_language,
+      JSON.stringify(d.genres.map((g) => g.name)), JSON.stringify((d.production_countries ?? []).map((c) => c.name)), JSON.stringify(directors),
+      JSON.stringify(d.credits.cast.slice(0, 12).map((c) => ({ name: c.name, character: c.character }))), JSON.stringify(titles), filmId,
+    ],
+  });
+  await refreshSearchText(filmId);
+}

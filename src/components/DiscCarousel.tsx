@@ -122,7 +122,7 @@ export function DiscCarousel({ discs, label }: { discs: Disc[]; label?: string }
         </p>
         <div className="mt-5 flex items-center justify-center gap-3">
           <button onClick={() => go(active - 1)} disabled={active === 0} className="flex size-11 items-center justify-center rounded-full border border-border bg-surface transition hover:border-accent disabled:opacity-30" aria-label="Disque précédent">←</button>
-          <Link href={current.href} className="font-display rounded-full bg-accent px-6 py-2.5 text-sm text-on-accent transition hover:brightness-110">Ouvrir la fiche</Link>
+          <Link href={current.href} className="rounded-full bg-accent px-6 py-2.5 text-sm text-on-accent transition hover:brightness-110">Ouvrir la fiche</Link>
           <button onClick={() => go(active + 1)} disabled={active === n - 1} className="flex size-11 items-center justify-center rounded-full border border-border bg-surface transition hover:border-accent disabled:opacity-30" aria-label="Disque suivant">→</button>
         </div>
       </div>

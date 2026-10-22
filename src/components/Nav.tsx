@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Theme } from "@/lib/theme";
 import { Logo } from "./Logo";
 import { SearchBox } from "./SearchBox";
@@ -19,6 +19,8 @@ const ICONS = {
   bell: "M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0",
   people: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M17 11a3 3 0 1 0 0-6M22 21v-1a5 5 0 0 0-4-4.9",
   more: "M5 12h.01M12 12h.01M19 12h.01",
+  back: "M15 18l-6-6 6-6",
+  close: "M6 6l12 12M18 6L6 18",
   list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
   disc: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
   bookmark: "M6 3h12v18l-6-4-6 4z",
@@ -50,11 +52,14 @@ const MORE = [
   { href: "/stats", label: "Stats", icon: ICONS.chart },
   { href: "/watchlist", label: "Watchlist", icon: ICONS.bookmark },
   { href: "/listes", label: "Listes", icon: ICONS.list },
+  { href: "/preferes", label: "Préférés", icon: ICONS.star },
   { href: "/collection", label: "Collection", icon: ICONS.disc },
   { href: "/activite", label: "Communauté", icon: ICONS.people },
   { href: "/compte", label: "Mon compte", icon: ICONS.user },
   { href: "/installer", label: "Installer", icon: ICONS.download },
 ];
+// Les pages « racines » des onglets du bas : ailleurs, on affiche une flèche de retour.
+const ROOTS = ["/", "/films", "/recherche", "/conseils"];
 // Pages rangées sous « Films » et sous « Communauté »
 const LIBRARY = ["/films", "/watchlist", "/collection", "/listes", "/personnes", "/personne"];
 const COMMUNITY = ["/activite", "/membres", "/membre"];
@@ -86,10 +91,43 @@ function Avatar({ user }: { user: NavUser }) {
   );
 }
 
+// Retour en arrière : la page précédente de l'appli, sinon l'accueil (appli ouverte directement sur une page).
+function useGoBack() {
+  const router = useRouter();
+  return useCallback(() => (window.history.length > 1 ? router.back() : router.push("/")), [router]);
+}
+
 export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; user: NavUser }) {
   const path = usePathname();
+  const goBack = useGoBack();
   const [more, setMore] = useState(false);
+  const isRoot = ROOTS.includes(path);
   useEffect(() => setMore(false), [path]);
+
+  // Sur téléphone : glisser depuis le bord gauche de l'écran vers la droite = retour (comme une appli native).
+  useEffect(() => {
+    if (isRoot) return;
+    let start: { x: number; y: number } | null = null;
+    const down = (e: TouchEvent) => {
+      const t = e.touches[0];
+      start = t.clientX < 28 && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
+    };
+    const up = (e: TouchEvent) => {
+      if (!start) return;
+      const t = e.changedTouches[0];
+      if (t.clientX - start.x > 70 && Math.abs(t.clientY - start.y) < 60) goBack();
+      start = null;
+    };
+    window.addEventListener("touchstart", down, { passive: true });
+    window.addEventListener("touchend", up, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", down);
+      window.removeEventListener("touchend", up);
+    };
+  }, [isRoot, goBack]);
+
+  // Panneau « Plus » : on le ferme en le faisant glisser vers le bas
+  const sheetStart = useRef<number | null>(null);
 
   const active = (href: string) =>
     href === "/" ? path === "/" : href === "/films" ? LIBRARY.some((l) => path.startsWith(l)) : href === "/activite" ? COMMUNITY.some((l) => path.startsWith(l)) : path.startsWith(href);
@@ -128,9 +166,16 @@ export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; use
 
       {/* Mobile : logo en haut, onglets en bas */}
       <header className="flex items-center justify-between gap-2 px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-2 md:hidden">
-        <Link href="/" aria-label="Dreams, accueil">
-          <Logo />
-        </Link>
+        {isRoot ? (
+          <Link href="/" aria-label="Dreams, accueil">
+            <Logo />
+          </Link>
+        ) : (
+          <button onClick={goBack} className="-ml-2 flex items-center gap-0.5 rounded-full py-1.5 pr-3 pl-1 text-sm text-foreground" aria-label="Retour">
+            <Icon d={ICONS.back} className="size-6" />
+            Retour
+          </button>
+        )}
         <div className="flex items-center gap-1">
           <Bell alerts={alerts} />
           <ThemeSwitch initial={theme} />
@@ -141,9 +186,18 @@ export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; use
         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMore(false)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <div
-            className="absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] grid grid-cols-3 gap-1 rounded-3xl border border-border bg-surface p-3 shadow-2xl"
+            className="absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] grid grid-cols-3 gap-1 rounded-3xl border border-border bg-surface p-3 pt-8 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => (sheetStart.current = e.touches[0].clientY)}
+            onTouchEnd={(e) => {
+              if (sheetStart.current != null && e.changedTouches[0].clientY - sheetStart.current > 50) setMore(false);
+              sheetStart.current = null;
+            }}
           >
+            <span className="absolute top-2.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-border" aria-hidden />
+            <button onClick={() => setMore(false)} className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full text-muted" aria-label="Fermer">
+              <Icon d={ICONS.close} className="size-4" />
+            </button>
             {MORE.map((l) => (
               <Link key={l.href} href={l.href} className={`flex flex-col items-center gap-1.5 rounded-2xl py-3 text-xs ${path.startsWith(l.href) ? "bg-surface-2 text-accent" : "text-foreground"}`}>
                 <Icon d={l.icon} />

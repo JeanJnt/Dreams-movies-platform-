@@ -5,6 +5,7 @@ import { LibraryTabs } from "@/components/LibraryTabs";
 import { currentUser } from "@/lib/auth";
 import { allLists } from "@/lib/queries";
 import { refLists } from "@/lib/ref-lists";
+import { visibleLists, type UserList } from "@/lib/user-lists";
 import { poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Listes" };
@@ -29,11 +30,30 @@ function Stack({ posters }: { posters: string[] }) {
 }
 
 export default async function ListsPage() {
-  const [lists, references, me] = await Promise.all([allLists(), refLists(), currentUser()]);
+  const [lists, references, me, mine] = await Promise.all([allLists(), refLists(), currentUser(), visibleLists()]);
   return (
     <div className="space-y-10 pt-2 md:pt-8">
       <LibraryTabs />
       <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Listes</h1>
+
+      <section>
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h2 className="text-xl md:text-2xl">Mes listes</h2>
+          <Link href="/listes/perso/nouvelle" className="rounded-full bg-accent px-4 py-1.5 text-sm text-on-accent">Nouvelle liste</Link>
+        </div>
+        {mine.mine.length ? (
+          <UserListGrid lists={mine.mine} />
+        ) : (
+          <p className="text-sm text-muted">Crée tes propres listes (ton top de l&apos;année, un cycle à voir…) et partage-les par un lien.</p>
+        )}
+      </section>
+
+      {mine.others.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-xl md:text-2xl">Listes des membres</h2>
+          <UserListGrid lists={mine.others} showAuthor />
+        </section>
+      )}
 
       <section>
         <div className="mb-4 flex items-baseline justify-between gap-4">
@@ -77,6 +97,23 @@ export default async function ListsPage() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function UserListGrid({ lists, showAuthor = false }: { lists: UserList[]; showAuthor?: boolean }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {lists.map((l) => (
+        <Link key={l.id} href={`/listes/perso/${l.id}`} className="group rounded-xl border border-border bg-surface p-3 transition hover:border-accent/50">
+          {l.posters.length > 0 ? <Stack posters={l.posters} /> : <div className="aspect-[4/1.5] rounded-md bg-surface-2" />}
+          <h3 className="mt-3 font-medium group-hover:text-accent">{l.name}</h3>
+          <p className="text-sm text-muted">
+            {showAuthor && `@${l.author} · `}
+            {l.count} films{l.visibility === "prive" ? " · privée" : ""}
+          </p>
+        </Link>
+      ))}
     </div>
   );
 }

@@ -71,7 +71,7 @@ export default async function FilmPage({ params }: Props) {
             <h1 className="font-display text-4xl leading-none md:text-6xl">{titles.main}</h1>
             {titles.sub && <p className="mt-1.5 text-base text-muted md:text-lg">{titles.sub}</p>}
             <p className="mt-3 text-sm text-muted">
-              {[film.year, formatRuntime(film.runtime), film.countries.slice(0, 2).join(", ")].filter(Boolean).join(" · ")}
+              {[film.media_type === "tv" ? "Série" : null, film.year, formatRuntime(film.runtime), film.countries.slice(0, 2).join(", ")].filter(Boolean).join(" · ")}
             </p>
             {film.directors.length > 0 && (
               <p className="mt-1 text-sm">
@@ -95,8 +95,8 @@ export default async function FilmPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-10 md:grid-cols-[1fr_280px]">
-        <div className="space-y-10">
+      <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="min-w-0 space-y-10">
           {film.overview && <p className="max-w-prose leading-relaxed text-foreground/90">{film.overview}</p>}
 
           <section>
@@ -113,11 +113,11 @@ export default async function FilmPage({ params }: Props) {
                 </div>
                 <h3 className="font-display text-3xl leading-tight group-hover:text-accent">{critique.title || "Sans titre"}</h3>
                 {critique.lede && <p className="mt-2 text-foreground/80">{critique.lede}</p>}
-                <p className="mt-3 text-sm text-accent">{critique.status === "published" ? "Lire la critique →" : "Continuer l'écriture →"}</p>
+                <p className="mt-3 text-sm text-accent">{critique.status === "published" ? "Lire la critique" : "Continuer l'écriture"}</p>
               </Link>
             ) : (
               <Link href={`/film/${id}/critique`} className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border p-6 text-muted transition hover:border-accent hover:text-accent">
-                ✍️ Écrire ma critique
+                Écrire ma critique
               </Link>
             )}
           </section>
@@ -131,11 +131,11 @@ export default async function FilmPage({ params }: Props) {
           <section>
             <h2 className="mb-1 text-xl md:text-2xl">Lire des critiques</h2>
             <p className="mb-4 text-sm text-muted">Les critiques de ce film chez les meilleures revues.</p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="no-scrollbar swipe-row -mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:grid-cols-2 lg:grid-cols-3">
               {ARTICLE_SOURCES.map((s) => (
                 <a key={s.domain} href={articleUrl(s, film)} target="_blank" rel="noreferrer" className="group rounded-lg border border-border bg-surface px-4 py-3 transition hover:border-accent/60">
                   <span className="flex items-center justify-between font-medium group-hover:text-accent">
-                    {s.name} <span className="text-xs text-muted">{s.lang.toUpperCase()} ↗</span>
+                    {s.name} <span className="text-xs text-muted">{s.lang.toUpperCase()}</span>
                   </span>
                   <span className="text-xs text-muted">{s.description}</span>
                 </a>
@@ -182,7 +182,7 @@ export default async function FilmPage({ params }: Props) {
           )}
         </div>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
           <div className="rounded-xl border border-border bg-surface p-5">
             {film.watched_date || diary.length ? (
               <>
@@ -219,15 +219,13 @@ export default async function FilmPage({ params }: Props) {
           </Suspense>
 
           <Link href={`/agenda?film=${id}`} className="flex items-center justify-between rounded-2xl border border-border bg-surface p-5 transition hover:border-accent/60">
-            <span className="font-display">📅 Planifier une séance</span>
-            <span className="text-accent">→</span>
+            <span className="font-display">Planifier une séance</span>
           </Link>
 
 
           {film.tmdb_id && (
             <Link href={`/conseils?from=${id}&partout=1`} className="flex items-center justify-between rounded-xl border border-border bg-surface p-5 transition hover:border-accent/60">
               <span className="font-medium">Films dans le même esprit</span>
-              <span className="text-accent">→</span>
             </Link>
           )}
 
@@ -239,7 +237,7 @@ export default async function FilmPage({ params }: Props) {
                 <ProviderRow label="Location" items={providers.rent} link={providers.link} />
                 <ProviderRow label="Achat" items={providers.buy} link={providers.link} />
                 <a href={providers.link} target="_blank" rel="noreferrer" className="block text-xs text-muted hover:text-accent">
-                  Toutes les offres (JustWatch) ↗
+                  Toutes les offres (JustWatch)
                 </a>
               </>
             ) : (
@@ -248,14 +246,14 @@ export default async function FilmPage({ params }: Props) {
             <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Au cinéma à {me?.city ?? "Paris"}</p>
             <div className="mb-1 flex flex-wrap gap-1.5">
               {showtimeLinks(title, me?.city ?? "Paris", me?.country ?? "FR").map((l) => (
-                <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className={`rounded-full px-2.5 py-1 text-xs ${l.main ? "bg-accent text-on-accent" : "bg-surface-2 text-muted hover:text-accent"}`}>{l.label} ↗</a>
+                <a key={l.label} href={l.href} target="_blank" rel="noreferrer" className={`rounded-full px-2.5 py-1 text-xs ${l.main ? "bg-accent text-on-accent" : "bg-surface-2 text-muted hover:text-accent"}`}>{l.label}</a>
               ))}
             </div>
             <p className="mt-4 mb-1.5 border-t border-border pt-4 text-xs uppercase tracking-wider text-muted">Gratuit et légal ?</p>
             <div className="flex flex-wrap gap-1.5">
               {LEGAL_FREE.map((s) => (
                 <a key={s.domain} href={legalSearchUrl(s.domain, film)} target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-accent">
-                  {s.name} ↗
+                  {s.name}
                 </a>
               ))}
             </div>
@@ -279,11 +277,10 @@ export default async function FilmPage({ params }: Props) {
               <span className="font-display block">Voir sur Letterboxd</span>
               <span className="block text-xs text-muted">Note moyenne, avis et listes de la communauté</span>
             </span>
-            <span className="text-muted">↗</span>
           </a>
           <div className="flex flex-col gap-2 text-sm">
             {film.tmdb_id && (
-              <a href={`https://www.themoviedb.org/movie/${film.tmdb_id}`} target="_blank" rel="noreferrer" className="text-muted hover:text-accent">Voir sur TMDB ↗</a>
+              <a href={`https://www.themoviedb.org/movie/${film.tmdb_id}`} target="_blank" rel="noreferrer" className="text-muted hover:text-accent">Voir sur TMDB</a>
             )}
           </div>
         </aside>
@@ -320,7 +317,7 @@ async function Videos({ film }: { film: FilmDetail }) {
         Uniquement des sources reconnues : Arte, Cahiers du cinéma, Cinémathèque, France Culture, Criterion, BFI, Every Frame a Painting…
       </p>
       {videos?.length ? (
-        <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+        <div className="no-scrollbar swipe-row -mx-4 flex gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-6">
           {videos.map((v) => <VideoCard key={v.id} video={v} />)}
         </div>
       ) : (
@@ -336,7 +333,7 @@ async function Videos({ film }: { film: FilmDetail }) {
               ["Criterion", `criterion ${film.original_title ?? film.name}`],
             ].map(([label, q]) => (
               <a key={label} href={youtubeSearchUrl(q)} target="_blank" rel="noreferrer" className="rounded-full bg-surface-2 px-2.5 py-1 text-xs hover:text-accent">
-                {label} ↗
+                {label}
               </a>
             ))}
           </div>

@@ -1,7 +1,7 @@
 import { db, ensureSchema } from "./db";
 import { tmdb } from "./tmdb";
 import { normalize, pickTranslations } from "./titles";
-import { applyMovieToFilm, fetchMovie, refreshSearchText, type Translations } from "./tmdb-film";
+import { applyMovieToFilm, applyTvToFilm, fetchMovie, refreshSearchText, type Translations } from "./tmdb-film";
 
 // Complète les films du catalogue avec les infos TMDB (affiche, synopsis, genres, réalisateur…).
 // Le travail se fait par petits paquets, pour tenir dans le temps limite d'une requête en ligne.
@@ -12,6 +12,12 @@ type SearchResult = { id: number; title: string; original_title: string; release
 // (« Dreams » 1990 → « Backstreet Dreams », « Drive » → « Drive Angry »…) : on préfère le titre exact,
 // puis, à défaut, le film le plus vu parmi ceux de la bonne année.
 export async function findMovie(name: string, year: number | null): Promise<number | null> {
+  return (await findMovieMatch(name, year))?.id ?? null;
+}
+
+// exact : le titre correspond exactement (sinon c'est un titre seulement proche, moins sûr) ; gap : écart d'années
+type Match = { id: number; exact: boolean; gap: number; votes: number };
+async function findMovieMatch(name: string, year: number | null): Promise<Match | null> {
   const wanted = normalize(name);
   const gap = (r: SearchResult) => (!year ? 0 : r.release_date ? Math.abs(Number(r.release_date.slice(0, 4)) - year) : 99);
   const titles = (r: SearchResult) => [normalize(r.title), normalize(r.original_title)];
@@ -29,15 +35,52 @@ export async function findMovie(name: string, year: number | null): Promise<numb
 
   // 1. Titre exact, à 2 ans près (dates de festival, de sortie locale…) : le plus vu.
   const exact = results.filter((r) => gap(r) <= 2 && titles(r).includes(wanted)).sort(byVotes)[0];
-  if (exact) return exact.id;
+  if (exact) return { id: exact.id, exact: true, gap: gap(exact), votes: exact.vote_count };
   // 2. Titre proche (l'un contient l'autre : « Glass Onion » → « Glass Onion: A Knives Out Mystery »), à 1 an près.
   const close = results.filter((r) => gap(r) <= 1 && titles(r).some((t) => t && (t.includes(wanted) || wanted.includes(t)))).sort(byVotes)[0];
-  return close?.id ?? null;
+  return close ? { id: close.id, exact: false, gap: gap(close), votes: close.vote_count } : null;
+}
+
+// Une série TMDB au titre exact, à 2 ans près de sa première diffusion ; la plus vue.
+// Pour « Twin Peaks: The Return » ou « Fargo: Year 2 », on cherche aussi la série principale (« Twin Peaks »), si elle est très vue.
+type TvResult = { id: number; name: string; original_name: string; first_air_date?: string; vote_count: number };
+async function findTvMatch(name: string, year: number | null): Promise<Match | null> {
+  const search = async (q: string) => (await tmdb<{ results: TvResult[] }>("/search/tv", { query: q, language: "en-US" })).results;
+  const gap = (r: TvResult) => (!year ? 0 : r.first_air_date ? Math.abs(Number(r.first_air_date.slice(0, 4)) - year) : 99);
+  const named = (r: TvResult, n: string) => [normalize(r.name), normalize(r.original_name)].includes(normalize(n));
+  const best = (list: TvResult[]) => list.sort((x, y) => y.vote_count - x.vote_count)[0];
+  const exact = best((await search(name)).filter((r) => gap(r) <= 2 && named(r, name)));
+  if (exact) return { id: exact.id, exact: true, gap: gap(exact), votes: exact.vote_count };
+  const base = name.split(":")[0].trim();
+  if (base !== name && base.length > 2) {
+    const main = best((await search(base)).filter((r) => named(r, base) && r.vote_count >= 200));
+    if (main) return { id: main.id, exact: false, gap: 0, votes: main.vote_count };
+  }
+  return null;
+}
+export const findTv = async (name: string, year: number | null) => (await findTvMatch(name, year))?.id ?? null;
+
+// Film ou série ? Sans film au titre exact, la série l'emporte. Si les deux ont le titre exact,
+// celui dont l'année colle le mieux (le pilote « Twin Peaks » 1989 est un film ; « Fiasco » 2024, la série), puis le plus vu.
+function preferTv(movie: Match | null, tv: Match | null) {
+  if (!tv) return false;
+  if (!movie || !movie.exact) return true;
+  if (!tv.exact) return false;
+  return tv.gap < movie.gap || (tv.gap === movie.gap && tv.votes > movie.votes * 2);
 }
 
 async function enrichOne(film: { id: number; name: string; year: number | null; tmdbId: number | null }) {
-  // Film ajouté depuis une liste TMDB : on connaît déjà son identifiant. Sinon, on le cherche par titre et année.
-  const tmdbId = film.tmdbId ?? (await findMovie(film.name, film.year));
+  // Film ajouté depuis une liste TMDB : on connaît déjà son identifiant. Sinon, on le cherche par titre et année ;
+  // sans film au titre exact, on regarde si c'est une série (Letterboxd en contient).
+  let tmdbId = film.tmdbId;
+  if (!tmdbId) {
+    const [movie, tv] = await Promise.all([findMovieMatch(film.name, film.year), findTvMatch(film.name, film.year)]);
+    if (preferTv(movie, tv)) {
+      await applyTvToFilm(film.id, tv!.id);
+      return true;
+    }
+    tmdbId = movie?.id ?? null;
+  }
   if (!tmdbId) {
     await db().execute({ sql: "UPDATE films SET tmdb_status = 'not_found' WHERE id = ?", args: [film.id] });
     return false;
@@ -125,4 +168,41 @@ export async function rematchSuspects(onFix?: (line: string) => void, all = fals
   };
   await Promise.all(Array.from({ length: 6 }, worker));
   return { checked: suspects.length, fixed };
+}
+
+// Répare les séries prises pour des films (ou introuvables) : pour chaque film, on regarde s'il existe une série
+// au même titre, et on garde le plus vraisemblable des deux (voir preferTv).
+export async function fixSeries(onFix?: (line: string) => void) {
+  await ensureSchema();
+  const { rows } = await db().execute(
+    "SELECT id, name, year, tmdb_id, title_fr, original_title, titles, tmdb_status FROM films WHERE media_type = 'movie' AND (tmdb_status = 'not_found' OR (tmdb_status = 'ok' AND titles IS NOT NULL))",
+  );
+  const queue = [...rows];
+  let fixed = 0;
+  const worker = async () => {
+    for (let r = queue.shift(); r; r = queue.shift()) {
+      try {
+        const year = r.year == null ? null : Number(r.year);
+        const tv = await findTvMatch(String(r.name), year);
+        if (!tv) continue;
+        // Le film actuel : titre Letterboxd retrouvé parmi ses titres ? Si oui, on compare années et popularité.
+        let movie: Match | null = null;
+        if (r.tmdb_status === "ok") {
+          const t = JSON.parse(String(r.titles)) as Record<string, string>;
+          const exact = [r.original_title, r.title_fr, ...Object.values(t)].some((x) => x && normalize(String(x)) === normalize(String(r.name)));
+          const m = await tmdb<{ release_date?: string; vote_count: number }>(`/movie/${Number(r.tmdb_id)}`);
+          const gap = !year ? 0 : m.release_date ? Math.abs(Number(m.release_date.slice(0, 4)) - year) : 99;
+          movie = { id: Number(r.tmdb_id), exact, gap, votes: m.vote_count };
+        }
+        if (!preferTv(movie, tv)) continue;
+        await applyTvToFilm(Number(r.id), tv.id);
+        fixed++;
+        onFix?.(`${r.name} (${r.year}) → série`);
+      } catch {
+        // réessayé au prochain passage
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  return { checked: rows.length, fixed };
 }

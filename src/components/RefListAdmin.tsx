@@ -56,7 +56,7 @@ export function RefListAdmin({ lists }: { lists: RefList[] }) {
         )}
         {kind === "tmdb-top" && <p className="text-sm text-muted">Les 250 films les mieux notés par les membres de TMDB.</p>}
         {kind !== "tmdb-top" && <input name="name" placeholder="Nom de la liste (facultatif)" maxLength={120} className="field w-full" />}
-        <button disabled={pending} className="font-display rounded-full bg-accent px-5 py-2 text-on-accent disabled:opacity-50">+ Ajouter la liste</button>
+        <button disabled={pending} className="rounded-full bg-accent px-5 py-2 text-on-accent disabled:opacity-50">+ Ajouter la liste</button>
       </form>
       {message && <p className={`text-sm ${message.ok ? "text-accent" : "text-heart"}`}>{message.text}</p>}
 

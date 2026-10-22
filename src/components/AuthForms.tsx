@@ -26,7 +26,7 @@ export function LoginForm({ deleted }: { deleted?: boolean }) {
         <span className="text-sm text-muted">Mot de passe</span>
         <input name="password" type="password" autoComplete="current-password" required className={input} />
       </label>
-      <button disabled={pending} className="font-display w-full rounded-full bg-accent py-3 text-lg text-on-accent disabled:opacity-50">
+      <button disabled={pending} className="w-full rounded-full bg-accent py-3 text-lg text-on-accent disabled:opacity-50">
         {pending ? "Connexion…" : "Se connecter"}
       </button>
       <p className="text-center text-sm text-muted">
@@ -72,7 +72,7 @@ export function SignupForm({ first }: { first: boolean }) {
         <span className="text-sm text-muted">Confirme le mot de passe</span>
         <input name="password2" type="password" required minLength={10} autoComplete="new-password" className={input} />
       </label>
-      <button disabled={pending} className="font-display w-full rounded-full bg-accent py-3 text-lg text-on-accent disabled:opacity-50">
+      <button disabled={pending} className="w-full rounded-full bg-accent py-3 text-lg text-on-accent disabled:opacity-50">
         {pending ? "Création…" : "Créer mon compte"}
       </button>
       <p className="text-center text-sm text-muted">

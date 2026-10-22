@@ -4,7 +4,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityFeed, TextKind } from "@/components/ActivityFeed";
 import { DvdCase } from "@/components/DvdCase";
-import { FilmCard } from "@/components/FilmCard";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { ownedFilms } from "@/lib/collection";
@@ -71,16 +70,30 @@ export default async function MemberPage({ params }: Props) {
         </div>
       </header>
 
-      {favorites.length > 0 && (
+      {/* Ses films préférés, en DVD, qu'on fait défiler du doigt */}
+      {favorites.length > 0 ? (
         <section>
-          <h2 className="mb-4 text-xl md:text-2xl">Coups de cœur</h2>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-            {favorites.slice(0, 12).map((f) => <FilmCard key={f.id} film={f} />)}
+          <div className="mb-4 flex items-baseline justify-between gap-4">
+            <h2 className="text-xl md:text-2xl">Films préférés</h2>
+            {isMe && <Link href="/preferes" className="text-sm text-muted hover:text-accent">Modifier</Link>}
+          </div>
+          <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-5 md:overflow-visible md:px-0 lg:grid-cols-10">
+            {favorites.slice(0, 10).map((f) => (
+              <div key={f.id} className="w-28 shrink-0 snap-start md:w-auto">
+                <DvdCase compact film={{ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, director: f.director, runtime: f.runtime, image: backdrop(f.backdrop_path), cover: poster(f.poster_path, "w342") }} />
+              </div>
+            ))}
           </div>
         </section>
+      ) : (
+        isMe && (
+          <Link href="/preferes" className="block rounded-2xl border border-dashed border-border p-6 text-center text-muted hover:border-accent hover:text-foreground">
+            Choisis tes 10 films préférés : ils s&apos;afficheront ici en DVD.
+          </Link>
+        )
       )}
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-12">
           <section>
             <h2 className="mb-4 text-xl md:text-2xl">Critiques Dreams</h2>
@@ -90,7 +103,7 @@ export default async function MemberPage({ params }: Props) {
                   <Link key={c.id} href={`/critiques/${c.id}`} className="group flex gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/60">
                     {c.poster && <img src={poster(c.poster, "w185")!} alt="" className="aspect-[2/3] w-16 shrink-0 rounded-md object-cover" />}
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2"><TextKind kind="critique" />{c.visibility === "prive" && <span className="text-xs text-muted">🔒 privée</span>}</div>
+                      <div className="flex flex-wrap items-center gap-2"><TextKind kind="critique" />{c.visibility === "prive" && <span className="text-xs text-muted">privée</span>}</div>
                       <p className="mt-1 text-xs text-muted">{c.filmTitle} · {c.year}</p>
                       <h3 className="text-xl leading-tight group-hover:text-accent">{c.title || c.filmTitle}</h3>
                       {c.lede && <p className="mt-1 line-clamp-2 text-sm text-muted">{c.lede}</p>}

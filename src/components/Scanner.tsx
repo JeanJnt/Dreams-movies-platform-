@@ -90,7 +90,7 @@ export function Scanner({ formats, caseTypes }: Props) {
             {camera !== "on" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center text-white">
                 <p className="font-display text-2xl">Vise le code-barres du boîtier</p>
-                <button onClick={startCamera} className="font-display rounded-full bg-accent px-6 py-2.5 text-on-accent">📷 Activer la caméra</button>
+                <button onClick={startCamera} className="rounded-full bg-accent px-6 py-2.5 text-on-accent">Activer la caméra</button>
                 {camera === "error" && <p className="text-sm text-white/70">Caméra indisponible. Sur téléphone, l&apos;appli doit être ouverte en HTTPS (une fois en ligne).</p>}
               </div>
             )}
@@ -178,7 +178,7 @@ export function Scanner({ formats, caseTypes }: Props) {
             </div>
           </div>
 
-          <button onClick={add} disabled={!chosen || pending} className="font-display w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
+          <button onClick={add} disabled={!chosen || pending} className="w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
             {chosen ? `Ajouter « ${chosen.title} » à ma collection` : "Choisis le film"}
           </button>
         </div>

@@ -122,7 +122,7 @@ function People({ title, people, role }: { title: string; people: Awaited<Return
           </li>
         ))}
       </ol>
-      <Link href="/personnes" className="mt-4 inline-block text-sm text-accent hover:underline">Voir le classement complet →</Link>
+      <Link href="/personnes" className="mt-4 inline-block text-sm text-accent hover:underline">Voir le classement complet</Link>
     </Card>
   );
 }
