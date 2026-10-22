@@ -185,6 +185,12 @@ const PER_USER: { name: string; create: string; columns: string[]; indexes?: str
       created_at TEXT NOT NULL DEFAULT (datetime('now')))`,
     columns: ["endpoint", "p256dh", "auth", "created_at"],
   },
+  // Maquette de disque choisie par chacun pour un film (photo, bande, typo, duo)
+  {
+    name: "disc_styles",
+    create: `CREATE TABLE IF NOT EXISTS disc_styles (user_id INTEGER NOT NULL, film_id INTEGER NOT NULL, variant TEXT NOT NULL, PRIMARY KEY (user_id, film_id))`,
+    columns: ["film_id", "variant"],
+  },
   // Rappels de séance déjà envoyés (un par membre et par séance, le jour même)
   {
     name: "event_reminders",
@@ -268,6 +274,7 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
   ["users", "alert_sources", "TEXT NOT NULL DEFAULT 'watchlist,likes,top'"],
   ["alerts", "notified", "INTEGER NOT NULL DEFAULT 0"], // notification envoyée sur le téléphone
   ["events", "link", "TEXT"], // lien de la séance (réservation, page de la salle…)
+  ["films", "disc_color", "TEXT"], // couleur dominante de l'image du film (pour accorder l'étiquette du disque)
   // Titres du film dans plusieurs langues (JSON { fr, en, ja… }) et texte de recherche sans accents
   ["films", "titles", "TEXT"],
   ["films", "search_text", "TEXT"],

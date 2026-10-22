@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { DiscCarousel } from "@/components/DiscCarousel";
+import { discStyles } from "@/lib/disc-style";
 import { FilmCard } from "@/components/FilmCard";
 import { PickPoster } from "@/components/PickCard";
 import { Stars } from "@/components/Stars";
@@ -26,7 +27,8 @@ export default async function Home() {
     picks({ mode: "pour-toi" }),
     picks({ mode: "watchlist" }),
   ]);
-  const [feed, top] = await Promise.all([activity({ limit: 3 }), topFilms()]);
+  const favDiscs = favorites.map((f) => ({ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, image: backdrop(f.backdrop_path) ?? poster(f.poster_path, "w500"), director: f.director, runtime: f.runtime, rating: f.rating }));
+  const [feed, top, styles] = await Promise.all([activity({ limit: 3 }), topFilms(), discStyles(favDiscs)]);
   const hasTop = top.length > 0;
   const hero = recent.find((f) => f.backdrop_path);
 
@@ -89,7 +91,7 @@ export default async function Home() {
           </div>
           <DiscCarousel
             label="Mes coups de cœur"
-            discs={favorites.map((f) => ({ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, image: backdrop(f.backdrop_path) ?? poster(f.poster_path, "w500"), director: f.director, runtime: f.runtime, rating: f.rating }))}
+            discs={favDiscs.map((d) => ({ ...d, ...styles.get(d.id) }))}
           />
         </section>
       )}

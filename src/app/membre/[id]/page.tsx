@@ -7,6 +7,7 @@ import { DvdCase } from "@/components/DvdCase";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { ownedFilms } from "@/lib/collection";
+import { discStyles } from "@/lib/disc-style";
 import { formatLongDate } from "@/lib/format";
 import { topPeople } from "@/lib/people";
 import { favoriteFilms, recentDiary } from "@/lib/queries";
@@ -40,6 +41,11 @@ export default async function MemberPage({ params }: Props) {
   ]);
   const isMe = id === me.id;
   const hero = favorites.find((f) => f.backdrop_path);
+  // Étiquettes des disques : couleurs des images et maquettes choisies par ce membre
+  const styles = await discStyles(
+    [...favorites.slice(0, 10), ...owned.slice(0, 6)].map((f) => ({ id: f.id, image: backdrop(f.backdrop_path) ?? poster(f.poster_path, "w342") })),
+    id,
+  );
 
   return (
     <div className="space-y-12 pt-2 md:pt-8">
@@ -80,7 +86,7 @@ export default async function MemberPage({ params }: Props) {
           <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-5 md:overflow-visible md:px-0 lg:grid-cols-10">
             {favorites.slice(0, 10).map((f) => (
               <div key={f.id} className="w-28 shrink-0 snap-start md:w-auto">
-                <DvdCase compact film={{ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, director: f.director, runtime: f.runtime, image: backdrop(f.backdrop_path), cover: poster(f.poster_path, "w342") }} />
+                <DvdCase compact film={{ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, director: f.director, runtime: f.runtime, image: backdrop(f.backdrop_path), cover: poster(f.poster_path, "w342"), ...styles.get(f.id) }} />
               </div>
             ))}
           </div>
@@ -163,7 +169,7 @@ export default async function MemberPage({ params }: Props) {
                   <DvdCase
                     key={o.id}
                     compact
-                    film={{ id: o.id, href: `/film/${o.id}`, title: o.title_fr ?? o.name, year: o.year, director: o.director, runtime: o.runtime, image: backdrop(o.backdrop_path), cover: o.cover || poster(o.poster_path, "w342"), format: o.format, caseType: o.caseType }}
+                    film={{ id: o.id, href: `/film/${o.id}`, title: o.title_fr ?? o.name, year: o.year, director: o.director, runtime: o.runtime, image: backdrop(o.backdrop_path), cover: o.cover || poster(o.poster_path, "w342"), format: o.format, caseType: o.caseType, ...styles.get(o.id) }}
                   />
                 ))}
               </div>

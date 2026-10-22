@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { DiscLabel } from "@/components/DiscLabel";
+import { DiscStylePicker } from "@/components/DiscStylePicker";
+import { discStyles } from "@/lib/disc-style";
 import { Poster } from "@/components/FilmCard";
 import { MediaGallery } from "@/components/MediaGallery";
 import { OwnButton } from "@/components/OwnButton";
@@ -49,6 +50,8 @@ export default async function FilmPage({ params }: Props) {
   const title = film.title_fr ?? film.name;
   // En grand le titre original, en petit sa traduction dans la langue choisie par le membre.
   const titles = filmTitles(film, me?.titleLang ?? "fr");
+  const discBase = { id: film.id, title, year: film.year, director: film.directors[0] ?? null, runtime: film.runtime, image: backdrop(film.backdrop_path) ?? poster(film.poster_path, "w500"), badge: owned?.format };
+  const discStyle = (await discStyles([{ id: film.id, image: discBase.image }])).get(film.id);
   const bg = backdrop(film.backdrop_path);
 
   return (
@@ -58,8 +61,9 @@ export default async function FilmPage({ params }: Props) {
         {bg && <img src={bg} alt="" className="absolute inset-0 size-full object-cover opacity-40" />}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
         {/* Essai : le disque du film en haut à droite, qui tourne doucement (format du DVD/Blu-ray si je le possède) */}
-        <div className="spin-slow pointer-events-none absolute top-4 right-4 aspect-square w-28 drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] md:top-8 md:right-8 md:w-60" aria-hidden>
-          <DiscLabel disc={{ id: film.id, title, year: film.year, director: film.directors[0] ?? null, runtime: film.runtime, image: bg ?? poster(film.poster_path, "w500"), badge: owned?.format }} />
+        {/* Le disque du film : on le touche pour choisir son habillage */}
+        <div className="spin-slow absolute top-4 right-4 z-10 aspect-square w-28 drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] md:top-8 md:right-8 md:w-60">
+          <DiscStylePicker filmId={id} disc={{ ...discBase, ...discStyle }} />
         </div>
         <div className="relative flex gap-5 px-4 pt-24 pb-4 md:gap-8 md:px-8 md:pt-40">
           <div className="w-28 shrink-0 md:w-56">

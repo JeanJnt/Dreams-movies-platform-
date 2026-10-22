@@ -15,6 +15,7 @@ import { addFile, addYoutube, deleteMedia, MIME, registerUploaded, saveImage, se
 import { mediaPath, blobEnabled } from "@/lib/storage";
 import { posterOptions, setCustomPoster, setUploadedPoster, uploadPoster } from "@/lib/posters";
 import { searchMyFilms } from "@/lib/queries";
+import { setDiscStyle } from "@/lib/disc-style";
 import { ALERT_SOURCES } from "@/lib/alert-sources";
 import { deleteUserList, saveUserList, setListShare } from "@/lib/user-lists";
 import { PLATFORMS, setMyPlatforms } from "@/lib/reco";
@@ -277,5 +278,13 @@ export async function setAlertSourcesAction(keys: string[]) {
   const valid = ALERT_SOURCES.filter((s) => keys.includes(s.key)).map((s) => s.key);
   await db().execute({ sql: "UPDATE users SET alert_sources = ? WHERE id = ?", args: [valid.join(","), me.id] });
   revalidatePath("/alertes");
+  revalidatePath("/", "layout");
+}
+
+// --- Habillage des disques ---
+
+export async function setDiscStyleAction(filmId: number, variant: string | null) {
+  await requireUser();
+  await setDiscStyle(filmId, variant);
   revalidatePath("/", "layout");
 }

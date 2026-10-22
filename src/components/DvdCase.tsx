@@ -14,6 +14,8 @@ export type CaseFilm = {
   format?: string;
   caseType?: string; // amaray, steelbook, digipack, coffret
   seen?: boolean;
+  color?: string | null; // couleur de l'image, pour l'étiquette du disque
+  variant?: string | null; // maquette du disque choisie
 };
 
 // Chaque format a son boîtier : proportions, couleur du plastique et bandeau du haut.
@@ -43,7 +45,7 @@ export function DvdCase({ film, compact = false }: { film: CaseFilm; compact?: b
         <div className="absolute inset-0 overflow-hidden" style={{ background: digi ? "#d8ccb4" : s.plastic, borderRadius: radius }}>
           <div className="absolute inset-[6%] rounded-[4px] bg-[radial-gradient(circle_at_50%_50%,#ffffff14,transparent_70%)]" />
           <div className="absolute top-1/2 left-1/2 aspect-square w-[86%] -translate-x-1/2 -translate-y-1/2 transition duration-700 group-hover:rotate-[25deg]">
-            <DiscLabel disc={{ id: film.id, title: film.title, year: film.year, director: film.director, runtime: film.runtime, image: film.image ?? film.cover, badge: film.format }} />
+            <DiscLabel disc={{ id: film.id, title: film.title, year: film.year, director: film.director, runtime: film.runtime, image: film.image ?? film.cover, badge: film.format, color: film.color, variant: film.variant }} />
           </div>
         </div>
 

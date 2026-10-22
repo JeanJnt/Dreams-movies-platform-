@@ -4,6 +4,7 @@ import { DiscCarousel, type Disc } from "@/components/DiscCarousel";
 import { DvdCase, Shelf, type CaseFilm } from "@/components/DvdCase";
 import { LibraryTabs } from "@/components/LibraryTabs";
 import { FORMATS, ownedCounts, ownedFilms } from "@/lib/collection";
+import { discStyles } from "@/lib/disc-style";
 import { backdrop, poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Ma collection" };
@@ -21,7 +22,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const unseen = owned.filter((f) => !f.seen).length;
 
-  const films: CaseFilm[] = owned.map((f) => ({
+  const raw: CaseFilm[] = owned.map((f) => ({
     id: f.id,
     href: `/film/${f.id}`,
     title: f.title_fr ?? f.name,
@@ -34,6 +35,9 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     format: f.format,
     seen: f.seen,
   }));
+  // Couleur de l'image et maquette choisie, pour l'étiquette de chaque disque
+  const styles = await discStyles(raw.map((f) => ({ id: f.id, image: f.image ?? f.cover })));
+  const films: CaseFilm[] = raw.map((f) => ({ ...f, ...styles.get(f.id) }));
   const discs: Disc[] = films.map((f) => ({ ...f, image: f.image ?? f.cover, badge: f.format }));
 
   const link = (p: Record<string, string | undefined>) => {
