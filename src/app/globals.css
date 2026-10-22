@@ -261,3 +261,18 @@ select.field {
     user-select: none;
   }
 }
+
+/* Disque qui tourne lentement (fiche film) */
+.spin-slow {
+  animation: spin-slow 40s linear infinite;
+}
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow {
+    animation: none;
+  }
+}

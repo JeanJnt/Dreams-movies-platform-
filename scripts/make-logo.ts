@@ -35,15 +35,14 @@ const brushFilter = `
     <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" xChannelSelector="R" yChannelSelector="G"/>
   </filter>`;
 
-// Icône : le 夢 noir sur fond papier washi, avec un sceau vermillon.
+// Icône : le 夢 rouge vif sur fond noir.
 const pad = 120, S = 1024;
 const scale = (S - pad * 2) / Math.max(w, h);
 const tx = (S - w * scale) / 2, ty = (S - h * scale) / 2 - 20;
 const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}">
   <defs>${brushFilter}</defs>
-  <rect width="${S}" height="${S}" rx="224" fill="#efe8dc"/>
-  <g filter="url(#brush)"><path transform="translate(${tx} ${ty}) skewX(-5) translate(40 0) scale(${scale})" d="${d}" fill="#141210"/></g>
-  <rect x="${S - 250}" y="${S - 250}" width="120" height="120" rx="16" fill="#e2492f"/>
+  <rect width="${S}" height="${S}" rx="224" fill="#0a0a0a"/>
+  <g filter="url(#brush)"><path transform="translate(${tx} ${ty + 20}) skewX(-5) translate(40 0) scale(${scale})" d="${d}" fill="#ff1a1a"/></g>
 </svg>`;
 fs.writeFileSync("public/icon.svg", icon);
 fs.writeFileSync("src/app/icon.svg", icon);
@@ -53,8 +52,8 @@ const mPad = 230;
 const mScale = (S - mPad * 2) / Math.max(w, h);
 const maskable = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}">
   <defs>${brushFilter}</defs>
-  <rect width="${S}" height="${S}" fill="#efe8dc"/>
-  <g filter="url(#brush)"><path transform="translate(${(S - w * mScale) / 2} ${(S - h * mScale) / 2}) skewX(-5) translate(30 0) scale(${mScale})" d="${d}" fill="#141210"/></g>
+  <rect width="${S}" height="${S}" fill="#0a0a0a"/>
+  <g filter="url(#brush)"><path transform="translate(${(S - w * mScale) / 2} ${(S - h * mScale) / 2}) skewX(-5) translate(30 0) scale(${mScale})" d="${d}" fill="#ff1a1a"/></g>
 </svg>`;
 sharp(Buffer.from(maskable)).resize(512, 512).png().toFile("public/icon-maskable-512.png");
 

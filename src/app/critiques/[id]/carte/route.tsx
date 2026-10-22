@@ -51,7 +51,7 @@ function Stars({ rating, color }: { rating: number | null; color: string }) {
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const c = await getCritique(Number((await params).id));
   if (!c) return new Response("Critique introuvable", { status: 404 });
-  const themeKey = (await cookies()).get("theme")?.value ?? "yume";
+  const themeKey = (await cookies()).get("theme")?.value ?? "lynch";
   const p = PALETTES[themeKey] ?? PALETTES.yume;
 
   const filmTitle = c.filmTitleFr ?? c.filmName;

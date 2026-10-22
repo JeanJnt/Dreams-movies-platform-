@@ -1,14 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { DiscCarousel } from "@/components/DiscCarousel";
 import { FilmCard } from "@/components/FilmCard";
 import { PickPoster } from "@/components/PickCard";
 import { Stars } from "@/components/Stars";
 import { formatShortDate } from "@/lib/format";
-import { overview, recentDiary } from "@/lib/queries";
+import { favoriteFilms, overview, recentDiary } from "@/lib/queries";
 import { picks } from "@/lib/reco";
 import { activity } from "@/lib/social";
 import { ActivityFeed } from "@/components/ActivityFeed";
-import { backdrop } from "@/lib/tmdb";
+import { backdrop, poster } from "@/lib/tmdb";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,10 @@ function greeting() {
 }
 
 export default async function Home() {
-  const [stats, recent, tonight, watchlist] = await Promise.all([
+  const [stats, recent, favorites, tonight, watchlist] = await Promise.all([
     overview(),
     recentDiary(16),
+    favoriteFilms(16),
     picks({ mode: "pour-toi" }),
     picks({ mode: "watchlist" }),
   ]);
@@ -77,6 +79,19 @@ export default async function Home() {
           </div>
         ))}
       </Row>
+
+      {favorites.length > 0 && (
+        <section>
+          <div className="mb-2 flex items-end justify-between gap-4">
+            <h2 className="text-xl md:text-2xl">Coups de cœur</h2>
+            <Link href="/films?sort=rating" className="shrink-0 text-sm text-muted hover:text-accent">Tout voir →</Link>
+          </div>
+          <DiscCarousel
+            label="Mes coups de cœur"
+            discs={favorites.map((f) => ({ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, image: backdrop(f.backdrop_path) ?? poster(f.poster_path, "w500"), director: f.director, runtime: f.runtime, rating: f.rating }))}
+          />
+        </section>
+      )}
 
       {feed.length > 0 && (
         <section>

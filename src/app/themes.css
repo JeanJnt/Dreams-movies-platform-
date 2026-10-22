@@ -6,7 +6,6 @@
 
 /* 夢 YUME — Rêves, Akira Kurosawa (1990), segment « Les Corbeaux »
    Le blé jaune de chrome, le ciel de cobalt tourmenté, les corbeaux noirs : Van Gogh vu par Kurosawa. */
-:root,
 [data-theme="yume"] {
   --background: #101c55;
   --surface: #182a72;
@@ -30,33 +29,35 @@
   color-scheme: dark;
 }
 
-/* トトロ — Mon voisin Totoro, Hayao Miyazaki (1988)
-   Le ciel d'été, les nuages, le vert du camphrier, l'orange du Chatbus et les noiraudes. */
-[data-theme="totoro"] {
-  --background: #e6f1ec;
-  --surface: #fbfaf2;
-  --surface-2: #d9e9df;
-  --border: #bcd4c5;
-  --foreground: #1f3a2c;
-  --muted: #5e7b6b;
-  --accent: #3f7d4e;
-  --accent-soft: #3f7d4e1f;
-  --on-accent: #fbfaf2;
-  --heart: #e86a3a;
+/* 風立ちぬ — Le vent se lève, Hayao Miyazaki (2013)
+   Nahoko et son ombrelle blanche sur la colline, le ciel d'été, le vent dans l'herbe. L'image en grand, sans retenue. */
+[data-theme="vent"] {
+  --background: #eef3ea;
+  --surface: #fffdf6;
+  --surface-2: #e7eedf;
+  --border: #cfdcc6;
+  --foreground: #14263a;
+  --muted: #5b6b78;
+  --accent: #1f5fa8;
+  --accent-soft: #1f5fa81f;
+  --on-accent: #fff;
+  --heart: #d6452b;
   --display: var(--font-kaisei);
   --display-weight: 700;
   --texture: none;
   --glow: none;
-  /* Image officielle du Studio Ghibli (mise à disposition des fans), en haut de page */
-  --backdrop: url("/themes/totoro.jpg");
-  --backdrop-pos: center 30%;
-  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 25%, transparent 75%);
-  --backdrop-overlay: linear-gradient(to bottom, #e6f1ec40 0, #e6f1ecc7 40%, #e6f1ec 75%);
+  /* Image officielle du Studio Ghibli (mise à disposition des fans) */
+  --backdrop: url("/themes/vent.jpg");
+  --backdrop-pos: center 35%;
+  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 50%, transparent 92%);
+  --backdrop-overlay: linear-gradient(to bottom, transparent 0, transparent 35%, #eef3eab3 65%, #eef3ea 90%);
   color-scheme: light;
 }
 
 /* TWIN PEAKS — Fire Walk with Me, David Lynch (1992)
    La Chambre rouge : rideaux de velours, sol à chevrons noir et blanc, lumière de lounge. */
+/* Thème par défaut (:where = priorité nulle, pour que tout autre thème choisi l'emporte) */
+:where(:root),
 [data-theme="lynch"] {
   --background: #0d0303;
   --surface: #1e0507;
@@ -124,68 +125,71 @@
 }
 
 /* 2001 — 2001 : l'Odyssée de l'espace, Stanley Kubrick (1968)
-   Le blanc clinique du vaisseau, le noir de l'espace, l'œil rouge de HAL 9000. */
+   Le blanc clinique du Discovery, le monolithe noir, l'œil rouge de HAL 9000. Capitales espacées, angles droits. */
 [data-theme="odyssey"] {
-  --background: #f3f3f1;
+  --background: #ffffff;
   --surface: #ffffff;
-  --surface-2: #e9e9e6;
-  --border: #d7d7d3;
-  --foreground: #0b0b0b;
-  --muted: #6d6d6a;
+  --surface-2: #f1f1f1;
+  --border: #111111;
+  --foreground: #050505;
+  --muted: #6b6b6b;
   --accent: #e10600;
-  --accent-soft: #e1060014;
+  --accent-soft: #e1060012;
   --on-accent: #fff;
   --heart: #e10600;
   --display: var(--font-syncopate);
   --display-weight: 700;
   --texture: none;
   --glow: none;
+  /* Le monolithe : une dalle noire sur le bord droit, l'œil de HAL tout en haut ; et la grille des panneaux du vaisseau */
+  --backdrop: linear-gradient(90deg, transparent calc(100% - 44px), #050505 calc(100% - 44px)),
+    repeating-linear-gradient(90deg, transparent 0 159px, #00000010 159px 160px),
+    repeating-linear-gradient(0deg, transparent 0 159px, #00000010 159px 160px);
+  --backdrop-pos: 0 0;
+  --backdrop-mask: none;
+  --backdrop-overlay: radial-gradient(circle at calc(100% - 22px) 120px, #fff3a8 0 3px, #ff2a00 6px, #8a0000 12px, transparent 14px),
+    radial-gradient(circle at calc(100% - 22px) 120px, #ff2a0066 0, transparent 40px);
   color-scheme: light;
 }
 
 /* CLOSE-UP — Abbas Kiarostami (1990)
-   La lumière crue de Téhéran, les collines ocre de Koker, le chemin en zigzag.
-   Titres en Lalezar, une police dessinée pour les affiches persanes. */
+   Un fait divers : le papier journal, l'encre noire, le rouge des affiches persanes, le grain du 16 mm.
+   Titres en Lalezar, une police dessinée pour les affiches persanes ; filets noirs, angles droits. */
 [data-theme="closeup"] {
-  --background: #eee6d8;
-  --surface: #f7f1e6;
-  --surface-2: #e4dac8;
-  --border: #d6c9b3;
-  --foreground: #2a241d;
-  --muted: #7a6e5f;
-  --accent: #a4532a;
-  --accent-soft: #a4532a1a;
+  --background: #ece5d6;
+  --surface: #f5efe3;
+  --surface-2: #e2d9c6;
+  --border: #141210;
+  --foreground: #141210;
+  --muted: #5e564a;
+  --accent: #c8161d;
+  --accent-soft: #c8161d18;
   --on-accent: #fff;
-  --heart: #b8433b;
+  --heart: #c8161d;
   --display: var(--font-lalezar);
   --display-weight: 400;
   --texture: none;
-  --glow: radial-gradient(ellipse 90% 60% at 50% -20%, #fffaf0aa, transparent 70%),
-    radial-gradient(ellipse 90% 85% at 50% 50%, transparent 60%, #6b4a2230 100%);
+  --glow: radial-gradient(ellipse 90% 85% at 50% 50%, transparent 55%, #4a382035 100%);
   color-scheme: light;
 }
 
 /* LE BONHEUR — Agnès Varda (1965)
-   Les tournesols, les prés d'Île-de-France, le violet des fondus. */
+   Les fondus au jaune et au violet, les tournesols : des aplats francs, comme les couleurs du film. */
 [data-theme="varda"] {
-  --background: #fbf6e9;
-  --surface: #fffdf7;
-  --surface-2: #f3ead3;
-  --border: #e6d9b8;
-  --foreground: #2b2340;
-  --muted: #776c86;
-  --accent: #7b3fa6;
-  --accent-soft: #7b3fa61c;
+  --background: #ffd53d;
+  --surface: #fff1b0;
+  --surface-2: #ffe680;
+  --border: #3d1a6e;
+  --foreground: #2a0f52;
+  --muted: #5d3f86;
+  --accent: #6c2bb5;
+  --accent-soft: #6c2bb522;
   --on-accent: #fff;
-  --heart: #e8930c;
+  --heart: #ff4f1f;
   --display: var(--font-abril);
   --display-weight: 400;
   --texture: none;
   --glow: none;
-  --backdrop: url("/themes/varda.jpg");
-  --backdrop-pos: center top;
-  --backdrop-mask: linear-gradient(to bottom, #000 0, #000 25%, transparent 75%);
-  --backdrop-overlay: linear-gradient(to bottom, #fbf6e914 0, #fbf6e980 30%, #fbf6e9e0 55%, #fbf6e9 75%);
   color-scheme: light;
 }
 
@@ -319,8 +323,102 @@ h3 {
 /* Thèmes sans image de fond (sinon ils hériteraient de celle de Yume, le thème par défaut) */
 [data-theme="closeup"],
 [data-theme="pierrot"],
-[data-theme="odyssey"] {
+[data-theme="varda"] {
   --backdrop: none;
   --backdrop-mask: none;
   --backdrop-overlay: none;
+}
+
+/* --- Des partis pris francs, thème par thème (comme Pierrot) --- */
+
+/* Le Bonheur : aplats jaunes, filets et ombres pleines violettes, titres violets géants */
+[data-theme="varda"] main .border {
+  border-width: 2px;
+}
+[data-theme="varda"] main :is(a.rounded-xl, a.rounded-2xl, a.rounded-3xl, .rounded-3xl):hover {
+  box-shadow: 6px 6px 0 #3d1a6e;
+}
+[data-theme="varda"] h1.page-title {
+  color: var(--accent);
+  font-size: clamp(3.2rem, 9vw, 6.5rem);
+  line-height: 0.9;
+}
+[data-theme="varda"] .page-title::after {
+  width: 7rem;
+  height: 10px;
+  background: var(--accent);
+}
+
+/* Close-Up : la mise en page d'un journal — angles droits, filets noirs épais au-dessus des rubriques, tampon rouge */
+[data-theme="closeup"] main :is(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl) {
+  border-radius: 2px;
+}
+[data-theme="closeup"] main .border {
+  border-width: 1.5px;
+}
+[data-theme="closeup"] main h2 {
+  border-top: 4px solid var(--foreground);
+  padding-top: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+[data-theme="closeup"] h1.page-title {
+  font-size: clamp(3.4rem, 10vw, 7rem);
+  line-height: 0.85;
+  text-transform: uppercase;
+}
+[data-theme="closeup"] .page-title::after {
+  width: 100%;
+  height: 7px;
+  margin-top: 0.6rem;
+  border-top: 3px solid var(--foreground);
+  border-bottom: 1px solid var(--foreground);
+}
+[data-theme="closeup"] header.sticky {
+  border-bottom: 2px solid var(--foreground);
+}
+
+/* 2001 : angles droits, filets noirs fins, capitales très espacées ; le monolithe disparaît sur téléphone */
+[data-theme="odyssey"] main :is(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl) {
+  border-radius: 0;
+}
+[data-theme="odyssey"] :is(h1, h2, .font-display) {
+  font-family: var(--font-syncopate), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+[data-theme="odyssey"] h2 {
+  font-size: 1rem;
+}
+[data-theme="odyssey"] h1.page-title {
+  font-size: clamp(2.2rem, 6.5vw, 4.6rem);
+  letter-spacing: 0.18em;
+}
+[data-theme="odyssey"] header.sticky {
+  border-bottom: 1px solid #111;
+}
+@media (max-width: 767px) {
+  [data-theme="odyssey"] {
+    --backdrop: repeating-linear-gradient(90deg, transparent 0 159px, #00000010 159px 160px);
+    --backdrop-overlay: none;
+  }
+}
+
+/* Le vent se lève : l'image occupe tout le haut, les grands titres en blanc dans le ciel */
+[data-theme="vent"] h1.page-title {
+  color: #fff;
+  font-size: clamp(3rem, 8vw, 6rem);
+  text-shadow: 0 2px 30px #0b2a4a66;
+}
+[data-theme="vent"] .page-title::after {
+  display: none;
+}
+[data-theme="vent"] main :is(.rounded-xl, .rounded-2xl, .rounded-3xl).bg-surface {
+  box-shadow: 0 18px 40px -24px #14263a55;
+}
+@media (min-width: 768px) {
+  /* 2001 : le contenu s'arrête avant le monolithe */
+  [data-theme="odyssey"] body {
+    padding-right: 44px;
+  }
 }

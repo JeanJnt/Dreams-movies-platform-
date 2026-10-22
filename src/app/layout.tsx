@@ -37,7 +37,7 @@ export async function generateViewport(): Promise<Viewport> {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const saved = (await cookies()).get("theme")?.value;
-  const theme: Theme = THEMES.some((t) => t.key === saved) ? (saved as Theme) : "yume";
+  const theme: Theme = THEMES.some((t) => t.key === saved) ? (saved as Theme) : "lynch";
   const user = await currentUser();
   const alerts = user ? await unseenAlerts() : 0;
   const fonts = [geistSans, fraunces, fat, bodoni, syncopate, lalezar, kaisei, limelight, abril].map((f) => f.variable).join(" ");
