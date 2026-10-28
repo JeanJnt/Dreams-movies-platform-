@@ -21,9 +21,10 @@ const DEFAULT_PLATFORMS = ["netflix", "prime", "canal", "hbo"];
 
 const schema = () => ensureSchema(); // mémorisé dans db.ts (et réessayé en cas d'échec)
 
-export async function getMyPlatforms(): Promise<string[]> {
+// `forUser` : un membre précis, sans session (la TV, qui passe par son lien secret) ; sinon le membre connecté.
+export async function getMyPlatforms(forUser?: number): Promise<string[]> {
   await schema();
-  const { rows } = await db().execute({ sql: "SELECT value FROM settings WHERE user_id = ? AND key = 'platforms'", args: [await uid()] });
+  const { rows } = await db().execute({ sql: "SELECT value FROM settings WHERE user_id = ? AND key = 'platforms'", args: [forUser ?? await uid()] });
   return rows[0] ? JSON.parse(String(rows[0].value)) : DEFAULT_PLATFORMS;
 }
 
@@ -75,6 +76,7 @@ function match(taste: Taste, genres: string[], directors: string[], boost = 0) {
 
 export type Pick = {
   key: string;
+  tmdbId: number | null;
   href: string;
   title: string;
   year: number | null;
@@ -108,10 +110,10 @@ function applyFilters(picks: Pick[], f: PickFilters, mine: string[]) {
 
 const parse = <T>(v: unknown, fallback: T): T => (typeof v === "string" ? JSON.parse(v) : fallback);
 
-export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?: string; empty?: "reco" }> {
+export async function picks(f: PickFilters, forUser?: number): Promise<{ picks: Pick[]; fromTitle?: string; empty?: "reco" }> {
   await schema();
-  const u = await uid();
-  const [mine, taste] = await Promise.all([getMyPlatforms(), tasteProfile(u)]);
+  const u = forUser ?? await uid();
+  const [mine, taste] = await Promise.all([getMyPlatforms(u), tasteProfile(u)]);
   const wl = await db().execute(`SELECT f.tmdb_id FROM watchlist w JOIN films f ON f.id = w.film_id WHERE w.user_id = ${u} AND f.tmdb_id IS NOT NULL`);
   const watchlistIds = new Set(wl.rows.map((r) => Number(r.tmdb_id)));
 
@@ -126,7 +128,7 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
     const all = rows.map((r) => {
       const genres = parse<string[]>(r.genres, []), directors = parse<string[]>(r.directors, []);
       return {
-        key: `f${r.id}`, href: `/film/${r.id}`, title: String(r.title), year: r.year == null ? null : Number(r.year),
+        key: `f${r.id}`, tmdbId: r.tmdb_id == null ? null : Number(r.tmdb_id), href: `/film/${r.id}`, title: String(r.title), year: r.year == null ? null : Number(r.year),
         posterPath: (r.poster_path as string) ?? null, runtime: r.runtime == null ? null : Number(r.runtime),
         genres, directors, platforms: parse<ProviderLite[]>(r.flatrate, []), reasons: [],
         // Bonus si le film est aussi recommandé à partir de mes favoris.
@@ -147,7 +149,7 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
       recos.results.filter((r) => !seen.has(r.id)).slice(0, 20).map((r) => movieLite(r.id)),
     );
     const all = details.map((m) => ({
-      key: `t${m.id}`, href: `/tmdb/${m.id}`, title: m.title, year: m.year, posterPath: m.posterPath, runtime: m.runtime,
+      key: `t${m.id}`, tmdbId: m.id, href: `/tmdb/${m.id}`, title: m.title, year: m.year, posterPath: m.posterPath, runtime: m.runtime,
       genres: m.genres, directors: m.directors, platforms: m.flatrate, reasons: [String(film.rows[0].title)],
       match: match(taste, m.genres, m.directors, 5), inWatchlist: watchlistIds.has(m.id),
     }));
@@ -175,7 +177,7 @@ export async function picks(f: PickFilters): Promise<{ picks: Pick[]; fromTitle?
   const all = ranked.map(({ r, rank }) => {
     const genres = parse<string[]>(r.genres, []), directors = parse<string[]>(r.directors, []);
     return {
-      key: `t${r.tmdb_id}`, href: `/tmdb/${r.tmdb_id}`, title: String(r.title), year: r.year == null ? null : Number(r.year),
+      key: `t${r.tmdb_id}`, tmdbId: Number(r.tmdb_id), href: `/tmdb/${r.tmdb_id}`, title: String(r.title), year: r.year == null ? null : Number(r.year),
       posterPath: (r.poster_path as string) ?? null, runtime: r.runtime == null ? null : Number(r.runtime),
       genres, directors, platforms: parse<ProviderLite[]>(r.flatrate, []), reasons: parse<string[]>(r.reasons, []),
       match: match(taste, genres, directors, (rank / maxRank) * 15),

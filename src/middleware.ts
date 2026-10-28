@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Première barrière : sans cookie de session, toute page renvoie vers la connexion.
 // (La vraie vérification de la session, en base, est faite ensuite par chaque page et chaque action.)
-// /api/upload et /api/cron vérifient eux-mêmes leurs droits (session, signature de Vercel Blob, secret de la tâche planifiée).
-const PUBLIC = ["/connexion", "/inscription", "/hors-ligne", "/agenda/ics", "/manifest.webmanifest", "/sw.js", "/api/upload", "/api/cron", "/.well-known", "/partage"];
+// /api/tv (comme /agenda/ics) passe par le lien secret du membre ; /api/upload et /api/cron vérifient eux-mêmes leurs droits (session, signature de Vercel Blob, secret de la tâche planifiée).
+const PUBLIC = ["/connexion", "/inscription", "/hors-ligne", "/agenda/ics", "/api/tv", "/manifest.webmanifest", "/sw.js", "/api/upload", "/api/cron", "/.well-known", "/partage"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
