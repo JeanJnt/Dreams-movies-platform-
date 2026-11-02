@@ -2,14 +2,17 @@
 import { ImageResponse } from "next/og";
 import { cookies } from "next/headers";
 import sharp from "sharp";
-import { cardPages, headlineSize, TEXT_GAP, TEXT_LINE, TEXT_SIZE } from "@/lib/critique-card";
+import { plainParagraphs } from "@/lib/critique-card";
 import { getCritique } from "@/lib/critiques";
 import { LOGO_PATH, LOGO_VIEWBOX } from "@/lib/logo-path";
 import { mediaBytes } from "@/lib/media";
 import { backdrop, poster } from "@/lib/tmdb";
 
-// Cartes de partage d'une critique (format portrait 1080 × 1350, idéal pour Instagram), aux couleurs du thème.
-// Une critique longue tient sur plusieurs cartes (?page=2, ?page=3…) : voir critique-card.ts.
+// Carte de partage d'une critique, aux couleurs du thème : une seule image de 1080 px de large, avec tout le texte.
+// Sa hauteur suit le texte, avec au moins le format portrait 1080 × 1350 pour une critique courte.
+// Plus l'image est haute, plus elle est longue à générer : une critique très longue peut prendre plusieurs dizaines de secondes.
+export const maxDuration = 60;
+
 const PALETTES: Record<string, { bg: string; fg: string; accent: string; muted: string; font: string; italic: boolean }> = {
   yume: { bg: "#101c55", fg: "#fbf3d9", accent: "#f2c230", muted: "#a9b5e0", font: "Fraunces", italic: true },
   totoro: { bg: "#e6f1ec", fg: "#1f3a2c", accent: "#3f7d4e", muted: "#5e7b6b", font: "Kaisei Decol", italic: false },
@@ -63,38 +66,7 @@ async function inlineImage(url: string | null) {
   return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
 }
 
-type Palette = (typeof PALETTES)[string];
-
-function Paragraphs({ paragraphs, p }: { paragraphs: string[]; p: Palette }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: TEXT_GAP, fontSize: TEXT_SIZE, lineHeight: `${TEXT_LINE}px`, color: p.fg, opacity: 0.85, fontFamily: "Sans" }}>
-      {paragraphs.map((t, i) => <div key={i} style={{ display: "flex" }}>{t}</div>)}
-    </div>
-  );
-}
-
-function Signature({ p, page, total }: { p: Palette; page: number; total: number }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 72px 60px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-        <svg viewBox={LOGO_VIEWBOX} width={62} height={68} fill={p.fg}>
-          <path d={LOGO_PATH} />
-        </svg>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 40 }}>Dreams</div>
-          <div style={{ fontSize: 18, letterSpacing: 6, color: p.muted, fontFamily: "Sans" }}>JOURNAL DE CINÉMA</div>
-        </div>
-      </div>
-      {total > 1 ? (
-        <div style={{ fontSize: 30, color: p.accent, fontFamily: "Sans" }}>{`${page} / ${total}`}</div>
-      ) : (
-        <div style={{ width: 52, height: 52, borderRadius: 8, background: p.accent, display: "flex" }} />
-      )}
-    </div>
-  );
-}
-
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const c = await getCritique(Number((await params).id));
   if (!c) return new Response("Critique introuvable", { status: 404 });
   const themeKey = (await cookies()).get("theme")?.value ?? "lynch";
@@ -102,20 +74,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const filmTitle = c.filmTitleFr ?? c.filmName;
   const headline = c.title || filmTitle;
-  const pages = cardPages({ headline, lede: c.lede, body: c.body });
-  const page = Number(new URL(req.url).searchParams.get("page") ?? 1);
-  const paragraphs = pages[page - 1];
-  if (!paragraphs) return new Response("Carte introuvable", { status: 404 });
-  const first = page === 1;
+  const paragraphs = [...(c.lede.trim() ? [c.lede.replace(/\s+/g, " ").trim()] : []), ...plainParagraphs(c.body)];
 
   const fontData = await loadFont(p.font, `${headline}${filmTitle}Dreams`, p.italic).catch(() => null);
   // Police du texte courant : Inter, pour le texte et les petites mentions.
-  const sansData = await loadFont("Inter", `${paragraphs.join("")}${filmTitle} · ${c.year ?? ""}${c.directors.join(", ")}JOURNAL DE CINÉMA 0123456789/`, false).catch(() => null);
-  const [bg, cover] = first ? await Promise.all([inlineImage(backdrop(c.backdropPath)), inlineImage(poster(c.posterPath, "w500"))]) : [null, null];
+  const sansData = await loadFont("Inter", `${paragraphs.join("")}${filmTitle} · ${c.year ?? ""}${c.directors.join(", ")}JOURNAL DE CINÉMA`, false).catch(() => null);
+  const [bg, cover] = await Promise.all([inlineImage(backdrop(c.backdropPath)), inlineImage(poster(c.posterPath, "w500"))]);
 
   const image = new ImageResponse(
-    first ? (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: p.bg, color: p.fg, fontFamily: "Display" }}>
+    (
+      <div style={{ width: 1080, minHeight: 1350, display: "flex", flexDirection: "column", background: p.bg, color: p.fg, fontFamily: "Display" }}>
         {/* Bandeau image du film */}
         <div style={{ position: "relative", display: "flex", height: 560 }}>
           {bg && <img src={bg} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
@@ -133,27 +101,31 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 34, padding: "56px 72px 0", flex: 1, overflow: "hidden" }}>
-          <div style={{ fontSize: headlineSize(headline), lineHeight: 1.02, fontStyle: p.italic ? "italic" : "normal" }}>{headline}</div>
-          <Paragraphs paragraphs={paragraphs} p={p} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 34, padding: "56px 72px 0", flexGrow: 1 }}>
+          <div style={{ fontSize: headline.length > 40 ? 64 : 84, lineHeight: 1.02, fontStyle: p.italic ? "italic" : "normal" }}>{headline}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 22, fontSize: 34, lineHeight: 1.45, color: p.fg, opacity: 0.85, fontFamily: "Sans" }}>
+            {paragraphs.map((t, i) => <div key={i} style={{ display: "flex" }}>{t}</div>)}
+          </div>
         </div>
 
-        <Signature p={p} page={page} total={pages.length} />
-      </div>
-    ) : (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: p.bg, color: p.fg, fontFamily: "Display" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 34, padding: "72px 72px 0", flex: 1, overflow: "hidden" }}>
-          <div style={{ height: 36, fontSize: 26, letterSpacing: 6, textTransform: "uppercase", color: p.accent, fontFamily: "Sans", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {`${filmTitle} · ${c.year ?? ""}`}
+        {/* Signature */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 72px 60px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <svg viewBox={LOGO_VIEWBOX} width={62} height={68} fill={p.fg}>
+              <path d={LOGO_PATH} />
+            </svg>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: 40 }}>Dreams</div>
+              <div style={{ fontSize: 18, letterSpacing: 6, color: p.muted, fontFamily: "Sans" }}>JOURNAL DE CINÉMA</div>
+            </div>
           </div>
-          <Paragraphs paragraphs={paragraphs} p={p} />
+          <div style={{ width: 52, height: 52, borderRadius: 8, background: p.accent, display: "flex" }} />
         </div>
-        <Signature p={p} page={page} total={pages.length} />
       </div>
     ),
     {
       width: 1080,
-      height: 1350,
+      height: undefined, // sans hauteur imposée, le rendu la calcule d'après le contenu
       fonts: [
         ...(fontData ? [{ name: "Display", data: fontData, style: (p.italic ? "italic" : "normal") as "italic" | "normal" }] : []),
         ...(sansData ? [{ name: "Sans", data: sansData, style: "normal" as const }] : []),
