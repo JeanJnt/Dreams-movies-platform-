@@ -39,4 +39,7 @@ export async function watchProviders(tmdbId: number): Promise<WatchProviders | n
 export const poster = (p: string | null | undefined, size: "w185" | "w342" | "w500" | "original" = "w342") =>
   !p ? null : p.startsWith("/media/") ? p : `https://image.tmdb.org/t/p/${size}${p}`;
 
-export const backdrop = (p: string | null | undefined) => (p ? `https://image.tmdb.org/t/p/w1280${p}` : null);
+export const backdrop = (p: string | null | undefined) => (!p ? null : p.startsWith("/media/") ? p : `https://image.tmdb.org/t/p/w1280${p}`);
+
+// L'image d'un disque peut venir d'une affiche ou d'un fond : w780 est la seule grande taille commune aux deux.
+export const discImage = (p: string) => (p.startsWith("/media/") ? p : `https://image.tmdb.org/t/p/w780${p}`);

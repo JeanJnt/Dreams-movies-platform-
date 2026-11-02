@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { setDiscStyleAction } from "@/app/actions";
 import { DISC_LAYOUTS, DiscLabel, type DiscData } from "./DiscLabel";
+import { FilmImagePicker } from "./FilmImagePicker";
 
 const LABELS: Record<string, string> = {
   auto: "Auto",
@@ -14,16 +15,19 @@ const LABELS: Record<string, string> = {
   duo: "Bichromie",
 };
 
-// Le disque du film (en haut de la fiche) : en le touchant, on choisit sa maquette, vue directement sur ce film.
+// Le disque du film (en haut de la fiche) : en le touchant, on choisit sa maquette, vue directement sur ce film, et son image.
 export function DiscStylePicker({
   disc,
   filmId,
+  customImage,
 }: {
   disc: DiscData;
   filmId: number;
+  customImage: string | null; // l'image choisie par le membre pour ce disque
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [pickingImage, setPickingImage] = useState(false);
   const [current, setCurrent] = useState<string>(disc.variant ?? "auto");
   const [, start] = useTransition();
 
@@ -91,10 +95,29 @@ export function DiscStylePicker({
                   </button>
                 ))}
               </div>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setPickingImage(true);
+                }}
+                className="mt-4 w-full rounded-full border border-border px-4 py-2 text-sm hover:border-accent"
+              >
+                Changer l&apos;image du disque
+              </button>
             </div>
           </div>,
           document.body,
         )}
+
+      {pickingImage && (
+        <FilmImagePicker
+          filmId={filmId}
+          kind="disc"
+          current={customImage}
+          hasCustom={Boolean(customImage)}
+          onClose={() => setPickingImage(false)}
+        />
+      )}
     </>
   );
 }

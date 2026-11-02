@@ -1,5 +1,5 @@
 import { currentUser, uid } from "./auth";
-import { db, ensureSchema, posterSql } from "./db";
+import { backdropSql, db, ensureSchema, posterSql } from "./db";
 import { chosenFilter, watchedForAlertsSql } from "./alert-sources";
 import { pciCheck } from "./pariscine";
 import { tmdb } from "./tmdb";
@@ -160,7 +160,7 @@ export async function listAlerts(): Promise<Alert[]> {
   const u = await uid();
   const { rows } = await db().execute(`
     SELECT a.*, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster,
-      f.backdrop_path, json_extract(f.directors, '$[0]') AS director
+      ${backdropSql(u)} AS backdrop_path, json_extract(f.directors, '$[0]') AS director
     FROM alerts a JOIN films f ON f.id = a.film_id WHERE a.user_id = ${u} AND ${await chosenFilter(u)}
     ORDER BY a.seen, CASE a.kind WHEN 'paris' THEN 0 WHEN 'en_salle' THEN 1 WHEN 'ressortie' THEN 2 ELSE 3 END, a.release_date`);
   return rows.map((r) => ({

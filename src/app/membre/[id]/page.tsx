@@ -4,9 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityFeed, TextKind } from "@/components/ActivityFeed";
 import { DvdCase } from "@/components/DvdCase";
+import { LetterboxdSyncButton } from "@/components/LetterboxdConnect";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { ownedFilms } from "@/lib/collection";
+import { db } from "@/lib/db";
 import { discStyles } from "@/lib/disc-style";
 import { formatLongDate } from "@/lib/format";
 import { topPeople } from "@/lib/people";
@@ -16,6 +18,9 @@ import { statsOverview, topJson } from "@/lib/stats";
 import { backdrop, poster } from "@/lib/tmdb";
 
 type Props = { params: Promise<{ id: string }> };
+
+// La synchronisation Letterboxd lancée depuis le profil peut prendre un moment.
+export const maxDuration = 60;
 
 async function memberId(params: Props["params"]) {
   const id = Number((await params).id);
@@ -40,6 +45,7 @@ export default async function MemberPage({ params }: Props) {
     ownedFilms(undefined, id), topJson("genres", 5, id), topPeople("director", 5, id), activity({ userId: id, limit: 12 }),
   ]);
   const isMe = id === me.id;
+  const letterboxd = isMe ? (await db().execute({ sql: "SELECT letterboxd_username FROM users WHERE id = ?", args: [id] })).rows[0]?.letterboxd_username : null;
   const hero = favorites.find((f) => f.backdrop_path);
   // Étiquettes des disques : couleurs des images et maquettes choisies par ce membre
   const styles = await discStyles(
@@ -59,6 +65,7 @@ export default async function MemberPage({ params }: Props) {
             <h1 className="text-5xl leading-none md:text-6xl">{member.username ? `@${member.username}` : member.name}</h1>
             <p className="mt-2 text-sm text-muted">{member.username && `${member.firstName} · `}Membre depuis le {formatLongDate(member.createdAt.slice(0, 10))}</p>
           </div>
+          {isMe && letterboxd ? <LetterboxdSyncButton /> : null}
           {isMe && <Link href="/compte" className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent">Modifier mon compte</Link>}
         </div>
         <div className="relative grid grid-cols-2 border-t border-border bg-surface md:grid-cols-4">

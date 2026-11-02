@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { LibraryTabs } from "@/components/LibraryTabs";
 import { PickCard } from "@/components/PickCard";
 import { PickFilters, PlatformPicker } from "@/components/PickControls";
 import { GENRES, PLATFORMS, getMyPlatforms, picks, type PickFilters as Filters } from "@/lib/reco";
@@ -14,6 +15,7 @@ export default async function ConseilsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-6 pt-2 md:pt-8">
+      <LibraryTabs />
       <div>
         <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Que regarder ce soir ?</h1>
         <p className="mt-3 max-w-2xl text-muted">

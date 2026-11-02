@@ -77,7 +77,8 @@ async function filmFor(e: Entry): Promise<number | null> {
     id = Number(res.lastInsertRowid);
   }
   if (e.tmdbId && (!byKey.rows[0] || byKey.rows[0].tmdb_status !== "ok")) {
-    await applyMovieToFilm(id, await fetchMovie(e.tmdbId)).catch(() => {});
+    // Une erreur TMDB sur un film ne doit pas interrompre toute la synchronisation.
+    await fetchMovie(e.tmdbId).then((movie) => applyMovieToFilm(id, movie)).catch(() => {});
   }
   return id;
 }

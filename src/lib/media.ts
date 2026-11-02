@@ -1,6 +1,6 @@
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { deleteFile, fileExists, mediaPath, saveFile } from "./storage";
+import { deleteFile, fileExists, mediaPath, readFile, saveFile } from "./storage";
 import { uid } from "./auth";
 import { db, ensureSchema } from "./db";
 
@@ -118,7 +118,7 @@ export async function setMediaVisibility(id: number, visibility: Visibility) {
 }
 
 // Enregistre une image (jaquette, affiche…) et renvoie son adresse.
-export async function saveImage(filmId: number, file: File, prefix: "cover" | "poster") {
+export async function saveImage(filmId: number, file: File, prefix: "cover" | "poster" | "backdrop" | "disc") {
   const ext = path.extname(file.name).toLowerCase() || ".jpg";
   if (!MIME[ext]?.startsWith("image/")) throw new Error("Choisis une image (jpg, png, webp…).");
   if (file.size > 20 * 1024 * 1024) throw new Error("Image trop lourde (20 Mo maximum).");
@@ -130,15 +130,23 @@ export async function saveImage(filmId: number, file: File, prefix: "cover" | "p
 
 export async function removeImage(url: string) {
   const me = await uid();
-  const m = url.match(/^\/media\/(\d+)\/(\d+)\/((?:cover|poster)-[\w-]+\.\w+)$/);
+  const m = url.match(/^\/media\/(\d+)\/(\d+)\/((?:cover|poster|backdrop|disc)-[\w-]+\.\w+)$/);
   if (m && Number(m[1]) === me) await deleteFile(mediaPath(me, Number(m[2]), m[3]));
 }
 
+// Lit une image envoyée par un membre (« /media/… ») : pour sa couleur, ou pour l'intégrer à une carte de partage.
+export async function mediaBytes(url: string) {
+  const m = url.match(/^\/media\/(\d+)\/(\d+)\/([\w-]+\.\w+)$/);
+  if (!m) return null;
+  const res = await readFile(mediaPath(Number(m[1]), Number(m[2]), m[3]), null);
+  return res ? Buffer.from(await res.arrayBuffer()) : null;
+}
+
 // Qui a le droit de voir un fichier ? Son auteur, et les membres si le média est partagé.
-// Les jaquettes et affiches personnalisées sont visibles des membres (elles apparaissent sur les profils).
+// Les jaquettes, affiches et images de fond ou de disque personnalisées sont visibles des membres (elles apparaissent sur les profils).
 export async function canView(viewer: number, owner: number, file: string) {
   if (viewer === owner) return true;
-  if (/^(cover|poster)-/.test(file)) return true;
+  if (/^(cover|poster|backdrop|disc)-/.test(file)) return true;
   const { rows } = await db().execute({ sql: "SELECT visibility FROM media WHERE user_id = ? AND src = ?", args: [owner, file] });
   return rows[0]?.visibility === "membres";
 }
