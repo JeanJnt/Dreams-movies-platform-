@@ -26,6 +26,7 @@ const ICONS = {
   bookmark: "M6 3h12v18l-6-4-6 4z",
   user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
   download: "M12 3v12M7 10l5 5 5-5M5 21h14",
+  ticket: "M3 8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.5a1.5 1.5 0 0 0 0 3V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2.5a1.5 1.5 0 0 0 0-3zM15 7v2M15 11v2M15 15v2",
 };
 
 // Ordinateur : une seule rangée de liens, sobre.
@@ -37,18 +38,17 @@ const DESKTOP = [
   { href: "/agenda", label: "Agenda" },
   { href: "/activite", label: "Communauté" },
 ];
-// Mobile : 4 onglets + « Plus », comme une appli native.
+// Mobile : 5 onglets + « Plus », comme une appli native. Les conseils sont rangés sous « Films ».
 const MOBILE = [
   { href: "/", label: "Accueil", icon: ICONS.home },
   { href: "/films", label: "Films", icon: ICONS.films },
   { href: "/recherche", label: "Chercher", icon: ICONS.search },
-  { href: "/conseils", label: "Conseils", icon: ICONS.star },
+  { href: "/agenda", label: "Agenda", icon: ICONS.calendar },
+  { href: "/alertes", label: "À l'affiche", icon: ICONS.ticket },
 ];
 // Tout le reste, dans le panneau « Plus » (mobile)
 const MORE = [
   { href: "/critiques", label: "Critiques", icon: ICONS.pen },
-  { href: "/agenda", label: "Agenda", icon: ICONS.calendar },
-  { href: "/alertes", label: "Au cinéma", icon: ICONS.bell },
   { href: "/stats", label: "Stats", icon: ICONS.chart },
   { href: "/watchlist", label: "Watchlist", icon: ICONS.bookmark },
   { href: "/listes", label: "Listes", icon: ICONS.list },
@@ -59,9 +59,9 @@ const MORE = [
   { href: "/installer", label: "Installer", icon: ICONS.download },
 ];
 // Les pages « racines » des onglets du bas : ailleurs, on affiche une flèche de retour.
-const ROOTS = ["/", "/films", "/recherche", "/conseils"];
+const ROOTS = ["/", "/films", "/recherche", "/agenda", "/alertes"];
 // Pages rangées sous « Films » et sous « Communauté »
-const LIBRARY = ["/films", "/watchlist", "/collection", "/listes", "/personnes", "/personne"];
+const LIBRARY = ["/films", "/conseils", "/watchlist", "/collection", "/listes", "/personnes", "/personne"];
 const COMMUNITY = ["/activite", "/membres", "/membre"];
 
 function Icon({ d, className = "size-5" }: { d: string; className?: string }) {
@@ -131,6 +131,8 @@ export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; use
 
   const active = (href: string) =>
     href === "/" ? path === "/" : href === "/films" ? LIBRARY.some((l) => path.startsWith(l)) : href === "/activite" ? COMMUNITY.some((l) => path.startsWith(l)) : path.startsWith(href);
+  // Ordinateur : « Conseils » a son propre lien, « Films » ne s'allume pas en même temps.
+  const activeDesktop = (href: string) => active(href) && !(href === "/films" && path.startsWith("/conseils"));
   const moreActive = MORE.some((l) => path.startsWith(l.href)) && !MOBILE.some((l) => active(l.href));
 
   return (
@@ -146,10 +148,10 @@ export function Nav({ theme, alerts, user }: { theme: Theme; alerts: number; use
               <Link
                 key={l.href}
                 href={l.href}
-                className={`relative flex h-full items-center text-sm transition-colors ${active(l.href) ? "font-medium text-foreground" : "text-muted hover:text-foreground"}`}
+                className={`relative flex h-full items-center text-sm transition-colors ${activeDesktop(l.href) ? "font-medium text-foreground" : "text-muted hover:text-foreground"}`}
               >
                 {l.label}
-                {active(l.href) && <span className="absolute inset-x-0 bottom-3 h-0.5 rounded-full bg-accent" />}
+                {activeDesktop(l.href) && <span className="absolute inset-x-0 bottom-3 h-0.5 rounded-full bg-accent" />}
               </Link>
             ))}
           </div>

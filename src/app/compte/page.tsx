@@ -37,12 +37,13 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </p>
       </div>
 
+      {/* Une fois connecté, la synchronisation passe en premier : c'est elle qu'on vient chercher ici. */}
+      {info.letterboxd_username ? <LetterboxdConnect connected={info.letterboxd_username as string} syncedAt={(info.letterboxd_synced_at as string) ?? null} /> : null}
+
       <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
 
       {/* Pendant l'accueil d'un nouveau membre, la connexion Letterboxd apparaît à la fin de l'import. */}
-      {(!onboarding || info.letterboxd_username) && (
-        <LetterboxdConnect connected={(info.letterboxd_username as string) ?? null} syncedAt={(info.letterboxd_synced_at as string) ?? null} />
-      )}
+      {!onboarding && !info.letterboxd_username && <LetterboxdConnect connected={null} />}
 
       <section id="profil" className={`space-y-4 rounded-3xl border bg-surface p-5 md:p-6 ${me.username ? "border-border" : "border-accent"}`}>
         <h2 className="text-2xl">Profil et préférences</h2>

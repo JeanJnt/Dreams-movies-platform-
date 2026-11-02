@@ -4,7 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DiscStylePicker } from "@/components/DiscStylePicker";
+import { BackdropButton } from "@/components/FilmImagePicker";
 import { discStyles } from "@/lib/disc-style";
+import { filmImages } from "@/lib/film-images";
 import { Poster } from "@/components/FilmCard";
 import { MediaGallery } from "@/components/MediaGallery";
 import { OwnButton } from "@/components/OwnButton";
@@ -36,7 +38,7 @@ export default async function FilmPage({ params }: Props) {
   const id = Number((await params).id);
   const film = await filmDetail(id);
   if (!film) notFound();
-  const [reviews, diary, lists, providers, critique, owned, media, posters, me] = await Promise.all([
+  const [reviews, diary, lists, providers, critique, owned, media, posters, images, me] = await Promise.all([
     filmReviews(id),
     filmDiary(id),
     filmLists(id),
@@ -45,6 +47,7 @@ export default async function FilmPage({ params }: Props) {
     ownedItem(id),
     filmMedia(id),
     currentPoster(id),
+    filmImages(id),
     currentUser(),
   ]);
   const title = film.title_fr ?? film.name;
@@ -60,10 +63,12 @@ export default async function FilmPage({ params }: Props) {
       <div className="relative -mx-4 overflow-hidden md:mx-0 md:rounded-xl">
         {bg && <img src={bg} alt="" className="absolute inset-0 size-full object-cover opacity-40" />}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
+        <BackdropButton filmId={id} current={film.backdrop_path} hasCustom={Boolean(images.backdrop)} />
         {/* Essai : le disque du film en haut à droite, qui tourne doucement (format du DVD/Blu-ray si je le possède) */}
         {/* Le disque du film : on le touche pour choisir son habillage */}
         <div className="spin-slow absolute top-4 right-4 z-10 aspect-square w-28 drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] md:top-8 md:right-8 md:w-60">
-          <DiscStylePicker filmId={id} disc={{ ...discBase, ...discStyle }} />
+          {/* La clé repart de la maquette enregistrée quand un choix d'image la change */}
+          <DiscStylePicker key={discStyle?.variant ?? "auto"} filmId={id} disc={{ ...discBase, ...discStyle }} customImage={images.disc} />
         </div>
         <div className="relative flex gap-5 px-4 pt-24 pb-4 md:gap-8 md:px-8 md:pt-40">
           <div className="w-28 shrink-0 md:w-56">
@@ -215,7 +220,7 @@ export default async function FilmPage({ params }: Props) {
             initial={owned}
             formats={FORMATS}
             caseTypes={CASE_TYPES}
-            film={{ id, href: `/film/${id}`, title, year: film.year, director: film.directors[0] ?? null, runtime: film.runtime, image: backdrop(film.backdrop_path), poster: poster(film.poster_path, "w500") }}
+            film={{ id, href: `/film/${id}`, title, year: film.year, director: film.directors[0] ?? null, runtime: film.runtime, image: backdrop(film.backdrop_path), poster: poster(film.poster_path, "w500"), ...discStyle }}
           />
 
           <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-surface" />}>
