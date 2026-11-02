@@ -6,7 +6,6 @@ import { TextKind } from "@/components/ActivityFeed";
 import { Markdown } from "@/components/Markdown";
 import { ShareCard } from "@/components/ShareCard";
 import { Stars } from "@/components/Stars";
-import { cardPages } from "@/lib/critique-card";
 import { readingTime } from "@/lib/critiques";
 import { formatLongDate } from "@/lib/format";
 import { readableCritique } from "@/lib/social";
@@ -63,7 +62,7 @@ export default async function CritiquePage({ params }: Props) {
 
         {c.mine && (
           <div className="mt-12">
-            <ShareCard id={c.id} title={c.title || c.filmTitle} pages={cardPages({ headline: c.title || c.filmTitle, lede: c.lede, body: c.body }).length} />
+            <ShareCard id={c.id} title={c.title || c.filmTitle} />
           </div>
         )}
       </div>
