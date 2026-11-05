@@ -4,6 +4,33 @@
  * et son motif sous les titres.
  */
 
+/* NITRATE — le thème signature de Dreams : la salle obscure.
+   Le noir d'une salle avant la séance, la lumière tungstène du projecteur, l'ivoire de l'écran.
+   Titres en Instrument Serif (une revue de cinéma), mentions en chasse fixe comme un générique. */
+:where(:root),
+[data-theme="nitrate"] {
+  --background: #0b0a09;
+  --surface: #141210;
+  --surface-2: #1d1a17;
+  --border: #2a2622;
+  --foreground: #f2ece1;
+  --muted: #9a9286;
+  --accent: #e8b450;
+  --accent-soft: #e8b4501c;
+  --on-accent: #150f05;
+  --heart: #ff6b57;
+  --display: var(--font-instrument);
+  --display-weight: 400;
+  --texture: none;
+  --glow: none;
+  /* Le faisceau du projecteur, tout en haut, et un reste de lumière chaude en bas */
+  --backdrop: radial-gradient(ellipse 70% 55% at 50% -12%, #e8b4501a 0, #e8b45008 45%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 85% 110%, #ff6b570a 0, transparent 70%);
+  --backdrop-pos: 0 0;
+  --backdrop-overlay: none;
+  color-scheme: dark;
+}
+
 /* 夢 YUME — Rêves, Akira Kurosawa (1990), segment « Les Corbeaux »
    Le blé jaune de chrome, le ciel de cobalt tourmenté, les corbeaux noirs : Van Gogh vu par Kurosawa. */
 [data-theme="yume"] {
@@ -55,7 +82,6 @@
 /* TWIN PEAKS — Fire Walk with Me, David Lynch (1992)
    La Chambre rouge : rideaux de velours, sol à chevrons noir et blanc, lumière de lounge. */
 /* Thème par défaut (:where = priorité nulle, pour que tout autre thème choisi l'emporte) */
-:where(:root),
 [data-theme="lynch"] {
   --background: #0d0303;
   --surface: #1e0507;
@@ -272,6 +298,9 @@ h3 {
 [data-theme="odyssey"] h1.page-title {
   font-size: clamp(2rem, 6vw, 4rem);
   letter-spacing: 0.12em;
+}
+[data-theme="nitrate"] :is(h1, .font-display) {
+  letter-spacing: -0.02em;
 }
 [data-theme="lynch"] :is(h1, .font-display) {
   letter-spacing: 0.02em;

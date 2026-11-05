@@ -18,6 +18,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Composants React Bits copiés tels quels depuis reactbits.dev
+      "src/components/reactbits/**",
     ],
   },
 ];

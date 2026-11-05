@@ -6,6 +6,7 @@ import { ImportPanel } from "@/components/ImportPanel";
 import { LetterboxdConnect } from "@/components/LetterboxdConnect";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Mon compte" };
 export const dynamic = "force-dynamic";
@@ -28,14 +29,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const calendar = `webcal://${host}/agenda/ics?token=${info.calendar_token}`;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pt-2 md:pt-8">
-      <div>
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Mon compte</h1>
-        <p className="mt-3 text-muted">
+    <div className="mx-auto max-w-3xl space-y-8">
+      <PageHeader eyebrow="Réglages" title="Mon compte" lede={<>
           {me.username ? <b className="text-foreground">@{me.username}</b> : me.name} · {me.email}
           {me.isAdmin && <> · <Link href="/admin" className="text-accent hover:underline">Administration</Link></>}
-        </p>
-      </div>
+      </>} />
 
       <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
 
@@ -50,27 +48,27 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         <ProfileForm user={me} />
       </section>
 
-      <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-3 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Mon profil</h2>
         <p className="text-sm text-muted">Ce que les autres membres voient de toi.</p>
         <Link href="/preferes" className="mr-2 inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Mes 10 films préférés</Link>
         <Link href={`/membre/${me.id}`} className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Voir mon profil comme les autres le voient</Link>
       </section>
 
-      <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-3 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Agenda dans mon téléphone</h2>
         <p className="text-sm text-muted">Tes séances dans le calendrier de ton téléphone. Lien personnel, à ne pas partager.</p>
-        <a href={calendar} className="inline-block rounded-full bg-accent px-4 py-2 text-sm text-on-accent">S&apos;abonner à mon agenda</a>
+        <a href={calendar} className="btn btn-primary">S&apos;abonner à mon agenda</a>
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-4 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Sécurité</h2>
         <PasswordForm />
         <p className="text-sm text-muted">{Number(info.sessions)} appareil(s) connecté(s).</p>
         <SessionButtons />
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-4 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Mes données</h2>
         <p className="text-sm text-muted">Tes données t&apos;appartiennent : tu peux les récupérer ou tout effacer à tout moment.</p>
         <a href="/compte/export" className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">⬇ Exporter toutes mes données (JSON)</a>

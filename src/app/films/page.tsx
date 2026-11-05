@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { FilmGrid } from "@/components/FilmCard";
 import { LibraryTabs } from "@/components/LibraryTabs";
 import { FilterBar } from "@/components/FilterBar";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { allGenres, watchedFilms, type FilmFilters } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Mes films" };
@@ -12,16 +13,21 @@ export default async function FilmsPage({ searchParams }: { searchParams: Promis
   const [films, genres] = await Promise.all([watchedFilms(filters), allGenres()]);
 
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
-      <LibraryTabs />
-      <div className="flex items-baseline justify-between">
-        <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Mes films</h1>
-        <span className="text-sm text-muted">{films.length.toLocaleString("fr-FR")} films</span>
-      </div>
+    <div className="space-y-8">
+      <PageHeader eyebrow={<>Journal · <span className="tabular">{films.length.toLocaleString("fr-FR")}</span> films</>} title="Mes films">
+        <LibraryTabs />
+      </PageHeader>
       <Suspense>
         <FilterBar genres={genres} />
       </Suspense>
-      {films.length ? <FilmGrid films={films} /> : <p className="py-16 text-center text-muted">Aucun film ne correspond.</p>}
+      {films.length ? (
+        <FilmGrid films={films} />
+      ) : (
+        <div className="rounded-2xl border border-dashed border-border py-20 text-center">
+          <p className="font-display text-3xl">Aucun film ne correspond.</p>
+          <p className="mt-2 text-sm text-muted">Essaie d&apos;enlever un filtre.</p>
+        </div>
+      )}
     </div>
   );
 }

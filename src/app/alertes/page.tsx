@@ -11,6 +11,7 @@ import { formatLongDate, showtimeLinks } from "@/lib/format";
 import { searchPci } from "@/lib/pariscine";
 import { normalize } from "@/lib/titles";
 import { backdrop, poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Au cinéma" };
 export const dynamic = "force-dynamic";
@@ -44,11 +45,11 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
   const now = playing.filter((p) => match(p.title) || match(p.original));
 
   return (
-    <div className="space-y-10 pt-2 md:pt-8">
+    <div className="space-y-10">
       <header className="space-y-5">
         <div>
-          <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Au cinéma</h1>
-          <p className="mt-3 text-sm text-muted">
+          <PageHeader eyebrow="Découvrir · en salle" title="Au cinéma" />
+          <p className="mt-4 text-sm text-muted">
             Séances à <span className="text-foreground">{me.city}</span> · <Link href="/compte#profil" className="hover:text-accent">changer</Link>
             {checkedAt && <> · mis à jour {new Date(checkedAt).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}</>}
           </p>
@@ -74,7 +75,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
         <section>
           <h2 className="mb-3 text-xl">Dans le programme de Paris Ciné Info</h2>
           {programme.length ? (
-            <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            <ul className="divide-y divide-border overflow-hidden card">
               {programme.map((p) => (
                 <li key={`${p.title}-${p.year}`}>
                   <a href={showtimeLinks(p.title, "Paris", "FR")[0].href} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-2">
@@ -102,7 +103,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
       {/* Mes films à Paris : une grille d'affiches, plus légère que des cartes */}
       {mine.some((a) => a.kind === "paris") && (
         <section>
-          <h2 className="mb-4 text-xl md:text-2xl">
+          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">
             {KINDS.paris.title} <span className="text-base text-muted">{mine.filter((a) => a.kind === "paris").length}</span>
           </h2>
           <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
@@ -127,7 +128,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
         if (!list.length) return null;
         return (
           <section key={kind}>
-            <h2 className="mb-4 text-xl md:text-2xl">{KINDS[kind].title}</h2>
+            <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{KINDS[kind].title}</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {list.map((a) => <AlertCard key={a.tmdbId} alert={a} city={me.city} country={me.country} />)}
             </div>
@@ -137,7 +138,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
 
       {now.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl md:text-2xl">Tous les films à l&apos;affiche</h2>
+          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Tous les films à l&apos;affiche</h2>
           <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-6 md:overflow-visible md:px-0 lg:grid-cols-8">
             {now.map((p) => (
               <div key={p.tmdbId} className={`w-28 shrink-0 snap-start md:w-auto ${p.seen ? "opacity-50" : ""}`}>
@@ -164,7 +165,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
 function AlertCard({ alert: a, city, country }: { alert: Alert; city: string; country: string }) {
   const bg = backdrop(a.backdrop);
   return (
-    <article className="relative overflow-hidden rounded-2xl border border-border bg-surface">
+    <article className="relative overflow-hidden card">
       {bg && <img src={bg} alt="" className="absolute inset-0 size-full object-cover opacity-15" />}
       <div className="relative flex gap-4 p-4">
         <Link href={`/film/${a.filmId}`} className="w-20 shrink-0">

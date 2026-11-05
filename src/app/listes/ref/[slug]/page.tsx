@@ -16,10 +16,10 @@ export default async function RefListPage({ params, searchParams }: { params: Pr
   const films = vus === "non" ? list.films.filter((f) => !f.seen) : list.films;
 
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
+    <div className="space-y-8 pt-4 md:pt-14">
       <LibraryTabs />
       <div>
-        <h1 className="page-title text-5xl leading-[0.95] md:text-6xl">{list.name}</h1>
+        <h1 className="page-title font-display text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.92] text-balance">{list.name}</h1>
         {list.description && <p className="mt-3 max-w-2xl text-muted">{list.description}</p>}
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted">
           <div className="h-2 w-48 overflow-hidden rounded-full bg-surface-2">

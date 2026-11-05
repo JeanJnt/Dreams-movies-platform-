@@ -49,14 +49,14 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
   return (
     <section>
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="text-xl md:text-2xl">Galerie</h2>
+        <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Galerie</h2>
         <button onClick={() => setAdding(!adding)} className="text-sm text-muted hover:text-accent">
           {adding ? "Annuler" : "+ Ajouter"}
         </button>
       </div>
 
       {adding && (
-        <form ref={form} action={submit} className="mb-6 space-y-3 rounded-xl border border-border bg-surface p-4">
+        <form ref={form} action={submit} className="mb-6 space-y-3 card rounded-xl p-4">
           <label className="block cursor-pointer rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted hover:border-accent">
             Choisir des images ou des vidéos
             <input name="files" type="file" multiple accept="image/*,video/mp4,video/webm,video/quicktime" className="mt-2 block w-full text-xs file:mr-3 file:rounded file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-foreground" />

@@ -76,7 +76,7 @@ export function EventForm({ initialFilm, defaultDate, members = [] }: { initialF
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Quel film ? (ou le nom d'un événement)" className="field w-full" autoFocus />
         )}
         {hits.length > 0 && !film && (
-          <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-border bg-surface shadow-2xl">
+          <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden card rounded-xl shadow-2xl">
             {hits.map((h) => (
               <button key={h.id} onClick={() => { setFilm(h); setHits([]); }} className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-surface-2">
                 {posterUrl(h.poster) && <img src={posterUrl(h.poster)!} alt="" className="h-10 rounded-sm" />}
@@ -114,7 +114,7 @@ export function EventForm({ initialFilm, defaultDate, members = [] }: { initialF
       <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (version restaurée, rencontre…)" className="field w-full" />
       <input value={link} onChange={(e) => setLink(e.target.value)} type="url" inputMode="url" placeholder="Lien (réservation, page de la séance…)" className="field w-full" />
       {error && <p className="text-sm text-heart">{error}</p>}
-      <button onClick={submit} disabled={pending || (!film && !title.trim())} className="w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
+      <button onClick={submit} disabled={pending || (!film && !title.trim())} className="btn btn-primary h-12 w-full disabled:opacity-40">
         Ajouter à l&apos;agenda
       </button>
     </div>

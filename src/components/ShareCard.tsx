@@ -25,7 +25,7 @@ export function ShareCard({ id, title }: { id: number; title: string }) {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="card p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-display mr-auto">Carte de partage</span>
         <button onClick={() => setOpen(!open)} className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-accent">{open ? "Masquer" : "Aperçu"}</button>

@@ -19,9 +19,9 @@ export function BrushYume({ className = "", title = "夢" }: { className?: strin
 // Le logo du site suit le thème (le 夢 dans la couleur d'accent). L'icône de l'appli, elle, est noire et rouge.
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <BrushYume className="h-8 w-auto overflow-visible text-accent" />
-      <span className="font-display text-xl leading-none">Dreams</span>
+    <span className={`group/logo inline-flex items-center gap-2.5 ${className}`}>
+      <BrushYume className="h-8 w-auto overflow-visible text-accent drop-shadow-[0_0_14px_color-mix(in_srgb,var(--accent)_35%,transparent)] transition-transform duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover/logo:-rotate-6" />
+      <span className="font-display text-[1.45rem] leading-none tracking-tight">Dreams</span>
     </span>
   );
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LibraryTabs } from "@/components/LibraryTabs";
 import { findPerson, profileUrl, topPeople, type Role } from "@/lib/people";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Cinéastes et acteurs" };
 export const dynamic = "force-dynamic";
@@ -11,12 +12,10 @@ export default async function PeoplePage() {
   const [directors, actors] = await Promise.all([withPhotos(await topPeople("director", 18), "director"), withPhotos(await topPeople("actor", 18), "actor")]);
 
   return (
-    <div className="space-y-12 pt-2 md:pt-8">
-      <LibraryTabs />
-      <div>
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Cinéastes &amp; acteurs</h1>
-        <p className="mt-3 max-w-2xl text-muted">Les personnes que tu as le plus suivies, d&apos;après tes films vus.</p>
-      </div>
+    <div className="space-y-14">
+      <PageHeader eyebrow="Journal · personnes" title="Cinéastes & acteurs" lede="Les personnes que tu as le plus suivies, d’après tes films vus.">
+        <LibraryTabs />
+      </PageHeader>
       <Ranking title="Mes cinéastes" people={directors} role="director" />
       <Ranking title="Mes acteurs & actrices" people={actors} role="actor" />
     </div>
@@ -31,7 +30,7 @@ async function withPhotos(people: Awaited<ReturnType<typeof topPeople>>, role: R
 function Ranking({ title, people, role }: { title: string; people: Awaited<ReturnType<typeof withPhotos>>; role: Role }) {
   return (
     <section>
-      <h2 className="mb-5 text-xl md:text-2xl">{title}</h2>
+      <h2 className="mb-5 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{title}</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {people.map((p, i) => {
           const photo = profileUrl(p.person?.profile_path ?? null);

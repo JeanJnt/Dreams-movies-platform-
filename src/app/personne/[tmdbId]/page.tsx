@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
+import { Tilt } from "@/components/ui/Tilt";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Stars } from "@/components/Stars";
@@ -36,25 +37,25 @@ export default async function PersonPage({ params }: Props) {
     : [["Filmographie", p.acted], ["Réalisation", p.directed]] as const;
 
   return (
-    <div className="space-y-12 pt-2 md:pt-8">
+    <div className="space-y-12 pt-4 md:pt-14">
       <header className="grid gap-6 md:grid-cols-[260px_1fr] md:gap-10">
-        <div className="mx-auto w-44 md:w-full">
-          <div className="aspect-[2/3] overflow-hidden rounded-2xl bg-surface-2 shadow-2xl shadow-black/40">
+        <Tilt className="mx-auto w-44 md:w-full" max={7}>
+          <div className="poster aspect-[2/3] rounded-2xl shadow-[0_40px_80px_-30px_#000]">
             {photo && <img src={photo} alt={p.name} className="size-full object-cover" />}
           </div>
-        </div>
+        </Tilt>
         <div className="min-w-0">
-          <p className="text-xs tracking-[0.3em] text-muted uppercase">
+          <p className="eyebrow flex items-center gap-3"><span className="h-px w-8 bg-accent" aria-hidden />
             {p.department === "Directing" ? "Cinéaste" : p.department === "Acting" ? "Acteur·rice" : p.department}
           </p>
-          <h1 className="page-title mt-2 text-5xl leading-[0.95] md:text-7xl">{p.name}</h1>
+          <h1 className="page-title mt-3 font-display text-[clamp(2.9rem,8.5vw,6.75rem)] leading-[0.92] text-balance">{p.name}</h1>
           <p className="mt-4 text-sm text-muted">
             {p.birthday && <>Né·e le {formatLongDate(p.birthday)}{!p.deathday && ` (${age(p.birthday)} ans)`}</>}
             {p.placeOfBirth && <> · {p.placeOfBirth}</>}
             {p.deathday && p.birthday && <> · mort·e le {formatLongDate(p.deathday)} ({age(p.birthday, p.deathday)} ans)</>}
           </p>
 
-          <div className="mt-6 grid max-w-lg grid-cols-3 overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="mt-6 grid max-w-lg grid-cols-3 overflow-hidden card">
             <Stat value={String(p.stats.seen)} label="films vus" />
             <Stat value={`${pct} %`} label="de sa filmographie" />
             <Stat value={p.stats.avgRating != null ? `${p.stats.avgRating}★` : "—"} label="ma note moyenne" />
@@ -75,7 +76,7 @@ export default async function PersonPage({ params }: Props) {
         films.length ? (
           <section key={title}>
             <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-xl md:text-2xl">{title}</h2>
+              <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{title}</h2>
               <span className="text-sm text-muted">{films.filter((f) => f.seen).length} / {films.length} vus</span>
             </div>
             <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7">

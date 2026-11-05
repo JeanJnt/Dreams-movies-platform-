@@ -7,6 +7,7 @@ import { allCritiques, readingTime } from "@/lib/critiques";
 import { sharedCritiques } from "@/lib/social";
 import { formatLongDate } from "@/lib/format";
 import { backdrop, poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Mes critiques" };
 export const dynamic = "force-dynamic";
@@ -17,11 +18,10 @@ export default async function CritiquesPage() {
   const drafts = critiques.filter((c) => c.status === "draft");
 
   return (
-    <div className="space-y-10 pt-2 md:pt-8">
-      <LibraryTabs />
-      <div>
-        <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Mes critiques</h1>
-      </div>
+    <div className="space-y-10">
+      <PageHeader eyebrow="Journal · écrits" title="Mes critiques">
+        <LibraryTabs />
+      </PageHeader>
 
       {!critiques.length && (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-muted">
@@ -36,7 +36,7 @@ export default async function CritiquesPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           <div className="absolute bottom-0 max-w-3xl p-5 md:p-8">
             <p className="text-xs uppercase tracking-[0.2em] text-accent">{featured.filmTitleFr ?? featured.filmName} · {featured.year}</p>
-            <h2 className="mt-2 text-xl md:text-2xl leading-tight md:text-5xl">{featured.title || "Sans titre"}</h2>
+            <h2 className="mt-2 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem] leading-tight md:text-5xl">{featured.title || "Sans titre"}</h2>
             {featured.lede && <p className="mt-2 line-clamp-2 text-foreground/80">{featured.lede}</p>}
           </div>
         </Link>
@@ -50,7 +50,7 @@ export default async function CritiquesPage() {
 
       {drafts.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl md:text-2xl">Brouillons</h2>
+          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Brouillons</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {drafts.map((c) => <CritiqueCard key={c.id} c={c} href={`/film/${c.filmId}/critique`} />)}
           </div>
@@ -59,10 +59,10 @@ export default async function CritiquesPage() {
 
       {others.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl md:text-2xl">Les critiques des membres</h2>
+          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Les critiques des membres</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {others.map((o) => (
-              <Link key={o.id} href={`/critiques/${o.id}`} className="group flex gap-4 rounded-xl border border-border bg-surface p-4 transition hover:border-accent/50">
+              <Link key={o.id} href={`/critiques/${o.id}`} className="group flex gap-4 card rounded-xl p-4 transition hover:border-accent/50">
                 {o.poster && <img src={poster(o.poster, "w185")!} alt="" className="aspect-[2/3] w-20 shrink-0 rounded-md object-cover" />}
                 <div className="min-w-0">
                   <p className="text-xs text-muted"><span className="text-foreground">{o.author}</span> · {o.filmTitle} · {o.year}</p>
@@ -84,7 +84,7 @@ export default async function CritiquesPage() {
 
 function CritiqueCard({ c, href }: { c: Awaited<ReturnType<typeof allCritiques>>[number]; href: string }) {
   return (
-    <Link href={href} className="group flex gap-4 rounded-xl border border-border bg-surface p-4 transition hover:border-accent/50">
+    <Link href={href} className="group flex gap-4 card rounded-xl p-4 transition hover:border-accent/50">
       {c.posterPath && <img src={poster(c.posterPath, "w185")!} alt="" className="aspect-[2/3] w-20 shrink-0 rounded-md object-cover" />}
       <div className="min-w-0">
         <p className="text-xs text-muted">{c.filmTitleFr ?? c.filmName} · {c.year}</p>

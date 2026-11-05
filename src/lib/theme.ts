@@ -1,6 +1,7 @@
 // Chaque thème est inspiré d'un film : couleurs, typographie et petit motif sous les titres.
 // bar : couleur de la barre de titre de l'appli installée (et de la barre d'état sur Android).
 export const THEMES = [
+  { key: "nitrate", bar: "#0b0a09", label: "Nitrate", film: "Nitrate", director: "La salle obscure de Dreams", year: 1895, swatch: ["#0b0a09", "#e8b450", "#f2ece1"] },
   { key: "lynch", bar: "#3a0306", label: "Twin Peaks", film: "Twin Peaks", director: "David Lynch", year: 1992, swatch: ["#5c0a0e", "#f1ece1", "#0b0b0b"] },
   { key: "pierrot", bar: "#ff4a1c", label: "Pierrot le fou", film: "Pierrot le fou", director: "Jean-Luc Godard", year: 1965, swatch: ["#ff4a1c", "#1838ff", "#111111"] },
   { key: "yume", bar: "#101c55", label: "Rêves", film: "Rêves", director: "Akira Kurosawa", year: 1990, swatch: ["#14246b", "#f2c230", "#0b0b0b"] },

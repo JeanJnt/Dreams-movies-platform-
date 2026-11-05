@@ -36,7 +36,10 @@ export function FilterBar({ genres }: { genres: string[] }) {
   }, [q]);
 
   return (
-    <div className={`flex flex-wrap gap-2 transition-opacity ${pending ? "opacity-60" : ""}`}>
+    // Barre de filtres collée en haut pendant qu'on parcourt la grille
+    <div
+      className={`glass sticky top-0 z-20 -mx-[var(--gutter)] flex flex-wrap gap-2 border-b border-[var(--line)] px-[var(--gutter)] py-3 transition-[opacity,top] duration-500 ease-[cubic-bezier(.16,1,.3,1)] md:top-[var(--nav-offset,4.25rem)] ${pending ? "opacity-60" : ""}`}
+    >
       <input
         type="search"
         value={q}

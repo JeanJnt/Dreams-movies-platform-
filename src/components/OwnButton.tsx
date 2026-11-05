@@ -68,7 +68,7 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
 
   if (!editing) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="card p-5">
         {saved ? (
           <div className="flex gap-4">
             <div className="w-24 shrink-0">
@@ -147,7 +147,7 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
       {error && <p className="text-sm text-heart">{error}</p>}
 
       <div className="flex items-center gap-3 pt-1">
-        <button onClick={save} disabled={pending} className="rounded-full bg-accent px-5 py-2 text-sm text-on-accent">
+        <button onClick={save} disabled={pending} className="btn btn-primary">
           {saved ? "Enregistrer" : "Ajouter à ma collection"}
         </button>
         {saved && <button onClick={remove} className="text-xs text-muted hover:text-heart">Retirer de la collection</button>}

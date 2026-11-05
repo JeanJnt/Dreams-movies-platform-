@@ -6,6 +6,8 @@ import { Stars } from "@/components/Stars";
 import { topPeople } from "@/lib/people";
 import { byDecade, perMonth, ratingDistribution, records, statsOverview, timeline, topJson } from "@/lib/stats";
 import { poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Tabs } from "@/components/ui/Tabs";
 
 export const metadata: Metadata = { title: "Stats" };
 export const dynamic = "force-dynamic";
@@ -15,14 +17,16 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   const frise = vue === "frise";
 
   return (
-    <div className="space-y-10 pt-2 md:pt-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">{frise ? "Ma frise" : "Mes stats"}</h1>
-        <div className="flex rounded-full border border-border bg-surface p-0.5 text-xs">
-          <Link href="/stats" className={`rounded-full px-3.5 py-1.5 ${!frise ? "bg-foreground text-background" : "text-muted"}`}>Chiffres</Link>
-          <Link href="/stats?vue=frise" className={`rounded-full px-3.5 py-1.5 ${frise ? "bg-foreground text-background" : "text-muted"}`}>Frise</Link>
-        </div>
-      </div>
+    <div className="space-y-14">
+      <PageHeader eyebrow={frise ? "Chez moi · mes années de cinéma" : "Chez moi · en chiffres"} title={frise ? "Ma frise" : "Mes stats"}>
+        <Tabs
+          active={frise ? "/stats?vue=frise" : "/stats"}
+          tabs={[
+            { href: "/stats", label: "Chiffres" },
+            { href: "/stats?vue=frise", label: "Frise" },
+          ]}
+        />
+      </PageHeader>
       {frise ? <Timeline /> : <Numbers />}
     </div>
   );
@@ -100,8 +104,8 @@ function Tile({ value, label, note }: { value: string; label: string; note?: str
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-border bg-surface p-5 md:p-6">
-      <h2 className="text-xl md:text-2xl">{title}</h2>
+    <section className="card rounded-3xl p-5 md:p-6">
+      <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{title}</h2>
       {subtitle && <p className="mt-1 mb-5 text-sm text-muted">{subtitle}</p>}
       {children}
     </section>
@@ -129,7 +133,7 @@ function People({ title, people, role }: { title: string; people: Awaited<Return
 
 function Record({ label, title, value, href }: { label: string; title: string; value: string; href: string }) {
   return (
-    <Link href={href} className="rounded-3xl border border-border bg-surface p-5 transition hover:border-accent/60">
+    <Link href={href} className="card rounded-3xl p-5 transition hover:border-accent/60">
       <p className="text-xs tracking-wider text-muted uppercase">{label}</p>
       <p className="font-display mt-2 text-2xl leading-tight">{title}</p>
       <p className="mt-1 text-accent">{value}</p>

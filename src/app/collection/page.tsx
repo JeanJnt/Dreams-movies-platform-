@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { DiscCarousel, type Disc } from "@/components/DiscCarousel";
 import { DvdCase, Shelf, type CaseFilm } from "@/components/DvdCase";
 import { LibraryTabs } from "@/components/LibraryTabs";
@@ -46,33 +47,36 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   };
 
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
-      <LibraryTabs />
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Ma collection</h1>
-          {total > 0 && <p className="mt-3 text-sm text-muted">{total} films{unseen ? ` · ${unseen} pas encore vus` : ""}</p>}
+    <div className="space-y-8 pt-4 md:pt-14">
+      <PageHeader
+        eyebrow={total > 0 ? <><span className="tabular">{total}</span> films sur l’étagère{unseen ? <> · <span className="tabular">{unseen}</span> pas encore vus</> : null}</> : "Chez moi · DVD, Blu-ray, 4K"}
+        title="Ma collection"
+        actions={
+          <>
+            <Link href="/collection/ajouter" className="btn btn-primary">Ajouter des films</Link>
+            <Link href="/collection/scanner" className="btn btn-ghost">Scanner</Link>
+          </>
+        }
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <LibraryTabs />
+          <div className={`flex rounded-full border border-border bg-surface p-0.5 text-xs ${total ? "" : "hidden"}`}>
+            {VIEWS.map((v) => (
+              <Link key={v.key} href={link({ vue: v.key })} className={`rounded-full px-3.5 py-1.5 transition-colors ${vue === v.key ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
+                {v.label}
+              </Link>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-        <Link href="/collection/ajouter" className="rounded-full bg-accent px-4 py-1.5 text-sm text-on-accent">Ajouter des films</Link>
-        <Link href="/collection/scanner" className="rounded-full border border-border px-4 py-1.5 text-sm hover:border-accent">Scanner</Link>
-        <div className={`flex rounded-full border border-border bg-surface p-0.5 text-xs ${total ? "" : "hidden"}`}>
-          {VIEWS.map((v) => (
-            <Link key={v.key} href={link({ vue: v.key })} className={`rounded-full px-3.5 py-1.5 ${vue === v.key ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
-              {v.label}
-            </Link>
-          ))}
-        </div>
-        </div>
-      </div>
+      </PageHeader>
 
       {total === 0 ? (
         <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center">
-          <h2 className="text-2xl">Ta collection est vide</h2>
+          <h2 className="font-display text-4xl">Ta collection est vide</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted">DVD, Blu-ray, éditions collector.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/collection/ajouter" className="rounded-full bg-accent px-6 py-3 text-on-accent">Commencer ma collection</Link>
-            <Link href="/collection/scanner" className="rounded-full border border-border px-6 py-3 hover:border-accent">Scanner un boîtier</Link>
+            <Link href="/collection/ajouter" className="btn btn-primary h-12 px-6">Commencer ma collection</Link>
+            <Link href="/collection/scanner" className="btn btn-ghost h-12 px-6">Scanner un boîtier</Link>
           </div>
         </div>
       ) : (

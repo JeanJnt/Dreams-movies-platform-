@@ -122,7 +122,7 @@ export function Scanner({ formats, caseTypes }: Props) {
       {pending && !product && <p className="text-center text-muted">Recherche de l&apos;édition…</p>}
 
       {product && (
-        <div className="mx-auto max-w-2xl space-y-5 rounded-3xl border border-border bg-surface p-5">
+        <div className="mx-auto max-w-2xl space-y-5 card rounded-3xl p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs tracking-wider text-muted uppercase">{product.ean ? `Code ${product.ean}` : "Ajout manuel"}</p>
@@ -178,7 +178,7 @@ export function Scanner({ formats, caseTypes }: Props) {
             </div>
           </div>
 
-          <button onClick={add} disabled={!chosen || pending} className="w-full rounded-full bg-accent py-3 text-on-accent disabled:opacity-40">
+          <button onClick={add} disabled={!chosen || pending} className="btn btn-primary h-12 w-full disabled:opacity-40">
             {chosen ? `Ajouter « ${chosen.title} » à ma collection` : "Choisis le film"}
           </button>
         </div>

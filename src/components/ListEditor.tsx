@@ -63,7 +63,7 @@ export function ListEditor({ initial }: { initial: Initial }) {
         rows={2}
         maxLength={2000}
         placeholder="Description (facultatif)"
-        className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-accent"
+        className="w-full card rounded-xl px-4 py-3 text-sm outline-none focus:border-accent"
       />
 
       <div className="flex rounded-full border border-border bg-surface p-0.5 text-sm">
@@ -77,7 +77,7 @@ export function ListEditor({ initial }: { initial: Initial }) {
       {films.length > 0 && (
         <ol className="space-y-2">
           {films.map((f, i) => (
-            <li key={f.key} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-2 pr-3">
+            <li key={f.key} className="flex items-center gap-3 card rounded-xl p-2 pr-3">
               <span className="w-6 text-center text-sm text-muted tabular-nums">{i + 1}</span>
               <span className="aspect-[2/3] w-9 shrink-0 overflow-hidden rounded bg-surface-2">
                 {img(f.poster) && <img src={img(f.poster)!} alt="" className="size-full object-cover" />}
@@ -95,7 +95,7 @@ export function ListEditor({ initial }: { initial: Initial }) {
       <FilmPicker picked={films} onChange={setFilms} showPicked={false} />
 
       {error && <p className="text-sm text-heart">{error}</p>}
-      <button type="button" onClick={save} disabled={pending} className="w-full rounded-full bg-accent py-3 font-medium text-on-accent disabled:opacity-40">
+      <button type="button" onClick={save} disabled={pending} className="btn btn-primary h-12 w-full disabled:opacity-40">
         {pending ? "Enregistrement…" : "Enregistrer la liste"}
       </button>
       {initial.id && (

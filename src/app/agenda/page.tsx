@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { db, posterSql } from "@/lib/db";
 import { members } from "@/lib/social";
 import { poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Agenda" };
 export const dynamic = "force-dynamic";
@@ -50,19 +51,22 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <div className="space-y-8 pt-2 md:pt-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Agenda</h1>
-        <a href={calendarUrl} className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
-          Exporter vers mon calendrier
-        </a>
-      </div>
+    <div className="space-y-10">
+      <PageHeader
+        eyebrow="Séances · au cinéma et à la maison"
+        title="Agenda"
+        actions={
+          <a href={calendarUrl} className="btn btn-ghost" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
+            Exporter vers mon calendrier
+          </a>
+        }
+      />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="rounded-3xl border border-border bg-surface p-4 md:p-6">
+        <section className="card rounded-3xl p-4 md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <Link href={`/agenda?mois=${key(prev)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois précédent">←</Link>
-            <h2 className="text-2xl capitalize md:text-xl md:text-2xl">{first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</h2>
+            <h2 className="text-2xl capitalize md:font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</h2>
             <Link href={`/agenda?mois=${key(next)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois suivant">→</Link>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted">
@@ -95,7 +99,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
           <h2 className="pt-2 text-2xl">Prochaines séances</h2>
           {upcoming.length === 0 && <p className="text-sm text-muted">Rien de prévu pour l&apos;instant.</p>}
           {upcoming.map((e) => (
-            <div key={e.id} className="flex gap-3 rounded-2xl border border-border bg-surface p-3">
+            <div key={e.id} className="flex gap-3 card p-3">
               {e.poster && <img src={poster(e.poster, "w185")!} alt="" className="h-20 rounded-md" />}
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-accent capitalize">

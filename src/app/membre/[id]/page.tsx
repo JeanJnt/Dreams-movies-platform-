@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
+import { Projection } from "@/components/fx/Projection";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityFeed, TextKind } from "@/components/ActivityFeed";
@@ -48,29 +49,30 @@ export default async function MemberPage({ params }: Props) {
   );
 
   return (
-    <div className="space-y-12 pt-2 md:pt-8">
+    <div className="space-y-12 pt-4 md:pt-14">
       {/* En-tête du profil */}
-      <header className="relative overflow-hidden rounded-3xl border border-border">
-        {hero && <img src={backdrop(hero.backdrop_path)!} alt="" className="absolute inset-0 size-full object-cover opacity-30" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
+      <header className="card relative overflow-hidden !rounded-[1.75rem]">
+        {hero && <Projection src={backdrop(hero.backdrop_path)!} className="absolute inset-0 opacity-55" />}
+        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
         <div className="relative flex flex-wrap items-end gap-5 p-6 pt-24 md:p-8 md:pt-32">
-          <span className="font-display flex size-24 items-center justify-center rounded-full bg-accent text-5xl text-on-accent shadow-xl">{member.name.slice(0, 1).toUpperCase()}</span>
+          <span className="font-display flex size-24 items-center justify-center rounded-full bg-accent text-5xl text-on-accent shadow-[0_20px_50px_-10px_var(--accent)] ring-4 ring-surface">{member.name.slice(0, 1).toUpperCase()}</span>
           <div className="min-w-0 flex-1">
-            <h1 className="text-5xl leading-none md:text-6xl">{member.username ? `@${member.username}` : member.name}</h1>
+            <p className="eyebrow mb-3">Membre de la bande</p>
+            <h1 className="font-display text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.9]">{member.username ? `@${member.username}` : member.name}</h1>
             <p className="mt-2 text-sm text-muted">{member.username && `${member.firstName} · `}Membre depuis le {formatLongDate(member.createdAt.slice(0, 10))}</p>
           </div>
-          {isMe && <Link href="/compte" className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent">Modifier mon compte</Link>}
+          {isMe && <Link href="/compte" className="btn btn-ghost glass">Modifier mon compte</Link>}
         </div>
-        <div className="relative grid grid-cols-2 border-t border-border bg-surface md:grid-cols-4">
+        <div className="relative grid grid-cols-2 border-t border-border bg-surface/80 backdrop-blur md:grid-cols-4">
           {[
             [stats.watched.toLocaleString("fr-FR"), "films"],
             [String(stats.thisYear), `en ${new Date().getFullYear()}`],
             [stats.avgRating != null ? `${stats.avgRating.toFixed(1).replace(".", ",")}★` : "—", "note moyenne"],
             [String(owned.length), "dans sa collection"],
           ].map(([v, l]) => (
-            <div key={l} className="border-border p-4 [&:not(:last-child)]:border-r">
-              <div className="font-display text-3xl text-accent">{v}</div>
-              <div className="text-xs text-muted">{l}</div>
+            <div key={l} className="border-border p-5 md:p-6 [&:not(:last-child)]:border-r">
+              <div className="font-display text-4xl leading-none text-accent tabular">{v}</div>
+              <div className="eyebrow mt-2">{l}</div>
             </div>
           ))}
         </div>
@@ -80,7 +82,7 @@ export default async function MemberPage({ params }: Props) {
       {favorites.length > 0 ? (
         <section>
           <div className="mb-4 flex items-baseline justify-between gap-4">
-            <h2 className="text-xl md:text-2xl">Films préférés</h2>
+            <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Films préférés</h2>
             {isMe && <Link href="/preferes" className="text-sm text-muted hover:text-accent">Modifier</Link>}
           </div>
           <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-5 md:overflow-visible md:px-0 lg:grid-cols-10">
@@ -102,11 +104,11 @@ export default async function MemberPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-12">
           <section>
-            <h2 className="mb-4 text-xl md:text-2xl">Critiques Dreams</h2>
+            <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Critiques Dreams</h2>
             {critiques.length ? (
               <div className="space-y-3">
                 {critiques.map((c) => (
-                  <Link key={c.id} href={`/critiques/${c.id}`} className="group flex gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/60">
+                  <Link key={c.id} href={`/critiques/${c.id}`} className="group flex gap-4 card p-4 transition hover:border-accent/60">
                     {c.poster && <img src={poster(c.poster, "w185")!} alt="" className="aspect-[2/3] w-16 shrink-0 rounded-md object-cover" />}
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2"><TextKind kind="critique" />{c.visibility === "prive" && <span className="text-xs text-muted">privée</span>}</div>
@@ -124,7 +126,7 @@ export default async function MemberPage({ params }: Props) {
           </section>
 
           <section>
-            <h2 className="mb-4 text-xl md:text-2xl">Activité récente</h2>
+            <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Activité récente</h2>
             <ActivityFeed items={feed} />
           </section>
         </div>

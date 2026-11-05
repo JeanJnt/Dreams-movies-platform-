@@ -56,7 +56,7 @@ export function CollectionAdder() {
         type="button"
         onClick={submit}
         disabled={!picked.length || pending}
-        className="w-full rounded-full bg-accent py-3 font-medium text-on-accent disabled:opacity-40"
+        className="btn btn-primary h-12 w-full disabled:opacity-40"
       >
         {pending ? "Ajout…" : picked.length ? `Ajouter ${picked.length} film${picked.length > 1 ? "s" : ""} à ma collection` : "Choisis des films"}
       </button>

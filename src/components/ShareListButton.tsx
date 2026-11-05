@@ -31,7 +31,7 @@ export function ShareListButton({ id, name, token: initial }: { id: number; name
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button onClick={share} disabled={pending} className="rounded-full bg-accent px-4 py-2 text-sm text-on-accent">
+      <button onClick={share} disabled={pending} className="btn btn-primary">
         Partager
       </button>
       {token && (

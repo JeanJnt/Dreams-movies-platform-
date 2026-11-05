@@ -12,13 +12,13 @@ export default async function UserListPage({ params }: { params: Promise<{ id: s
   const list = await userListDetail({ id: Number((await params).id) || 0 });
   if (!list) notFound();
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
+    <div className="space-y-8 pt-4 md:pt-14">
       <div>
         <p className="text-sm text-muted">
           {list.isMine ? "Ma liste" : <Link href={`/membre/${list.userId}`} className="hover:text-accent">Liste de @{list.author}</Link>} · {list.count} films
           {list.visibility === "prive" && " · privée"}
         </p>
-        <h1 className="page-title mt-1 text-4xl leading-[0.95] md:text-6xl">{list.name}</h1>
+        <h1 className="page-title mt-3 font-display text-[clamp(2.4rem,6.5vw,4.75rem)] leading-[0.92] text-balance">{list.name}</h1>
         {list.description && <p className="mt-3 max-w-2xl text-muted">{list.description}</p>}
       </div>
       {list.isMine && (

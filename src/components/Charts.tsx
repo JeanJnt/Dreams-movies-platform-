@@ -8,7 +8,7 @@ export function Columns({ data, unit = "films", highlight, labelEvery = 1, heigh
   const max = Math.max(1, ...data.map((d) => d.value));
   const peak = data.reduce((a, b) => (b.value > a.value ? b : a), data[0]);
   return (
-    <figure>
+    <figure className="chart">
       <div className="relative flex items-end gap-[2px]" style={{ height }}>
         {/* Lignes de repère discrètes */}
         {[0.5, 1].map((t) => (
@@ -19,7 +19,7 @@ export function Columns({ data, unit = "films", highlight, labelEvery = 1, heigh
         {data.map((d) => (
           <div key={d.key} className="group relative flex h-full flex-1 items-end">
             <div
-              className={`w-full rounded-t-[4px] transition-opacity group-hover:opacity-100 ${d.key === highlight ? "bg-accent" : "bg-accent/70"} ${d.value ? "" : "opacity-0"}`}
+              className={`bar-y w-full rounded-t-[4px] transition-opacity group-hover:opacity-100 ${d.key === highlight ? "bg-accent" : "bg-accent/70"} ${d.value ? "" : "opacity-0"}`}
               style={{ height: `${(d.value / max) * 100}%`, minHeight: d.value ? 3 : 0 }}
             />
             {d.key === peak.key && d.value > 0 && (
@@ -48,12 +48,12 @@ export function Columns({ data, unit = "films", highlight, labelEvery = 1, heigh
 export function Bars({ data, unit = "films" }: { data: Datum[]; unit?: string }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   return (
-    <ul className="space-y-2">
+    <ul className="chart space-y-2.5">
       {data.map((d) => (
         <li key={d.key} className="group grid grid-cols-[7.5rem_1fr_auto] items-center gap-3 text-sm" title={`${d.label} : ${d.value} ${unit}${d.avg != null ? `, moyenne ${d.avg}★` : ""}`}>
           <span className="truncate">{d.label}</span>
           <span className="h-2.5 overflow-hidden rounded-full bg-surface-2">
-            <span className="block h-full rounded-full bg-accent/80 transition-colors group-hover:bg-accent" style={{ width: `${(d.value / max) * 100}%` }} />
+            <span className="bar-x block h-full rounded-full bg-accent/80 transition-colors group-hover:bg-accent" style={{ width: `${(d.value / max) * 100}%` }} />
           </span>
           <span className="w-16 text-right text-xs text-muted tabular-nums">
             {d.value}

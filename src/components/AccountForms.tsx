@@ -103,7 +103,7 @@ export function ProfileForm({ user }: { user: { name: string; username: string |
         </label>
       </div>
       <div className="flex items-center gap-3 sm:col-span-2">
-        <button disabled={pending} className="rounded-full bg-accent px-4 py-2 text-sm text-on-accent">Enregistrer</button>
+        <button disabled={pending} className="btn btn-primary">Enregistrer</button>
         <Message state={state} />
       </div>
     </form>

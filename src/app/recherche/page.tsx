@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SearchBox } from "@/components/SearchBox";
 import { searchAll } from "@/lib/search";
 import { poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Rechercher" };
 export const dynamic = "force-dynamic";
@@ -13,8 +14,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const { films, people } = await searchAll(q, { films: 24, people: 6 });
 
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
-      <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Rechercher</h1>
+    <div className="space-y-8">
+      <PageHeader eyebrow="Découvrir · dans toutes les langues" title="Rechercher" />
       <SearchBox defaultValue={q} />
 
       {q && !films.length && !people.length && <p className="text-muted">Aucun résultat pour « {q} ».</p>}
@@ -37,7 +38,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
       <div className="grid gap-3 sm:grid-cols-2">
         {films.map((r) => (
-          <Link key={r.key} href={r.href} className="group flex gap-4 rounded-xl border border-border bg-surface p-3 hover:border-accent/50">
+          <Link key={r.key} href={r.href} className="group flex gap-4 card rounded-xl p-3 hover:border-accent/50">
             <div className="aspect-[2/3] w-16 shrink-0 overflow-hidden rounded bg-surface-2">
               {r.poster && <img src={poster(r.poster, "w185")!} alt="" loading="lazy" className="size-full object-cover" />}
             </div>

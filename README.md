@@ -35,10 +35,11 @@ Dreams is a Progressive Web App (PWA): one codebase that installs like a native 
 **Community (Letterboxd-style)**
 - **Member profiles**, an **activity feed**, and on every film what other members thought (ratings, reviews, Dreams reviews).
 
-**Seven film-inspired themes**
+**Film-inspired themes**
 
 | Theme | Film | Look |
 |---|---|---|
+| **Nitrate** (default) | The darkened cinema | Projector-lamp amber on black, editorial serif titles, film grain and a WebGL projection of your last film |
 | **夢 Yume** | *Dreams* ("Crows"), Kurosawa | Van Gogh cobalt sky, chrome-yellow wheat, crows |
 | **トトロ** | *My Neighbor Totoro*, Miyazaki | Summer sky, clouds, camphor-tree green, soot sprites |
 | **Twin Peaks** | *Fire Walk with Me*, Lynch | The Red Room: velvet curtains, chevron floor |

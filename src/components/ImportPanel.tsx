@@ -61,7 +61,7 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
 
   return (
     <section className={`rounded-3xl border p-5 md:p-6 ${welcome ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>
-      <h2 className="text-xl md:text-2xl">{welcome ? "Bienvenue ! Importe ton Letterboxd" : "Importer depuis Letterboxd"}</h2>
+      <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{welcome ? "Bienvenue ! Importe ton Letterboxd" : "Importer depuis Letterboxd"}</h2>
       <p className="mt-2 text-sm text-muted">
         Sur Letterboxd : <b>Settings → Import &amp; Export → Export your data</b>. Tu reçois un fichier .zip, dépose-le ici.
         Tu peux réimporter quand tu veux : tes critiques Dreams, ta collection et ton agenda sont conservés.
@@ -70,7 +70,7 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
       {(phase === "idle" || phase === "error") && (
         <form action={run} className="mt-4 flex flex-wrap items-center gap-3">
           <input name="zip" type="file" accept=".zip,application/zip" required className="w-full min-w-0 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:py-2 file:text-foreground" />
-          <button className="rounded-full bg-accent px-5 py-2 text-on-accent">Importer</button>
+          <button className="btn btn-primary">Importer</button>
         </form>
       )}
       {error && <p className="mt-3 text-sm text-heart">{error}</p>}
@@ -98,7 +98,7 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
         </div>
       )}
       {phase === "done" && (
-        <button onClick={() => router.push("/")} className="mt-4 rounded-full bg-accent px-5 py-2 text-on-accent">
+        <button onClick={() => router.push("/")} className="btn btn-primary mt-4">
           Découvrir mon Dreams
         </button>
       )}

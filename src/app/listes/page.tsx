@@ -7,6 +7,7 @@ import { allLists } from "@/lib/queries";
 import { refLists } from "@/lib/ref-lists";
 import { visibleLists, type UserList } from "@/lib/user-lists";
 import { poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Listes" };
 export const dynamic = "force-dynamic";
@@ -32,14 +33,15 @@ function Stack({ posters }: { posters: string[] }) {
 export default async function ListsPage() {
   const [lists, references, me, mine] = await Promise.all([allLists(), refLists(), currentUser(), visibleLists()]);
   return (
-    <div className="space-y-10 pt-2 md:pt-8">
-      <LibraryTabs />
-      <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Listes</h1>
+    <div className="space-y-12">
+      <PageHeader eyebrow="Journal · listes" title="Listes">
+        <LibraryTabs />
+      </PageHeader>
 
       <section>
         <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="text-xl md:text-2xl">Mes listes</h2>
-          <Link href="/listes/perso/nouvelle" className="rounded-full bg-accent px-4 py-1.5 text-sm text-on-accent">Nouvelle liste</Link>
+          <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Mes listes</h2>
+          <Link href="/listes/perso/nouvelle" className="btn btn-primary h-9">Nouvelle liste</Link>
         </div>
         {mine.mine.length ? (
           <UserListGrid lists={mine.mine} />
@@ -50,14 +52,14 @@ export default async function ListsPage() {
 
       {mine.others.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl md:text-2xl">Listes des membres</h2>
+          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Listes des membres</h2>
           <UserListGrid lists={mine.others} showAuthor />
         </section>
       )}
 
       <section>
         <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="text-xl md:text-2xl">Listes de référence</h2>
+          <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Listes de référence</h2>
           {me?.isAdmin && <Link href="/admin" className="text-sm text-muted hover:text-accent">+ Ajouter une liste</Link>}
         </div>
         {references.length ? (
@@ -65,7 +67,7 @@ export default async function ListsPage() {
             {references.map((l) => {
               const pct = l.total ? Math.round((l.seen / l.total) * 100) : 0;
               return (
-                <Link key={l.slug} href={`/listes/ref/${l.slug}`} className="group rounded-xl border border-border bg-surface p-3 transition hover:border-accent/50">
+                <Link key={l.slug} href={`/listes/ref/${l.slug}`} className="group card rounded-xl p-3 transition hover:border-accent/50">
                   <Stack posters={l.posters} />
                   <h3 className="mt-3 font-medium group-hover:text-accent">{l.name}</h3>
                   <div className="mt-2 flex items-center gap-2 text-xs text-muted">
@@ -86,10 +88,10 @@ export default async function ListsPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl md:text-2xl">Mes listes Letterboxd</h2>
+        <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Mes listes Letterboxd</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {lists.map((l) => (
-            <Link key={l.slug} href={`/listes/${l.slug}`} className="group rounded-xl border border-border bg-surface p-3 transition hover:border-accent/50">
+            <Link key={l.slug} href={`/listes/${l.slug}`} className="group card rounded-xl p-3 transition hover:border-accent/50">
               <Stack posters={l.posters} />
               <h3 className="mt-3 font-medium group-hover:text-accent">{l.name}</h3>
               <p className="text-sm text-muted">{l.count} films</p>
@@ -105,7 +107,7 @@ function UserListGrid({ lists, showAuthor = false }: { lists: UserList[]; showAu
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {lists.map((l) => (
-        <Link key={l.id} href={`/listes/perso/${l.id}`} className="group rounded-xl border border-border bg-surface p-3 transition hover:border-accent/50">
+        <Link key={l.id} href={`/listes/perso/${l.id}`} className="group card rounded-xl p-3 transition hover:border-accent/50">
           {l.posters.length > 0 ? <Stack posters={l.posters} /> : <div className="aspect-[4/1.5] rounded-md bg-surface-2" />}
           <h3 className="mt-3 font-medium group-hover:text-accent">{l.name}</h3>
           <p className="text-sm text-muted">
