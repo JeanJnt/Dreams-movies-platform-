@@ -30,6 +30,7 @@ import { LogoLoader } from "../loading/LogoLoader";
 import type { CaseFilmInfo } from "../three/dreams/CaseObject";
 import { discPresets } from "../three/models/discDesign";
 import { ImageCropper } from "./ImageCropper";
+import { TmdbImagePicker } from "./TmdbImagePicker";
 
 const FilmStage = dynamic(
   () => import("../three/dreams/FilmStage").then((m) => m.FilmStage),
@@ -96,12 +97,15 @@ export function DesignEditor({
     file: File;
     target: "front" | "back" | "disc";
   } | null>(null);
+  const [gallery, setGallery] = useState<"front" | "back" | "disc" | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [spin, setSpin] = useState(true);
   const uploaded = useRef<string[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
   const pickTarget = useRef<"front" | "back" | "disc">("front");
+  // une affiche porte déjà son titre : on ne le réimprime pas par-dessus
+  const fromPoster = useRef(false);
 
   useEffect(() => {
     designStateAction(film.id).then((s) => {
@@ -116,7 +120,7 @@ export function DesignEditor({
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const k = (e: KeyboardEvent) => e.key === "Escape" && !crop && close();
+    const k = (e: KeyboardEvent) => e.key === "Escape" && !crop && !gallery && close();
     window.addEventListener("keydown", k);
     return () => {
       document.body.style.overflow = prev;
@@ -188,7 +192,7 @@ export function DesignEditor({
       }
       if (!url) throw new Error("Envoi impossible.");
       uploaded.current.push(url);
-      if (target === "front") setFront({ image: url });
+      if (target === "front") setFront(fromPoster.current ? { image: url, showTitle: false, showHead: false, showFoot: false } : { image: url });
       else if (target === "back") setBack({ image: url });
       else setDisc({ image: url, bg: "image" });
       setMsg(null);
@@ -356,7 +360,7 @@ export function DesignEditor({
                   hint={
                     F.image
                       ? "Votre image remplace la maquette."
-                      : "Importez votre image : vous la cadrerez au format exact de la jaquette."
+                      : "Importez votre image ou choisissez une affiche du film : vous la cadrerez au format exact de la jaquette."
                   }
                 >
                   <div className="flex flex-wrap gap-2">
@@ -365,7 +369,14 @@ export function DesignEditor({
                       className="btn btn-sm"
                       onClick={() => pick("front")}
                     >
-                      {F.image ? "Changer d'image" : "Importer une image"}
+                      {F.image ? "Importer une autre image" : "Importer une image"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => setGallery("front")}
+                    >
+                      Affiches et images du film
                     </button>
                     {F.image && (
                       <button
@@ -431,14 +442,21 @@ export function DesignEditor({
 
             {part === "dos" && (
               <>
-                <Field label="Photogramme" hint="Format 2:1, cadré par vous.">
+                <Field label="Photogramme" hint="Votre image ou une image du film, cadrée au format 2:1.">
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       className="btn btn-sm"
                       onClick={() => pick("back")}
                     >
-                      {B.image ? "Changer d'image" : "Importer une image"}
+                      {B.image ? "Importer une autre image" : "Importer une image"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => setGallery("back")}
+                    >
+                      Affiches et images du film
                     </button>
                     {B.image && (
                       <button
@@ -605,7 +623,14 @@ export function DesignEditor({
                           className="btn btn-sm"
                           onClick={() => pick("disc")}
                         >
-                          {D.image ? "Changer mon image" : "Importer une image"}
+                          {D.image ? "Importer une autre image" : "Importer une image"}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm"
+                          onClick={() => setGallery("disc")}
+                        >
+                          Affiches et images du film
                         </button>
                         <Chips
                           value={D.image ? "mine" : (D.useFilmImage ?? "none")}
@@ -838,9 +863,22 @@ export function DesignEditor({
         onChange={(e) => {
           const f = e.target.files?.[0];
           e.target.value = "";
+          fromPoster.current = false;
           if (f) setCrop({ file: f, target: pickTarget.current });
         }}
       />
+      {gallery && (
+        <TmdbImagePicker
+          filmId={film.id}
+          prefer={gallery === "front" ? "posters" : "backdrops"}
+          onCancel={() => setGallery(null)}
+          onPick={(f, kind) => {
+            fromPoster.current = kind === "posters";
+            setCrop({ file: f, target: gallery });
+            setGallery(null);
+          }}
+        />
+      )}
       {crop && (
         <ImageCropper
           file={crop.file}

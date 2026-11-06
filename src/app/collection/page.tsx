@@ -65,7 +65,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={total > 0 ? `${total} éditions physiques` : "DVD, Blu-ray, 4K"}
+        eyebrow={total > 0 ? `${total} film${total > 1 ? "s" : ""}` : undefined}
         number={total > 0 && unseen ? `${unseen} pas encore vus` : undefined}
         title="Ma collection"
         actions={

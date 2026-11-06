@@ -272,9 +272,6 @@ export function FavoritesRing({ films }: { films: CaseFilmInfo[] }) {
         <div className="min-w-0" aria-live="polite">
           {cur && (
             <Link href={cur.href} className="group block">
-              <span className="text-[12.5px] text-muted tabular">
-                N° {front + 1} sur {n}
-              </span>
               <span className="block truncate font-display text-[1.6rem] leading-tight group-hover:text-accent md:text-[2rem]">
                 {cur.design?.case?.front?.title || cur.title}
               </span>

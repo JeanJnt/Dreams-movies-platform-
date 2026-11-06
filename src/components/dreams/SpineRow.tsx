@@ -26,7 +26,7 @@ export function SpineRow({ films, height = 300 }: { films: SpineFilm[]; height?:
               className="spine"
               data-look={look.style}
               style={{ width: size.mm * PX_PER_MM, "--spine-bg": look.bg, "--spine-ink": look.ink } as React.CSSProperties}
-              title={`${look.title} — boîtier ${size.name.toLowerCase()} (${size.mm} mm)`}
+              title={look.title}
             >
               <span className="spine-star" aria-hidden />
               {look.showNumber && <span className="spine-num tabular">{look.num}</span>}
@@ -34,7 +34,6 @@ export function SpineRow({ films, height = 300 }: { films: SpineFilm[]; height?:
                 {look.title}
                 {size.mm >= 14 && look.dir && <span className="spine-dir">{look.dir}</span>}
               </span>
-              <span className="sr-only">, boîtier {size.name.toLowerCase()}</span>
             </Link>
           </li>
         );

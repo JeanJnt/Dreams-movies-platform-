@@ -157,7 +157,7 @@ export default async function Home() {
         )}
 
         {shelf.length > 0 && (
-          <Section title="Sur vos étagères" kicker={`${owned.length} boîtiers. Chaque tranche a l'épaisseur de son édition.`} href="/collection" linkLabel="Ouvrir la bibliothèque">
+          <Section title="Sur vos étagères" kicker={`${owned.length} film${owned.length > 1 ? "s" : ""}`} href="/collection" linkLabel="Ouvrir la bibliothèque">
             <div className="no-scrollbar bleed overflow-x-auto">
               <SpineRow films={shelf} height={280} />
             </div>
