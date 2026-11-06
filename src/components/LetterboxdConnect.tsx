@@ -33,9 +33,9 @@ export function LetterboxdSyncButton() {
       <button
         disabled={pending}
         onClick={() => start(async () => { setMessage(syncMessage(await syncLetterboxdAction())); router.refresh(); })}
-        className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent disabled:opacity-50"
+        className="btn"
       >
-        {pending ? "Synchronisation…" : "↻ Synchroniser Letterboxd"}
+        {pending ? "Synchronisation…" : "Synchroniser Letterboxd"}
       </button>
       {message && <p className={`text-xs ${message.ok ? "text-accent" : "text-heart"}`}>{message.text}</p>}
     </div>
@@ -54,7 +54,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
   return (
     <section className={`space-y-4 rounded-3xl border p-5 md:p-6 ${highlight ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>
       <div>
-        <h2 className="text-xl md:text-2xl">{highlight ? "Dernière étape : connecte ton Letterboxd" : "Synchronisation Letterboxd"}</h2>
+        <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{highlight ? "Dernière étape : connecte ton Letterboxd" : "Synchronisation Letterboxd"}</h2>
         <p className="mt-2 text-sm text-muted">
           Chaque matin, Dreams récupère tes <b>nouveaux films</b> et tes <b>reviews</b> depuis ton profil Letterboxd. Plus besoin de réimporter à chaque fois.
           Ton profil Letterboxd doit être public.
@@ -71,7 +71,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
             <button
               disabled={pending}
               onClick={() => start(async () => { report(await syncLetterboxdAction()); router.refresh(); })}
-              className="rounded-full bg-accent px-5 py-2 text-on-accent disabled:opacity-50"
+              className="btn btn-primary disabled:opacity-50"
             >
               {pending ? "Synchronisation…" : "↻ Synchroniser maintenant"}
             </button>
@@ -94,7 +94,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
         >
           <span className="text-sm text-muted">letterboxd.com/</span>
           <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ton-pseudo" required className="field w-44" autoCapitalize="none" autoCorrect="off" />
-          <button disabled={pending} className="rounded-full bg-accent px-5 py-2 text-on-accent disabled:opacity-50">
+          <button disabled={pending} className="btn btn-primary disabled:opacity-50">
             {pending ? "Connexion…" : "Connecter"}
           </button>
         </form>

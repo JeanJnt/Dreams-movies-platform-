@@ -133,3 +133,12 @@ export async function timeline(limitMonths = 36, userId?: number) {
     films,
   }));
 }
+
+// Films vus par année (date de visionnage), pour la pile de disques des statistiques
+export async function perYear(userId?: number) {
+  const u = await viewedUser(userId);
+  const { rows } = await db().execute(
+    `SELECT substr(date, 1, 4) AS y, COUNT(*) AS n FROM watched WHERE user_id = ${u} AND date IS NOT NULL AND date != '' GROUP BY y ORDER BY y`,
+  );
+  return rows.map((r) => ({ year: Number(r.y), count: Number(r.n) })).filter((r) => r.year > 1990);
+}

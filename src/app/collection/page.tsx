@@ -1,23 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { DiscCarousel, type Disc } from "@/components/DiscCarousel";
 import { DvdCase, Shelf, type CaseFilm } from "@/components/DvdCase";
 import { LibraryTabs } from "@/components/LibraryTabs";
 import { FORMATS, ownedCounts, ownedFilms } from "@/lib/collection";
 import { discStyles } from "@/lib/disc-style";
 import { backdrop, poster } from "@/lib/tmdb";
+import { Parade } from "@/components/collection/Parade";
+import type { ParadeRow } from "@/components/three/dreams/CaseParade";
+import { EDITIONS, editionFor } from "@/components/three/cases/editions";
+import { caseFilms } from "@/lib/case-films";
 
 export const metadata: Metadata = { title: "Ma collection" };
 export const dynamic = "force-dynamic";
 
 const VIEWS = [
+  { key: "defile", label: "Défilé" },
   { key: "boitiers", label: "Boîtiers" },
   { key: "etagere", label: "Étagère" },
   { key: "disques", label: "Disques" },
 ] as const;
 
 export default async function CollectionPage({ searchParams }: { searchParams: Promise<{ format?: string; vue?: string }> }) {
-  const { format, vue = "boitiers" } = await searchParams;
+  const { format, vue = "defile" } = await searchParams;
   const [owned, counts] = await Promise.all([ownedFilms(format), ownedCounts()]);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const unseen = owned.filter((f) => !f.seen).length;
@@ -39,6 +45,17 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   const styles = await discStyles(raw.map((f) => ({ id: f.id, image: f.image ?? f.cover })));
   const films: CaseFilm[] = raw.map((f) => ({ ...f, ...styles.get(f.id) }));
   const discs: Disc[] = films.map((f) => ({ ...f, image: f.image ?? f.cover, badge: f.format }));
+  // Le défilé 3D : chaque exemplaire dans son boîtier, à l'épaisseur de son édition
+  let shelf: ParadeRow[] = [];
+  if (vue === "defile" && owned.length) {
+    const cfs = new Map((await caseFilms(owned.map((o) => o.id), "/film")).map((c) => [c.id, c]));
+    shelf = owned.flatMap((o) => {
+      const film = cfs.get(o.id);
+      if (!film) return [];
+      const edition = editionFor(o);
+      return [{ film: { ...film, edition: o.edition, caseType: o.caseType }, label: EDITIONS[edition].label, editionName: o.edition, director: o.director }];
+    });
+  }
 
   const link = (p: Record<string, string | undefined>) => {
     const q = new URLSearchParams(Object.entries({ format, vue, ...p }).filter(([, v]) => v) as [string, string][]).toString();
@@ -46,33 +63,37 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   };
 
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
-      <LibraryTabs />
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Ma collection</h1>
-          {total > 0 && <p className="mt-3 text-sm text-muted">{total} films{unseen ? ` · ${unseen} pas encore vus` : ""}</p>}
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow={total > 0 ? `${total} éditions physiques` : "DVD, Blu-ray, 4K"}
+        number={total > 0 && unseen ? `${unseen} pas encore vus` : undefined}
+        title="Ma collection"
+        actions={
+          <>
+            <Link href="/collection/ajouter" className="btn btn-primary">Ajouter des films</Link>
+            <Link href="/collection/scanner" className="btn">Scanner un code-barres</Link>
+          </>
+        }
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <LibraryTabs />
+          <div className={`dm-seg ${total ? "" : "hidden"}`} role="group" aria-label="Affichage">
+            {VIEWS.map((v) => (
+              <Link key={v.key} href={link({ vue: v.key })} aria-current={vue === v.key ? "page" : undefined} className={`flex min-h-[34px] items-center rounded-full px-3.5 text-[13px] font-medium transition-colors ${vue === v.key ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
+                {v.label}
+              </Link>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-        <Link href="/collection/ajouter" className="rounded-full bg-accent px-4 py-1.5 text-sm text-on-accent">Ajouter des films</Link>
-        <Link href="/collection/scanner" className="rounded-full border border-border px-4 py-1.5 text-sm hover:border-accent">Scanner</Link>
-        <div className={`flex rounded-full border border-border bg-surface p-0.5 text-xs ${total ? "" : "hidden"}`}>
-          {VIEWS.map((v) => (
-            <Link key={v.key} href={link({ vue: v.key })} className={`rounded-full px-3.5 py-1.5 ${vue === v.key ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
-              {v.label}
-            </Link>
-          ))}
-        </div>
-        </div>
-      </div>
+      </PageHeader>
 
       {total === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center">
-          <h2 className="text-2xl">Ta collection est vide</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted">DVD, Blu-ray, éditions collector.</p>
+        <div className="card px-6 py-16 text-center">
+          <h2 className="text-4xl">Votre collection est vide</h2>
+          <p className="mx-auto mt-3 max-w-md text-[15px] text-muted">Ajoutez vos DVD, Blu-ray et éditions collector : scannez le code-barres ou cherchez le film.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/collection/ajouter" className="rounded-full bg-accent px-6 py-3 text-on-accent">Commencer ma collection</Link>
-            <Link href="/collection/scanner" className="rounded-full border border-border px-6 py-3 hover:border-accent">Scanner un boîtier</Link>
+            <Link href="/collection/ajouter" className="btn btn-primary">Ajouter un premier film</Link>
+            <Link href="/collection/scanner" className="btn">Scanner un code-barres</Link>
           </div>
         </div>
       ) : (
@@ -84,7 +105,9 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
         </div>
       )}
 
-      {total === 0 ? null : vue === "etagere" ? (
+      {total === 0 ? null : vue === "defile" ? (
+        <Parade rows={shelf} />
+      ) : vue === "etagere" ? (
         <Shelf films={films} />
       ) : vue === "disques" ? (
         <DiscCarousel key={format ?? "all"} discs={discs} label="Ma collection en disques" />
@@ -99,7 +122,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
 
 function FormatChip({ href, active, label }: { href: string; active: boolean; label: string }) {
   return (
-    <Link href={href} className={`rounded-full border px-3 py-1 text-xs ${active ? "border-accent bg-accent-soft text-accent" : "border-border text-muted hover:text-foreground"}`}>
+    <Link href={href} aria-pressed={active} className="dm-chip">
       {label}
     </Link>
   );

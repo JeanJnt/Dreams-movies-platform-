@@ -98,8 +98,8 @@ export function InstallGuide() {
         ))}
       </div>
 
-      <section className="rounded-3xl border border-border bg-surface p-6">
-        <h2 className="text-xl md:text-2xl">{guide.title}</h2>
+      <section className="card rounded-3xl p-6">
+        <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{guide.title}</h2>
         <ol className="mt-5 space-y-4">
           {guide.steps.map((s, i) => (
             <li key={i} className="flex gap-4">
@@ -115,7 +115,7 @@ export function InstallGuide() {
               if ((await prompt.userChoice).outcome === "accepted") setInstalled(true);
               setPrompt(null);
             }}
-            className="font-display mt-6 rounded-full bg-accent px-6 py-3 text-on-accent"
+            className="btn btn-primary mt-6 h-12 px-6"
           >
             ⬇ Installer l&apos;appli
           </button>

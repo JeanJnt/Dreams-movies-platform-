@@ -120,7 +120,7 @@ export async function recentDiary(limit = 12, userId?: number): Promise<DiaryEnt
   const u = await viewedUser(userId);
   const { rows } = await db().execute({
     sql: `SELECT f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
-            d.rating, (l.film_id IS NOT NULL) AS liked, d.watched_date, d.rewatch
+            d.rating, (l.film_id IS NOT NULL) AS liked, d.watched_date, d.rewatch, f.directors, f.runtime
           FROM diary d JOIN films f ON f.id = d.film_id LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}
           WHERE d.user_id = ${u}
           ORDER BY d.watched_date DESC, d.id DESC LIMIT ?`,

@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import { InstallGuide } from "@/components/InstallGuide";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Installer l'appli" };
 
 export default function InstallPage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pt-2 md:pt-8">
-      <div>
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Installer Dreams</h1>
-        <p className="mt-3 text-muted">Sur ordinateur, iPhone et Android.</p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-10">
+      <PageHeader eyebrow="Application" title="Installer Dreams" lede="Sur ordinateur, iPhone et Android : Dreams s’ouvre en plein écran, comme une appli." />
       <InstallGuide />
     </div>
   );

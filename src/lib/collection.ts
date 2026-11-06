@@ -47,7 +47,7 @@ export async function setOwned(filmId: number, item: (Partial<OwnedItem> & { for
   });
 }
 
-export type OwnedFilm = Film & OwnedItem & { seen: boolean };
+export type OwnedFilm = Film & OwnedItem & { seen: boolean; color?: string | null };
 
 export async function ownedFilms(format?: string, userId?: number): Promise<OwnedFilm[]> {
   await schema();
@@ -55,7 +55,7 @@ export async function ownedFilms(format?: string, userId?: number): Promise<Owne
   const { rows } = await db().execute({
     sql: `SELECT f.id AS fid, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
             r.rating, (l.film_id IS NOT NULL) AS liked, o.format, o.case_type, o.edition, o.cover, o.ean,
-            (w.film_id IS NOT NULL) AS seen, json_extract(f.directors, '$[0]') AS director, f.runtime
+            (w.film_id IS NOT NULL) AS seen, json_extract(f.directors, '$[0]') AS director, f.runtime, f.disc_color
           FROM owned o JOIN films f ON f.id = o.film_id
           LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u} LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}
           LEFT JOIN watched w ON w.film_id = f.id AND w.user_id = ${u}
@@ -69,6 +69,7 @@ export async function ownedFilms(format?: string, userId?: number): Promise<Owne
     backdrop_path: (r.backdrop_path as string) ?? null, rating: r.rating == null ? null : Number(r.rating),
     liked: Boolean(r.liked), seen: Boolean(r.seen),
     director: (r.director as string) ?? null, runtime: r.runtime == null ? null : Number(r.runtime),
+    color: (r.disc_color as string) ?? null,
     ...toItem(r),
   }));
 }

@@ -39,7 +39,7 @@ export function PickFilters({ genres }: { genres: string[] }) {
   const activeCount = ["genre", "duree", "decennie"].filter((k) => params.get(k)).length;
 
   return (
-    <div className={`space-y-5 rounded-2xl border border-border bg-surface p-4 transition-opacity md:p-5 ${pending ? "opacity-60" : ""}`}>
+    <div className={`space-y-5 card p-4 transition-opacity md:p-5 ${pending ? "opacity-60" : ""}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex rounded-xl bg-background p-1">
           {MODES.map((m) => (

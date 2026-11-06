@@ -49,3 +49,5 @@ next-env.d.ts
 
 # réglages locaux de l'éditeur
 /.claude
+.refonte-captures/
+.preview-main/

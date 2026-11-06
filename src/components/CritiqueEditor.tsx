@@ -147,7 +147,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
         className="field-sizing-content w-full resize-none bg-transparent text-lg leading-relaxed text-foreground/80 outline-none placeholder:text-muted/50"
       />
 
-      <div className="rounded-xl border border-border bg-surface">
+      <div className="card rounded-xl">
         <div className="flex items-center gap-1 border-b border-border p-2">
           {(["write", "preview"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`rounded-md px-3 py-1 text-sm ${tab === t ? "bg-surface-2 text-foreground" : "text-muted"}`}>

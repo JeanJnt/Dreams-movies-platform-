@@ -10,12 +10,12 @@ export function InviteForm() {
     <form action={action} className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <input name="note" placeholder="Pour qui ? (facultatif)" maxLength={80} className="field flex-1" />
-        <button disabled={pending} className="rounded-full bg-accent px-5 py-2 text-on-accent">+ Créer une invitation</button>
+        <button disabled={pending} className="btn btn-primary">+ Créer une invitation</button>
       </div>
       {state?.error && <p className="text-sm text-heart">{state.error}</p>}
       {state?.ok && (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-accent-soft p-4">
-          <span className="font-mono text-2xl tracking-widest text-accent">{state.ok}</span>
+          <span className="tabular text-2xl tracking-widest text-accent">{state.ok}</span>
           <button
             type="button"
             onClick={() => navigator.clipboard.writeText(state.ok!).then(() => setCopied(true))}
@@ -59,7 +59,7 @@ export function MemberActions({ id, isAdmin, isMe }: { id: number; isAdmin: bool
         </button>
       )}
       {password && (
-        <span className="rounded-lg bg-accent-soft px-2 py-1 font-mono text-accent" title="À transmettre au membre, qui le changera dans Mon compte">
+        <span className="rounded-lg bg-accent-soft px-2 py-1 tabular text-accent" title="À transmettre au membre, qui le changera dans Mon compte">
           {password}
         </span>
       )}

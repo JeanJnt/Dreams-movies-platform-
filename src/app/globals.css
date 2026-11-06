@@ -1,151 +1,758 @@
 @import "tailwindcss";
+@import "./dm.css";
 
-@import "./themes.css";
+/*
+ * DREAMS MOVIES — identité « Argentique »
+ * Une salle noire, des objets éclairés comme en studio. L'interface est monochrome : noir absolu, anthracites,
+ * argent (la matière du logo), blanc cassé. La couleur n'entre que par les films : affiches, jaquettes, disques.
+ * Voir design-system/dreams-movies/MASTER.md
+ */
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
-  --color-border: var(--border);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--line-2);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-accent: var(--accent);
+  --color-accent-2: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-heart: var(--heart);
   --color-on-accent: var(--on-accent);
-  --font-sans: var(--font-geist-sans);
-  --font-display: var(--display);
+  --color-band: var(--surface-2);
+  --color-on-band: var(--foreground);
+  --color-ink: var(--background);
+  --color-silver: #c9ccd3;
+  --font-sans: var(--font-jost);
+  --font-mono: var(--font-jost);
+  --font-display: var(--font-bungee);
+  --font-serif: var(--font-jost);
+  --ease-cinema: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-fade: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
-/* Rien ne doit dépasser en largeur : sinon, sur téléphone, la page se dézoome et la barre du bas change de hauteur */
+:root {
+  /* Noirs : chaque niveau a un rôle (fond, panneau, panneau levé, contrôle) */
+  --background: #000000;
+  --surface: #0b0b0c;
+  --surface-2: #141416;
+  --surface-3: #1d1d20;
+  --line: rgb(255 255 255 / 0.07);
+  --line-2: rgb(255 255 255 / 0.13);
+  --line-3: rgb(255 255 255 / 0.22);
+  /* Texte : blanc cassé, gris chauds */
+  --foreground: #ecebe7;
+  --text-2: #b9b7b2;
+  --muted: #8b8984;
+  --faint: #5d5b58;
+  /* Action principale : le blanc (bouton plein), jamais une couleur vive */
+  --accent: #ecebe7;
+  --on-accent: #000000;
+  --accent-soft: rgb(236 235 231 / 0.08);
+  --heart: #d4574e;
+  --ok: #8fc7a2;
+  --danger: #e5675f;
+  /* L'argent : la matière du logo, pour les filets actifs, les chiffres-clés, les reflets */
+  --silver: linear-gradient(100deg, #8e929c 0%, #f4f5f8 22%, #b9bcc4 36%, #ffffff 48%, #7c808a 56%, #e6e8ed 70%, #9da1aa 86%, #eef0f4 100%);
+  --silver-flat: #c9ccd3;
+  /* repères (onglet actif, progression, chiffres-clés) et action principale : argent et blanc par défaut, rouge dans le thème rouge */
+  --marker: var(--silver);
+  --marker-text: var(--silver);
+  --accent-hi: #ffffff;
+  --accent-glow: rgb(255 255 255 / 0.25);
+  --film: #6b6b70; /* couleur dominante du film affiché (posée par la page) */
+
+  --display: var(--font-bungee);
+  --font-geist-sans: var(--font-jost);
+  --font-geist-mono: var(--font-jost);
+  --font-archivo: var(--font-jost);
+
+  --gutter: 20px;
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --r-poster: 3px;
+  --r-panel: 20px;
+  --sh-object: 0 1px 2px rgb(0 0 0 / 0.6), 0 24px 48px -24px rgb(0 0 0 / 0.95);
+  color-scheme: dark;
+}
+@media (min-width: 768px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 64px;
+  }
+}
+
 html,
 body {
   overflow-x: clip;
 }
-
+html {
+  background: #000;
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+  scrollbar-width: thin;
+}
 body {
-  /* 3 couches : la texture du thème (pinceau, rideaux…), une lueur, puis la couleur de fond */
-  background: var(--texture), var(--glow), var(--background);
-  background-size: var(--texture-size, auto), auto, auto;
-  background-repeat: var(--texture-repeat, repeat), no-repeat, no-repeat;
+  background: #000;
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font: 400 16px/1.55 var(--font-jost), system-ui, sans-serif;
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.3s, color 0.3s;
+  touch-action: manipulation;
+}
+/* Le halo de la salle : une lumière froide très douce tombe d'en haut, teintée par le film affiché */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 55% at 50% -12%, color-mix(in srgb, var(--film) 16%, transparent), transparent 70%),
+    radial-gradient(60% 40% at 50% -5%, rgb(255 255 255 / 0.05), transparent 70%);
+  transition: background 0.6s var(--ease);
+}
+/* Grain argentique, à peine perceptible */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+::selection {
+  background: #fff;
+  color: #000;
+}
+:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
-
-/* Champs de formulaire communs : menus déroulants avec une flèche discrète, sans le style système */
-.field {
-  appearance: none;
-  border: 1px solid var(--border);
-  background-color: var(--surface);
-  color: var(--foreground);
-  border-radius: 0.6rem;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-.field:hover {
-  background-color: var(--surface-2);
-}
-.field:focus-visible {
-  border-color: var(--accent);
-}
-select.field {
-  padding-right: 2.2rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.8rem center;
-  background-size: 0.7rem;
-  cursor: pointer;
-}
-
-/* Curseur (durée…) aux couleurs du thème */
-.range {
-  appearance: none;
-  width: 100%;
-  height: 4px;
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 200;
+  padding: 10px 16px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--accent) var(--fill, 100%), var(--surface-2) var(--fill, 100%));
-  cursor: pointer;
+  background: #fff;
+  color: #000;
+  transform: translateY(-200%);
 }
-.range::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--foreground);
-  border: 3px solid var(--accent);
-  box-shadow: 0 1px 4px #0006;
-  transition: transform 0.15s;
-}
-.range::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-.range:focus {
-  outline: none;
-}
-.range:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 5px var(--accent-soft);
-}
-.range::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--foreground);
-  border: 3px solid var(--accent);
+.skip-link:focus {
+  transform: none;
 }
 
-/* Close-Up : les images sont un peu moins saturées, comme la lumière poussiéreuse de Kiarostami */
-[data-theme="closeup"] main img {
-  filter: saturate(0.9) contrast(0.98);
+/* Défilement doux (Lenis, ordinateur seulement) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
-/* Laisse la place à la barre de navigation du bas sur mobile (et à l'encoche de l'iPhone). */
-.pb-safe {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-}
-@media (min-width: 768px) {
-  .pb-safe {
-    padding-bottom: 3rem;
+/* --- Typographie --- */
+@layer base {
+  /* Bungee est très large : font-size-adjust la ramène à une hauteur d'œil commune, quelle que soit la taille demandée */
+  h1,
+  h2,
+  .font-display {
+    font-family: var(--font-bungee), "Arial Black", sans-serif;
+    font-weight: 400;
+    font-size-adjust: ex-height 0.5;
+    letter-spacing: 0;
+    line-height: 0.92;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  h3 {
+    font-family: var(--font-jost), sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.25;
+  }
+  em {
+    font-style: italic;
   }
 }
 
-/* Mise en page des critiques, façon revue de cinéma */
+@layer components {
+  /* Titre original, citations : l'italique du Bodoni */
+  .serif {
+    font-family: var(--font-jost), sans-serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+  /* Petite mention : casse normale, grise */
+  .eyebrow {
+    font-family: var(--font-jost), sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+  .eyebrow-num {
+    color: var(--foreground);
+  }
+  /* Générique (crédits, tranches, rubriques de fiche) : capitales Jost espacées — réservé aux crédits */
+  .wide,
+  .billing {
+    font-family: var(--font-jost), sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.6875rem;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* L'argent appliqué au texte (chiffres-clés, logotype) */
+  .silver-text {
+    background: var(--marker-text);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Grand titre : les mots se lèvent une fois, au chargement */
+  .title-words > span {
+    display: inline-block;
+    overflow: clip;
+    overflow-clip-margin: 0.2em;
+    vertical-align: top;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+  .title-words > span > span {
+    display: inline-block;
+    animation: word-rise 0.8s var(--ease) both;
+    animation-delay: calc(var(--i, 0) * 50ms + 80ms);
+  }
+
+  .link-draw {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.24s var(--ease);
+  }
+  .link-draw:hover {
+    background-size: 100% 1px;
+  }
+
+  /* Boutons : pilules. Plein blanc = l'action principale de l'écran ; contour = secondaire ; discret = tertiaire */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 2.75rem;
+    padding: 0 1.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-2);
+    background: rgb(255 255 255 / 0.03);
+    color: var(--foreground);
+    font: 500 0.875rem/1 var(--font-jost), sans-serif;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 160ms var(--ease),
+      border-color 160ms var(--ease),
+      color 160ms var(--ease),
+      transform 120ms var(--ease);
+  }
+  .btn:hover {
+    background: rgb(255 255 255 / 0.07);
+    border-color: var(--line-3);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: var(--on-accent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 10px 30px -12px var(--accent-glow);
+  }
+  .btn-primary:hover {
+    background: var(--accent-hi);
+    border-color: transparent;
+  }
+  .btn-ink {
+    background: var(--surface-3);
+    border-color: var(--line-2);
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+  }
+  .btn-ghost:hover {
+    background: rgb(255 255 255 / 0.06);
+    border-color: transparent;
+  }
+  .btn-sm {
+    min-height: 2.25rem;
+    padding: 0 0.95rem;
+    font-size: 0.8125rem;
+  }
+
+  .arrow-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .arrow-link svg {
+    transition: transform 0.2s var(--ease);
+  }
+  .arrow-link:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* Surfaces : un panneau anthracite, un filet de lumière en haut (comme une tranche de métal) */
+  .card {
+    position: relative;
+    border-radius: var(--r-panel);
+    background: linear-gradient(180deg, var(--surface-2), var(--surface) 60%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.06),
+      0 0 0 1px var(--line);
+  }
+  .card-hover {
+    transition:
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.09),
+      0 0 0 1px var(--line-2),
+      0 24px 40px -24px rgb(0 0 0 / 0.9);
+  }
+  .glass {
+    background: rgb(0 0 0 / 0.72);
+    backdrop-filter: blur(20px) saturate(1.4);
+  }
+  .bleed {
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+  }
+  .fade-edges {
+    -webkit-mask: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
+    mask: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
+  }
+  .full-bleed {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: calc(50vw - 50%);
+  }
+  .band {
+    background: var(--surface-2);
+    color: var(--foreground);
+  }
+  .rule {
+    border-top: 1px solid var(--line-2);
+  }
+  .rule-thin {
+    border-top: 1px solid var(--line);
+  }
+  /* Filet argent : repère actif, séparation importante */
+  .rule-silver {
+    height: 1px;
+    background: var(--silver);
+    opacity: 0.7;
+  }
+
+  /* Affiche : un tirage photographique, coins à peine cassés, posé dans la lumière */
+  .poster {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--r-poster);
+    background: var(--surface-2);
+    box-shadow: var(--sh-object);
+    transition:
+      transform 0.24s var(--ease),
+      box-shadow 0.24s var(--ease);
+  }
+  .poster::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    background: linear-gradient(118deg, rgb(255 255 255 / 0.18), transparent 30%);
+    opacity: 0;
+    transition: opacity 0.24s var(--ease);
+    pointer-events: none;
+  }
+  :is(a, .group):hover > .poster,
+  .group:hover .poster,
+  a:focus-visible > .poster {
+    transform: translateY(-5px);
+    box-shadow:
+      0 2px 4px rgb(0 0 0 / 0.6),
+      0 34px 54px -26px rgb(0 0 0 / 1),
+      0 0 0 1px rgb(255 255 255 / 0.1);
+  }
+  :is(a, .group):hover > .poster::after,
+  .group:hover .poster::after {
+    opacity: 1;
+  }
+
+  /* Pastille : une étiquette sobre */
+  .sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.32em 0.7em;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.6);
+    color: var(--foreground);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    backdrop-filter: blur(8px);
+    font: 500 0.75rem/1 var(--font-jost), sans-serif;
+  }
+  .sticker-alt,
+  .sticker-paper {
+    background: var(--surface-3);
+  }
+  .sticker-round {
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    color: var(--heart);
+  }
+  .duotone {
+    position: relative;
+    background: var(--surface-2);
+  }
+
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .marquee > div {
+    display: flex;
+    flex-shrink: 0;
+    animation: marquee var(--marquee-speed, 40s) linear infinite;
+  }
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--surface) 0, var(--surface-3) 50%, var(--surface) 100%) 0 0 / 800px 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  /* Champs */
+  .field {
+    appearance: none;
+    min-height: 2.75rem;
+    border-radius: 12px;
+    border: 1px solid var(--line-2);
+    background-color: var(--surface);
+    color: var(--foreground);
+    padding: 0.6rem 0.95rem;
+    font-size: 0.9375rem;
+    outline: none;
+    transition:
+      border-color 0.16s var(--ease),
+      background-color 0.16s var(--ease);
+  }
+  .field::placeholder {
+    color: var(--faint);
+  }
+  .field:focus-visible,
+  .field:focus {
+    border-color: rgb(255 255 255 / 0.5);
+    background-color: var(--surface-2);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+  select.field,
+  select.field option {
+    background-color: var(--surface);
+    color: var(--foreground);
+  }
+  select.field {
+    padding-right: 2.3rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 0.7rem;
+    cursor: pointer;
+  }
+  .range {
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--accent) var(--fill, 100%), rgb(255 255 255 / 0.14) var(--fill, 100%));
+    cursor: pointer;
+  }
+  .range::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--silver);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.7), inset 0 1px 0 #fff;
+  }
+  .range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 0;
+    background: #dfe1e6;
+  }
+  .range:focus {
+    outline: none;
+  }
+  .range:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  /* Bloc générique : libellé à gauche, valeur à droite, filets fins */
+  .credits {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, auto) 1fr;
+    border-top: 1px solid var(--line-2);
+  }
+  .credits > dt,
+  .credits > dd {
+    margin: 0;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .credits > dt {
+    font: 500 0.6875rem/1.4 var(--font-jost), sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0.95rem;
+  }
+  .credits > dd {
+    text-align: right;
+    font-size: 0.9375rem;
+  }
+
+  /* Rangée-billet : une ligne qui porte toute l'info */
+  .ticket {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 4rem;
+    padding: 0.5rem 0.8rem 0.5rem 0.5rem;
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition:
+      background-color 0.16s var(--ease),
+      box-shadow 0.16s var(--ease);
+  }
+  .ticket:hover {
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  /* Onglets de rubrique : le repère actif est un filet argent */
+  .section-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: color 0.16s var(--ease);
+  }
+  .section-tab:hover {
+    color: var(--foreground);
+  }
+  .section-tab[aria-current="page"] {
+    color: var(--foreground);
+  }
+  .section-tab[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: -1px;
+    height: 1px;
+    background: var(--marker);
+  }
+
+  /* Pastilles de filtre */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.25rem;
+    padding: 0 0.95rem;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    color: var(--text-2);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.16s var(--ease),
+      color 0.16s var(--ease),
+      box-shadow 0.16s var(--ease);
+  }
+  .chip:hover {
+    color: var(--foreground);
+    box-shadow: inset 0 0 0 1px var(--line-3);
+  }
+  .chip[aria-pressed="true"],
+  .chip[aria-current="page"] {
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: none;
+  }
+}
+
+/* --- Mouvement --- */
+@keyframes word-rise {
+  from {
+    transform: translateY(105%);
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: -400px 0;
+  }
+  to {
+    background-position: 400px 0;
+  }
+}
+.shutter {
+  display: none;
+}
+.reveal,
+.reveal-stagger > * {
+  animation: none;
+}
+@supports (animation-timeline: view()) {
+  .chart {
+    view-timeline-name: --chart;
+  }
+  .chart .bar-y,
+  .chart .bar-x {
+    animation: linear both;
+    animation-timeline: --chart;
+    animation-range: entry 10% cover 40%;
+  }
+  .chart .bar-y {
+    animation-name: grow-y;
+    transform-origin: bottom;
+  }
+  .chart .bar-x {
+    animation-name: grow-x;
+    transform-origin: left;
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.pb-safe {
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  .pb-safe {
+    padding-bottom: 6rem;
+  }
+}
+
+/* Critiques : une page de revue */
 .critique {
-  font-size: 1.075rem;
-  line-height: 1.8;
-  color: color-mix(in srgb, var(--foreground) 92%, transparent);
+  font-size: 1.125rem;
+  line-height: 1.78;
+  max-width: 68ch;
+  color: rgb(236 235 231 / 0.9);
 }
 .critique > * + * {
   margin-top: 1.1em;
 }
 .critique h2,
 .critique h3 {
-  font-family: var(--font-display), serif;
   color: var(--foreground);
-  line-height: 1.15;
   margin-top: 1.8em;
 }
 .critique h2 {
   font-size: 2rem;
 }
 .critique h3 {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
 }
 .critique blockquote {
-  border-left: 3px solid var(--accent);
-  padding: 0.2em 0 0.2em 1.2em;
-  font-family: var(--font-display), serif;
+  border-left: 1px solid var(--silver-flat);
+  padding: 0.1em 0 0.1em 1.3em;
+  font-family: var(--font-jost), sans-serif;
+  font-style: italic;
   font-size: 1.5rem;
-  line-height: 1.4;
+  line-height: 1.3;
   color: var(--foreground);
 }
 .critique a {
-  color: var(--accent);
+  color: inherit;
   text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 0.35);
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 .critique strong {
@@ -161,27 +768,27 @@ select.field {
 }
 .critique hr {
   border: 0;
-  text-align: center;
-}
-.critique hr::after {
-  content: "✦ ✦ ✦";
-  color: var(--muted);
-  letter-spacing: 0.5em;
+  height: 1px;
+  background: var(--silver);
+  width: 4rem;
+  margin-inline: auto;
+  opacity: 0.6;
 }
 .critique--dropcap > p:first-child::first-letter {
   float: left;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-bungee), sans-serif;
   font-size: 4.4em;
   line-height: 0.8;
-  padding: 0.08em 0.12em 0 0;
-  color: var(--accent);
+  padding: 0.06em 0.12em 0 0;
 }
 
 .no-scrollbar {
   scrollbar-width: none;
   overscroll-behavior-x: contain;
 }
-/* Rangées qu'on fait défiler du doigt sur téléphone (grilles sur ordinateur) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 @media (max-width: 639px) {
   .swipe-row {
     scroll-snap-type: x mandatory;
@@ -191,42 +798,26 @@ select.field {
     scroll-snap-align: start;
   }
 }
-/* Sur écran tactile : un léger retour quand on touche un lien ou un bouton, comme une appli native */
 @media (hover: none) {
   a:active,
   button:active {
-    opacity: 0.6;
+    opacity: 0.75;
   }
 }
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
 
-/* Disques du carrousel (collection) : reflet irisé et rotation lente du disque sélectionné */
+/* Anciens disques et boîtiers 2D (vues secondaires de la collection) */
 .disc-sheen {
-  background:
-    conic-gradient(from 30deg, #ffffff00 0deg, #ffffff38 25deg, #ffffff00 60deg, #9ff5ff26 115deg, #ffffff00 160deg,
-      #ffffff38 205deg, #ffffff00 245deg, #ffb6f526 295deg, #ffffff00 360deg);
+  background: conic-gradient(from 30deg, #fff0 0deg, #ffffff38 25deg, #fff0 60deg, #9ff5ff26 115deg, #fff0 160deg, #ffffff38 205deg, #fff0 245deg, #ffb6f526 295deg, #fff0 360deg);
   mix-blend-mode: screen;
   pointer-events: none;
-  /* pas de reflet dans le trou central */
   -webkit-mask: radial-gradient(circle, transparent 9.5%, black 10%);
   mask: radial-gradient(circle, transparent 9.5%, black 10%);
 }
 .disc {
-  filter: drop-shadow(0 28px 34px #0009);
+  filter: drop-shadow(0 18px 24px rgb(0 0 0 / 0.7));
 }
-/* Sur téléphone : pas d'ombre ni de rotation continue (trop coûteux à l'affichage) */
-@media (max-width: 767px) {
-  .disc {
-    filter: none;
-  }
-  .disc--spin,
-  .spin-slow {
-    animation: none !important;
-  }
-}
-.disc--spin {
+.disc--spin,
+.spin-slow {
   animation: disc-spin 40s linear infinite;
 }
 @keyframes disc-spin {
@@ -234,36 +825,16 @@ select.field {
     transform: rotate(360deg);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .disc--spin {
-    animation: none;
-  }
-}
-
-/* Boîtiers DVD / Blu-ray : reflet du film plastique et ombre portée */
 .dvd-case > div {
-  filter: drop-shadow(0 18px 22px #0008);
+  filter: drop-shadow(0 18px 22px rgb(0 0 0 / 0.7));
 }
 .dvd-sheen {
-  background: linear-gradient(115deg, #ffffff00 30%, #ffffff2e 42%, #ffffff00 52%),
-    linear-gradient(180deg, #ffffff14, transparent 30%);
+  background: linear-gradient(115deg, #fff0 30%, #ffffff2e 42%, #fff0 52%), linear-gradient(180deg, #ffffff14, transparent 30%);
 }
-@media (prefers-reduced-motion: reduce) {
-  .dvd-cover {
-    transition: none;
-  }
-}
-/* Coffret : un boîtier épais, avec la tranche visible derrière */
-.dvd-case--box > div {
-  box-shadow: 6px 6px 0 -1px #00000055, 12px 12px 0 -2px #00000033;
-}
-
-/* Ligne de lecture du scanner */
 .scan-line {
   position: absolute;
   left: 0;
   animation: scan 1.8s ease-in-out infinite alternate;
-  box-shadow: 0 0 12px var(--accent);
 }
 @keyframes scan {
   from {
@@ -273,8 +844,11 @@ select.field {
     top: calc(100% - 2px);
   }
 }
+.outline-text {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.3);
+}
 
-/* iPhone : un champ en dessous de 16 px fait zoomer Safari quand on tape dedans */
 @media (pointer: coarse) {
   .field,
   input,
@@ -283,7 +857,6 @@ select.field {
     font-size: 16px;
   }
 }
-/* Appli installée : pas de rebond ni de sélection accidentelle sur les boutons */
 @media (display-mode: standalone) {
   body {
     overscroll-behavior-y: none;
@@ -295,17 +868,209 @@ select.field {
   }
 }
 
-/* Disque qui tourne lentement (fiche film) */
-.spin-slow {
-  animation: spin-slow 40s linear infinite;
+/* --- Le logo --- */
+.brand-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 28%;
+  background: #000;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.14),
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    0 8px 22px -8px rgb(0 0 0 / 0.9),
+    0 0 0 0.5px rgb(255 255 255 / 0.06);
 }
-@keyframes spin-slow {
-  to {
-    transform: rotate(360deg);
-  }
+.brand-mark {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 0.5px 0 rgb(255 255 255 / 0.25)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.8));
 }
-@media (prefers-reduced-motion: reduce) {
-  .spin-slow {
-    animation: none;
-  }
+.brand-sweep {
+  transform: skewX(-18deg) translateX(0);
+  transition: transform 0.9s var(--ease);
+}
+:is(a, button, .group\/logo):hover .brand-sweep {
+  transform: skewX(-18deg) translateX(2600px);
+}
+
+/* --- Navigation --- */
+.nav-bar {
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.86), rgb(0 0 0 / 0.66));
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow: 0 1px 0 var(--line);
+}
+.tabbar {
+  background: linear-gradient(180deg, rgb(28 28 31 / 0.92), rgb(10 10 11 / 0.94));
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    inset 0 0 0 1px rgb(255 255 255 / 0.06),
+    0 20px 40px -12px rgb(0 0 0 / 0.95);
+}
+/* Avatar : un jeton de métal sombre, l'initiale en Bodoni */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%, #3a3a3e, #121214 70%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  font-family: var(--font-bungee), sans-serif;
+  color: #e8e9ec;
+}
+
+/* --- Tranches de DVD (rangées 2D) --- */
+.spine-row {
+  gap: 1px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-2);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04);
+}
+.spine {
+  background: var(--spine-bg);
+  color: var(--spine-ink);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  padding: 10px 0 12px;
+  border-radius: 1.5px;
+  overflow: hidden;
+  box-shadow:
+    inset 1px 0 0 rgb(255 255 255 / 0.12),
+    inset -1px 0 0 rgb(0 0 0 / 0.5),
+    0 10px 18px -12px #000;
+  transition: transform 0.24s var(--ease);
+}
+/* le film PVC du fourreau : un reflet vertical */
+.spine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.1), transparent 30%, transparent 70%, rgb(255 255 255 / 0.05));
+  pointer-events: none;
+}
+.spine:hover,
+.spine:focus-visible {
+  transform: translateY(-14px);
+}
+.spine-star {
+  width: 74%;
+  max-width: 34px;
+  aspect-ratio: 1658 / 966;
+  background: var(--silver);
+  -webkit-mask: url("/brand/logo-blanc.svg") center / contain no-repeat;
+  mask: url("/brand/logo-blanc.svg") center / contain no-repeat;
+  flex: none;
+}
+.spine-num {
+  margin-top: 8px;
+  font-family: var(--font-bungee), sans-serif;
+  font-size: 10px;
+  writing-mode: vertical-rl;
+  opacity: 0.8;
+}
+.spine-title {
+  margin-top: 10px;
+  writing-mode: vertical-rl;
+  font: 500 11px/1 var(--font-jost), sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(100% - 80px);
+}
+.spine-dir {
+  margin-top: 10px;
+  margin-inline-start: 3px;
+  opacity: 0.6;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+
+/* --- Piles de disques (statistiques) --- */
+.disc-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+}
+.disc-stack__disc {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 6 / 1.25;
+  margin-top: calc(-1 * (100% * 1.25 / 6) + 5px);
+  border-radius: 50%;
+  /* la face gravée : argent, avec l'irisation qui tourne selon la hauteur dans la pile */
+  background:
+    radial-gradient(closest-side, #000 15%, rgb(255 255 255 / 0.55) 17%, rgb(255 255 255 / 0.2) 27%, transparent 29%),
+    conic-gradient(from calc(var(--i) * 23deg), #c9ccd2, #f3f4f6 8%, #8fd3ff33 14%, #c9ccd2 22%, #ff9be633 30%, #e8eaee 38%, #9aa0a8 50%, #fff3a833 58%, #c9ccd2 66%, #8effc633 74%, #f2f3f5 84%, #b7bbc2);
+  box-shadow:
+    0 1px 0 rgb(0 0 0 / 0.8),
+    0 2px 0 #5d6067,
+    0 3px 6px rgb(0 0 0 / 0.6);
+  transition:
+    transform 0.3s var(--ease),
+    filter 0.3s var(--ease);
+  transition-delay: calc(var(--i) * 12ms);
+}
+.disc-stack__disc:first-child {
+  margin-top: 0;
+}
+.group:hover .disc-stack__disc {
+  transform: translateY(calc(var(--i) * -2px));
+  filter: brightness(1.15);
+}
+
+/* --- Listes : affiches en éventail --- */
+.fan-card {
+  transform: translateX(calc(-50% + var(--k) * 30%)) rotate(calc(var(--k) * 6deg)) translateY(calc(var(--k) * var(--k) * 4%));
+  transform-origin: 50% 120%;
+  transition: transform 0.4s var(--ease);
+}
+.group:hover .fan-card {
+  transform: translateX(calc(-50% + var(--k) * 40%)) rotate(calc(var(--k) * 9deg)) translateY(calc(var(--k) * var(--k) * 5% - 4%));
+}
+
+
+/* --- Thème « Noir et rouge » : tout est identique ; le rouge vif remplace le blanc et l'argent pour agir et situer --- */
+html[data-theme="rouge"] {
+  --accent: #ff1f2e;
+  --on-accent: #ffffff;
+  --accent-hi: #ff4653;
+  --accent-glow: rgb(255 31 46 / 0.6);
+  --accent-soft: rgb(255 31 46 / 0.12);
+  --heart: #ff1f2e;
+  --marker: linear-gradient(90deg, #ff1f2e, #ff1f2e);
+  --marker-text: linear-gradient(180deg, #ff4653, #e0101e);
+}
+/* le logo en rouge laqué */
+html[data-theme="rouge"] {
+  --logo-0: #9a0712;
+  --logo-1: #ff2a37;
+  --logo-2: #c20b18;
+  --logo-3: #ff5560;
+  --logo-4: #8a0610;
+  --logo-5: #ff1f2e;
+  --logo-6: #b00915;
+  --logo-7: #ff3a46;
+  --logo-spec: 0.2;
+}
+html[data-theme="rouge"] body::before {
+  background:
+    radial-gradient(90% 55% at 50% -12%, rgb(255 31 46 / 0.16), transparent 70%),
+    radial-gradient(60% 40% at 50% -5%, rgb(255 31 46 / 0.08), transparent 70%);
+}
+html[data-theme="rouge"] ::selection {
+  background: #ff1f2e;
+  color: #fff;
 }

@@ -65,7 +65,7 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
           >
             <div className="flex items-center justify-between gap-4 border-b border-border p-5">
               <div>
-                <h2 className="text-xl md:text-2xl leading-none">Choisir l&apos;affiche</h2>
+                <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem] leading-none">Choisir l&apos;affiche</h2>
                 <p className="mt-1 text-sm text-muted">Affiches du monde entier (TMDB), ou la tienne.</p>
               </div>
               <button onClick={() => setOpen(false)} className="flex size-9 items-center justify-center rounded-full border border-border" aria-label="Fermer">✕</button>
@@ -73,7 +73,7 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
 
             <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
               <form action={upload} className="flex items-center gap-2">
-                <label className="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent">
+                <label className="btn btn-primary cursor-pointer">
                   ⬆ Envoyer mon image
                   <input
                     name="poster"

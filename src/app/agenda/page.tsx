@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { db, posterSql } from "@/lib/db";
 import { members } from "@/lib/social";
 import { poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Agenda" };
 export const dynamic = "force-dynamic";
@@ -49,72 +50,109 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     byDay.set(d, [...(byDay.get(d) ?? []), e]);
   }
 
+  const upcomingByDay = upcoming;
   return (
-    <div className="space-y-8 pt-2 md:pt-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Agenda</h1>
-        <a href={calendarUrl} className="rounded-full border border-border bg-surface px-4 py-2 text-sm hover:border-accent" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
-          Exporter vers mon calendrier
-        </a>
-      </div>
+    <div className="space-y-16">
+      <PageHeader
+        eyebrow="Amis"
+        number={`${upcoming.length} séance${upcoming.length > 1 ? "s" : ""} à venir`}
+        title="Agenda"
+        actions={
+          <a href={calendarUrl} className="btn" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
+            Exporter vers mon calendrier
+          </a>
+        }
+      />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="rounded-3xl border border-border bg-surface p-4 md:p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <Link href={`/agenda?mois=${key(prev)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois précédent">←</Link>
-            <h2 className="text-2xl capitalize md:text-xl md:text-2xl">{first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</h2>
-            <Link href={`/agenda?mois=${key(next)}`} className="flex size-9 items-center justify-center rounded-full border border-border hover:border-accent" aria-label="Mois suivant">→</Link>
-          </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted">
-            {WEEKDAYS.map((d, i) => <div key={i} className="py-1">{d}</div>)}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {cells.map((d, i) => {
-              const date = d ? `${key(first)}-${pad(d)}` : "";
-              const events = d ? byDay.get(d) ?? [] : [];
-              return (
-                <div key={i} className={`relative min-h-16 overflow-hidden rounded-lg p-1 md:min-h-24 ${d ? "bg-surface-2/50" : ""} ${date === today ? "ring-2 ring-accent" : ""}`}>
-                  {d && <span className={`text-xs tabular-nums ${date === today ? "font-bold text-accent" : "text-muted"}`}>{d}</span>}
-                  {events.map((e) => (
-                    <Link key={e.id} href={e.filmId ? `/film/${e.filmId}` : "#"} className="mt-0.5 block" title={`${e.startsAt.slice(11)} · ${e.title}${e.place ? ` · ${e.place}` : ""}`}>
-                      {e.poster ? (
-                        <img src={poster(e.poster, "w185")!} alt={e.title} className="aspect-[2/3] w-full rounded object-cover md:w-3/4" />
-                      ) : (
-                        <span className="block truncate rounded bg-accent px-1 text-[10px] text-on-accent">{e.title}</span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <aside className="space-y-4">
-          <EventForm key={initialFilm?.id ?? "new"} initialFilm={initialFilm} defaultDate={today} members={others} />
-          <h2 className="pt-2 text-2xl">Prochaines séances</h2>
-          {upcoming.length === 0 && <p className="text-sm text-muted">Rien de prévu pour l&apos;instant.</p>}
-          {upcoming.map((e) => (
-            <div key={e.id} className="flex gap-3 rounded-2xl border border-border bg-surface p-3">
-              {e.poster && <img src={poster(e.poster, "w185")!} alt="" className="h-20 rounded-md" />}
-              <div className="min-w-0 flex-1">
-                <p className="text-xs text-accent capitalize">
-                  {new Date(`${e.startsAt}:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} · {e.startsAt.slice(11).replace(":", "h")}
-                </p>
-                <Link href={e.filmId ? `/film/${e.filmId}` : "#"} className="font-display block truncate text-lg hover:text-accent">{e.title}</Link>
-                <p className="truncate text-xs text-muted">
-                  {[e.place, guestsLine(e), e.withWhom && `avec ${e.withWhom}`].filter(Boolean).join(" · ")}
-                </p>
-                {e.note && <p className="truncate text-xs text-muted italic">{e.note}</p>}
-                {e.link && (
-                  <a href={e.link} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-accent">
-                    {new URL(e.link).hostname.replace(/^www\./, "")}
-                  </a>
-                )}
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
+        <div className="min-w-0 space-y-16">
+          {/* Le programme : les prochaines séances, en billets */}
+          <section aria-labelledby="programme">
+            <h2 id="programme" className="text-[2rem] leading-none md:text-[2.6rem]">
+              Au programme
+            </h2>
+            {upcomingByDay.length === 0 ? (
+              <div className="card mt-6 px-6 py-12 text-center">
+                <p className="font-display text-2xl">Rien de prévu pour l&apos;instant</p>
+                <p className="mt-2 text-[15px] text-muted">Planifiez une séance : au cinéma, ou à la maison entre amis.</p>
               </div>
-              <DeleteEventButton id={e.id} />
+            ) : (
+              <ol className="mt-6 space-y-3">
+                {upcomingByDay.map((e) => {
+                  const d = new Date(`${e.startsAt}:00`);
+                  return (
+                    <li key={e.id} className="card grid grid-cols-[4.6rem_minmax(0,1fr)_auto] items-center gap-4 !rounded-[22px] p-3 pr-4 md:grid-cols-[6rem_4rem_minmax(0,1fr)_auto] md:gap-6 md:p-4">
+                      <div className="text-center">
+                        <span className="block text-[12px] text-muted capitalize">{d.toLocaleDateString("fr-FR", { weekday: "short" })}</span>
+                        <span className="block font-display text-[2.6rem] leading-none tabular">{d.getDate()}</span>
+                        <span className="block text-[12px] text-muted capitalize">{d.toLocaleDateString("fr-FR", { month: "short" })}</span>
+                      </div>
+                      <span className="poster hidden aspect-[2/3] w-full md:block">{e.poster && <img src={poster(e.poster, "w185")!} alt="" className="size-full object-cover" />}</span>
+                      <div className="min-w-0">
+                        <p className="text-[14px] text-[var(--text-2)] tabular">{e.startsAt.slice(11).replace(":", " h ")}{e.place ? ` · ${e.place}` : ""}</p>
+                        <Link href={e.filmId ? `/film/${e.filmId}` : "#"} className="mt-0.5 block truncate font-display text-[1.6rem] leading-tight md:text-[1.9rem]">
+                          {e.title}
+                        </Link>
+                        <p className="mt-0.5 truncate text-[13px] text-muted">{[guestsLine(e), e.withWhom && `avec ${e.withWhom}`, e.note].filter(Boolean).join(" · ")}</p>
+                        {e.link && (
+                          <a href={e.link} target="_blank" rel="noreferrer" className="link-draw mt-1 inline-block text-[13px] text-[var(--text-2)]">
+                            Réserver sur {new URL(e.link).hostname.replace(/^www./, "")}
+                          </a>
+                        )}
+                      </div>
+                      <DeleteEventButton id={e.id} />
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </section>
+
+          {/* Le mois */}
+          <section aria-labelledby="mois">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <h2 id="mois" className="text-[2rem] leading-none capitalize md:text-[2.6rem]">
+                {first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
+              </h2>
+              <div className="flex gap-1.5">
+                <Link href={`/agenda?mois=${key(prev)}`} className="btn !size-11 !p-0" aria-label="Mois précédent">
+                  <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden><path d="M15 18l-6-6 6-6" /></svg>
+                </Link>
+                <Link href={`/agenda?mois=${key(next)}`} className="btn !size-11 !p-0" aria-label="Mois suivant">
+                  <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
+                </Link>
+              </div>
             </div>
-          ))}
+            <div className="grid grid-cols-7 border-t border-l border-[var(--line)] text-center text-[12px] text-muted">
+              {WEEKDAYS.map((d, i) => (
+                <div key={i} className="border-r border-b border-[var(--line)] py-2">
+                  {d}
+                </div>
+              ))}
+              {cells.map((d, i) => {
+                const date = d ? `${key(first)}-${pad(d)}` : "";
+                const events = d ? (byDay.get(d) ?? []) : [];
+                const isToday = date === today;
+                return (
+                  <div key={i} className={`relative min-h-16 border-r border-b border-[var(--line)] p-1.5 text-left md:min-h-24 ${d ? "" : "bg-white/[0.015]"}`}>
+                    {d && <span className={`inline-grid size-6 place-items-center rounded-full text-[12px] tabular ${isToday ? "bg-accent font-medium text-on-accent" : "text-muted"}`}>{d}</span>}
+                    {events.map((e) => (
+                      <Link key={e.id} href={e.filmId ? `/film/${e.filmId}` : "#"} className="mt-1 block" title={`${e.startsAt.slice(11)} · ${e.title}${e.place ? ` · ${e.place}` : ""}`}>
+                        {e.poster ? <img src={poster(e.poster, "w185")!} alt={e.title} className="aspect-[2/3] w-full rounded-[2px] object-cover md:w-2/3" /> : <span className="block truncate rounded-full bg-accent px-1.5 text-[10px] text-on-accent">{e.title}</span>}
+                      </Link>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        <aside className="lg:sticky lg:top-[calc(var(--nav-offset,4.5rem)+1.5rem)] lg:self-start">
+          <div className="card p-5 md:p-6">
+            <h2 className="mb-5 text-[1.8rem] leading-none">Planifier une séance</h2>
+            <EventForm key={initialFilm?.id ?? "new"} initialFilm={initialFilm} defaultDate={today} members={others} />
+          </div>
         </aside>
       </div>
     </div>

@@ -4,8 +4,11 @@ import Link from "next/link";
 import { Bars, Columns } from "@/components/Charts";
 import { Stars } from "@/components/Stars";
 import { topPeople } from "@/lib/people";
-import { byDecade, perMonth, ratingDistribution, records, statsOverview, timeline, topJson } from "@/lib/stats";
+import { byDecade, perMonth, perYear, ratingDistribution, records, statsOverview, timeline, topJson } from "@/lib/stats";
+import { DiscStacks } from "@/components/dreams/DiscStacks";
 import { poster } from "@/lib/tmdb";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Tabs } from "@/components/ui/Tabs";
 
 export const metadata: Metadata = { title: "Stats" };
 export const dynamic = "force-dynamic";
@@ -15,23 +18,25 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   const frise = vue === "frise";
 
   return (
-    <div className="space-y-10 pt-2 md:pt-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">{frise ? "Ma frise" : "Mes stats"}</h1>
-        <div className="flex rounded-full border border-border bg-surface p-0.5 text-xs">
-          <Link href="/stats" className={`rounded-full px-3.5 py-1.5 ${!frise ? "bg-foreground text-background" : "text-muted"}`}>Chiffres</Link>
-          <Link href="/stats?vue=frise" className={`rounded-full px-3.5 py-1.5 ${frise ? "bg-foreground text-background" : "text-muted"}`}>Frise</Link>
-        </div>
-      </div>
+    <div className="space-y-14">
+      <PageHeader eyebrow={frise ? "Mes années de cinéma" : "Mes chiffres"} title={frise ? "Ma frise" : "Statistiques"}>
+        <Tabs
+          active={frise ? "/stats?vue=frise" : "/stats"}
+          tabs={[
+            { href: "/stats", label: "Chiffres" },
+            { href: "/stats?vue=frise", label: "Frise" },
+          ]}
+        />
+      </PageHeader>
       {frise ? <Timeline /> : <Numbers />}
     </div>
   );
 }
 
 async function Numbers() {
-  const [o, months, ratings, decades, genres, countries, directors, actors, rec] = await Promise.all([
+  const [o, months, ratings, decades, genres, countries, directors, actors, rec, years] = await Promise.all([
     statsOverview(), perMonth(24), ratingDistribution(), byDecade(), topJson("genres", 10), topJson("countries", 10),
-    topPeople("director", 8), topPeople("actor", 8), records(),
+    topPeople("director", 8), topPeople("actor", 8), records(), perYear(),
   ]);
   const trend = o.lastYear ? Math.round(((o.thisYear - o.lastYear) / o.lastYear) * 100) : null;
   const year = new Date().getFullYear();
@@ -41,7 +46,7 @@ async function Numbers() {
   return (
     <div className="space-y-10">
       {/* Les grands chiffres */}
-      <section className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-border bg-border md:grid-cols-4">
+      <section className="grid grid-cols-2 border-t border-[var(--dm-line)] md:grid-cols-4">
         <Tile value={o.watched.toLocaleString("fr-FR")} label="films vus" />
         <Tile value={o.hours.toLocaleString("fr-FR")} label={`heures (≈ ${o.days} jours)`} />
         <Tile value={String(o.thisYear)} label={`films en ${year}`} note={trend != null ? `${trend >= 0 ? "+" : ""}${trend} % vs même date en ${year - 1}` : undefined} />
@@ -51,6 +56,12 @@ async function Numbers() {
         <Tile value={String(o.rewatches)} label="films revus" />
         <Tile value={`${favoriteRating.label}★`} label="ta note la plus donnée" />
       </section>
+
+      {years.length > 1 && (
+        <Card title="Vos années de cinéma" subtitle="Chaque pile : les films vus dans l'année">
+          <DiscStacks data={years} />
+        </Card>
+      )}
 
       <Card title="Films vus par mois" subtitle="Les 24 derniers mois, d'après ton journal">
         <Columns data={months} highlight={months.at(-1)?.key} />
@@ -90,18 +101,18 @@ async function Numbers() {
 
 function Tile({ value, label, note }: { value: string; label: string; note?: string }) {
   return (
-    <div className="bg-surface p-5">
-      <div className="font-display text-4xl leading-none text-accent tabular-nums md:text-5xl">{value}</div>
-      <div className="mt-2 text-sm text-muted">{label}</div>
-      {note && <div className="mt-1 text-xs text-foreground/70">{note}</div>}
+    <div className="border-b border-[var(--dm-line)] py-6 pr-4 md:py-8 [&:nth-child(even)]:border-l [&:nth-child(even)]:border-[var(--dm-line)] [&:nth-child(even)]:pl-5 md:[&:not(:nth-child(4n+1))]:border-l md:[&:not(:nth-child(4n+1))]:border-[var(--dm-line)] md:[&:not(:nth-child(4n+1))]:pl-8">
+      <div className="font-display text-[clamp(2.4rem,4.6vw,3.8rem)] leading-none tabular-nums">{value}</div>
+      <div className="mt-2 text-[14px] text-muted">{label}</div>
+      {note && <div className="mt-1 text-[13px] text-[var(--dm-text-2)]">{note}</div>}
     </div>
   );
 }
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-border bg-surface p-5 md:p-6">
-      <h2 className="text-xl md:text-2xl">{title}</h2>
+    <section className="card p-5 md:p-7">
+      <h2 className="text-[1.8rem] leading-none md:text-[2.2rem]">{title}</h2>
       {subtitle && <p className="mt-1 mb-5 text-sm text-muted">{subtitle}</p>}
       {children}
     </section>
@@ -129,7 +140,7 @@ function People({ title, people, role }: { title: string; people: Awaited<Return
 
 function Record({ label, title, value, href }: { label: string; title: string; value: string; href: string }) {
   return (
-    <Link href={href} className="rounded-3xl border border-border bg-surface p-5 transition hover:border-accent/60">
+    <Link href={href} className="card card-hover p-5">
       <p className="text-xs tracking-wider text-muted uppercase">{label}</p>
       <p className="font-display mt-2 text-2xl leading-tight">{title}</p>
       <p className="mt-1 text-accent">{value}</p>
@@ -152,7 +163,7 @@ async function Timeline() {
           return (
             <section key={m.key} className="relative pl-8 md:pl-12">
               {showYear && <p className="font-display -ml-8 mb-4 text-5xl text-accent md:-ml-12 md:text-6xl">{y}</p>}
-              <span className="absolute top-1.5 left-0 size-[15px] rounded-full border-2 border-accent bg-background md:size-[23px]" />
+              <span className="absolute top-1.5 left-0 size-[15px] rounded-full border border-accent bg-background md:size-[23px]" />
               <h2 className="text-xl capitalize md:text-2xl">
                 {m.label.replace(/ \d{4}$/, "")} <span className="text-sm text-muted">· {m.films.length} film{m.films.length > 1 ? "s" : ""}</span>
               </h2>

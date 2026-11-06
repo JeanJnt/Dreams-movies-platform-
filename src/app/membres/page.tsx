@@ -4,6 +4,7 @@ import { CommunityTabs } from "@/components/CommunityTabs";
 import { requireUser } from "@/lib/auth";
 import { formatLongDate } from "@/lib/format";
 import { members } from "@/lib/social";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Membres" };
 export const dynamic = "force-dynamic";
@@ -12,12 +13,13 @@ export default async function MembersPage() {
   const me = await requireUser();
   const list = await members();
   return (
-    <div className="mx-auto max-w-3xl space-y-6 pt-2 md:pt-8">
-      <CommunityTabs active="membres" />
-      <h1 className="page-title text-5xl leading-[0.95] md:text-7xl">Membres</h1>
+    <div className="mx-auto max-w-3xl space-y-8">
+      <PageHeader eyebrow="Amis" title="Amis">
+        <CommunityTabs active="membres" />
+      </PageHeader>
       <div className="grid gap-3 sm:grid-cols-2">
         {list.map((m) => (
-          <Link key={m.id} href={`/membre/${m.id}`} className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/60">
+          <Link key={m.id} href={`/membre/${m.id}`} className="card card-hover flex items-center gap-4 p-4">
             <span className="font-display flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-2xl text-on-accent">{m.name.slice(0, 1).toUpperCase()}</span>
             <span className="min-w-0">
               <span className="font-display block truncate text-xl">{m.username ? `@${m.username}` : m.name}{m.id === me.id && <span className="ml-1 text-sm text-muted">(toi)</span>}</span>

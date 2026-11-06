@@ -11,8 +11,8 @@ export default async function EditListPage({ params }: { params: Promise<{ id: s
   const list = await userListDetail({ id: Number((await params).id) || 0 });
   if (!list || !list.isMine) notFound();
   return (
-    <div className="mx-auto max-w-2xl space-y-6 pt-2 md:pt-8">
-      <h1 className="page-title text-4xl leading-[0.95] md:text-6xl">Modifier la liste</h1>
+    <div className="mx-auto max-w-2xl space-y-8 pt-4 md:pt-14">
+      <h1 className="page-title font-display text-[clamp(2.4rem,6.5vw,4.75rem)] leading-[0.92] text-balance">Modifier la liste</h1>
       <ListEditor
         initial={{
           id: list.id,

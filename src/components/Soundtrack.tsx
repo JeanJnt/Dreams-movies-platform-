@@ -15,7 +15,7 @@ export async function Soundtrack({ titles, tmdbId }: { titles: (string | null)[]
 
   if (!ost) {
     return (
-      <a href={search} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl border border-border bg-surface p-5 text-sm transition hover:border-accent/60">
+      <a href={search} target="_blank" rel="noreferrer" className="flex items-center justify-between card p-5 text-sm transition hover:border-accent/60">
         <span className="font-display">Chercher la bande originale</span>
         <span className="text-muted">Deezer</span>
       </a>
@@ -23,7 +23,7 @@ export async function Soundtrack({ titles, tmdbId }: { titles: (string | null)[]
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
+    <div className="card p-5">
       <h3 className="mb-3 text-lg">Bande originale</h3>
       <a href={ost.link} target="_blank" rel="noreferrer" className="group flex gap-3">
         <img src={ost.cover} alt="" className="size-16 shrink-0 rounded-md shadow-lg shadow-black/30 transition group-hover:scale-105" />

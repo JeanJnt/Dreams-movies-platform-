@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { LibraryTabs } from "@/components/LibraryTabs";
 import { PickCard } from "@/components/PickCard";
 import { PickFilters, PlatformPicker } from "@/components/PickControls";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { GENRES, PLATFORMS, getMyPlatforms, picks, type PickFilters as Filters } from "@/lib/reco";
 
 export const metadata: Metadata = { title: "Conseils" };
@@ -14,18 +14,18 @@ export default async function ConseilsPage({ searchParams }: { searchParams: Pro
   const [result, mine] = await Promise.all([picks(filters), getMyPlatforms()]);
 
   return (
-    <div className="space-y-6 pt-2 md:pt-8">
-      <LibraryTabs />
-      <div>
-        <h1 className="page-title font-display text-5xl leading-[0.95] md:text-7xl">Que regarder ce soir ?</h1>
-        <p className="mt-3 max-w-2xl text-muted">
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow={filters.mode === "watchlist" ? "Découvrir · ta watchlist" : result.fromTitle ? "Découvrir · dans le même esprit" : "Découvrir · pour toi"}
+        title="Que regarder ce soir ?"
+        lede={<>
           {filters.mode === "watchlist"
             ? "Les films de ta watchlist, du plus au moins susceptible de te plaire."
             : result.fromTitle
               ? <>Des films dans l&apos;esprit de <span className="text-foreground">{result.fromTitle}</span>.</>
               : "Choisis à partir des films que tu as le mieux notés et de tes coups de cœur."}
-        </p>
-      </div>
+        </>}
+      />
 
       <PlatformPicker all={PLATFORMS.map(({ key, name }) => ({ key, name }))} mine={mine} />
       <Suspense>
@@ -44,10 +44,10 @@ export default async function ConseilsPage({ searchParams }: { searchParams: Pro
       ) : (
         <>
           <p className="text-sm text-muted">
-            <span className="font-display text-xl text-foreground">{result.picks.length}</span> films
+            <span className="font-display text-2xl text-foreground tabular">{result.picks.length}</span> films
             {result.picks.length > 60 && " · les 60 meilleurs"}
           </p>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="reveal-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {result.picks.slice(0, 60).map((p) => <PickCard key={p.key} pick={p} />)}
           </div>
         </>

@@ -120,7 +120,7 @@ export function BackdropButton({ filmId, current, hasCustom }: { filmId: number;
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(true)} className="absolute top-4 left-4 z-10 rounded-lg bg-black/75 px-3 py-1.5 text-xs text-white backdrop-blur md:top-8 md:left-8">
+      <button onClick={() => setOpen(true)} className="btn btn-sm absolute top-4 left-4 z-10 !bg-black/60 backdrop-blur-md md:top-6 md:left-6">
         Changer le fond
       </button>
       {open && <FilmImagePicker filmId={filmId} kind="backdrop" current={current} hasCustom={hasCustom} onClose={() => setOpen(false)} />}

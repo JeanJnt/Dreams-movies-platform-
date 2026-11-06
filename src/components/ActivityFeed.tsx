@@ -16,9 +16,9 @@ const when = (iso: string) => {
 // Badge qui distingue clairement les deux types de textes.
 export function TextKind({ kind }: { kind: "critique" | "review" }) {
   return kind === "critique" ? (
-    <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold tracking-wider text-on-accent uppercase">Critique Dreams</span>
+    <span className="rounded-full bg-accent px-2.5 py-0.5 text-[12px] font-medium text-on-accent">Critique Dreams</span>
   ) : (
-    <span className="rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wider text-muted uppercase">Review Letterboxd</span>
+    <span className="rounded-full border border-[var(--dm-line-2)] px-2.5 py-0.5 text-[12px] text-muted">Review Letterboxd</span>
   );
 }
 
@@ -42,11 +42,11 @@ function Line({ a }: { a: Activity }) {
 export function ActivityFeed({ items, compact = false }: { items: Activity[]; compact?: boolean }) {
   if (!items.length) return <p className="text-sm text-muted">Pas encore d&apos;activité.</p>;
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2">
       {items.map((a, i) => (
-        <li key={`${a.kind}-${a.refId ?? a.filmId}-${a.userId}-${i}`} className="flex gap-3 rounded-2xl border border-border bg-surface p-3">
+        <li key={`${a.kind}-${a.refId ?? a.filmId}-${a.userId}-${i}`} className="card card-hover group flex gap-4 p-3.5">
           <Link href={`/film/${a.filmId}`} className="w-12 shrink-0 md:w-14">
-            <div className="aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
+            <div className="poster aspect-[2/3] rounded-md">
               {a.poster && <img src={poster(a.poster, "w185")!} alt="" loading="lazy" className="size-full object-cover" />}
             </div>
           </Link>

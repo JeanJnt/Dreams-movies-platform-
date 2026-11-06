@@ -17,7 +17,7 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
         <p className="text-sm text-muted">
           Une liste de @{list.author} sur Dreams · {list.count} films
         </p>
-        <h1 className="page-title mt-1 text-4xl leading-[0.95] md:text-6xl">{list.name}</h1>
+        <h1 className="page-title mt-3 font-display text-[clamp(2.4rem,6.5vw,4.75rem)] leading-[0.92] text-balance">{list.name}</h1>
         {list.description && <p className="mt-3 max-w-2xl text-muted">{list.description}</p>}
       </div>
       <ol className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6">

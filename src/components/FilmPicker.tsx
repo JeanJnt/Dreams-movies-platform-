@@ -74,11 +74,11 @@ export function FilmPicker({ picked, onChange, max, showPicked = true }: { picke
         onChange={(e) => setQ(e.target.value)}
         disabled={full}
         placeholder={full ? `${max} films choisis` : "Chercher un film à ajouter…"}
-        className="w-full rounded-xl border border-border bg-surface px-4 py-3 outline-none focus:border-accent disabled:opacity-60"
+        className="w-full card rounded-xl px-4 py-3 outline-none focus:border-accent disabled:opacity-60"
       />
 
       {hits.length > 0 && !full && (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <ul className="divide-y divide-border overflow-hidden card rounded-xl">
           {hits.map((h) => {
             const already = picked.some((p) => p.key === h.key);
             return (

@@ -33,7 +33,7 @@ export function TopFilmsEditor({ initial }: { initial: Picked[] }) {
       {picked.length > 0 && (
         <ol className="space-y-2">
           {picked.map((p, i) => (
-            <li key={p.key} className="flex items-center gap-3 rounded-xl border border-border bg-surface p-2 pr-3">
+            <li key={p.key} className="flex items-center gap-3 card rounded-xl p-2 pr-3">
               <span className="w-6 text-center text-lg font-semibold text-accent tabular-nums">{i + 1}</span>
               <span className="aspect-[2/3] w-10 shrink-0 overflow-hidden rounded bg-surface-2">
                 {img(p.poster) && <img src={img(p.poster)!} alt="" className="size-full object-cover" />}
@@ -61,7 +61,7 @@ export function TopFilmsEditor({ initial }: { initial: Picked[] }) {
             router.refresh();
           })
         }
-        className="w-full rounded-full bg-accent py-3 font-medium text-on-accent disabled:opacity-40"
+        className="btn btn-primary h-12 w-full disabled:opacity-40"
       >
         {pending ? "Enregistrement…" : saved ? "Enregistré" : `Enregistrer mon top (${picked.length}/10)`}
       </button>

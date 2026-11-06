@@ -6,6 +6,7 @@ import { refLists } from "@/lib/ref-lists";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatLongDate } from "@/lib/format";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Administration" };
 export const dynamic = "force-dynamic";
@@ -23,14 +24,10 @@ export default async function AdminPage() {
   const now = new Date().toISOString();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pt-2 md:pt-8">
-      <div>
-        <Link href="/compte" className="text-sm text-muted hover:text-foreground">← Mon compte</Link>
-        <h1 className="page-title mt-2 text-5xl leading-[0.95] md:text-7xl">Administration</h1>
-        <p className="mt-3 text-muted">{members.rows.length} / 10 membres</p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-8">
+      <PageHeader back={{ href: "/compte", label: "Mon compte" }} eyebrow={<><span className="tabular">{members.rows.length}</span> / 10 membres</>} title="Administration" />
 
-      <section className="space-y-4 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-4 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Inviter quelqu&apos;un</h2>
         <InviteForm />
         {invites.rows.length > 0 && (
@@ -39,7 +36,7 @@ export default async function AdminPage() {
               const expired = !i.used_at && String(i.expires_at) < now;
               return (
                 <li key={String(i.code)} className="flex items-center gap-3 py-2">
-                  <span className="font-mono tracking-wider">{String(i.code)}</span>
+                  <span className="tabular tracking-wider">{String(i.code)}</span>
                   <span className="flex-1 truncate text-muted">{i.note ? String(i.note) : ""}</span>
                   {i.used_by ? (
                     <span className="text-accent">✓ {String(i.used_by)}</span>
@@ -58,13 +55,13 @@ export default async function AdminPage() {
         )}
       </section>
 
-      <section className="space-y-4 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-4 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Listes de référence</h2>
         <p className="text-sm text-muted">Des listes communes à tous les membres (Sight and Sound, Top Letterboxd…). Chacun y voit sa progression.</p>
         <RefListAdmin lists={lists} />
       </section>
 
-      <section className="space-y-3 rounded-3xl border border-border bg-surface p-5 md:p-6">
+      <section className="space-y-3 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Membres</h2>
         <ul className="divide-y divide-border">
           {members.rows.map((m) => (

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import sharp from "sharp";
 import { plainParagraphs } from "@/lib/critique-card";
 import { getCritique } from "@/lib/critiques";
-import { LOGO_PATH, LOGO_VIEWBOX } from "@/lib/logo-path";
+import { BRAND_PATH, BRAND_VIEWBOX } from "@/lib/brand-path";
 import { mediaBytes } from "@/lib/media";
 import { backdrop, poster } from "@/lib/tmdb";
 
@@ -111,8 +111,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
         {/* Signature */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "40px 72px 60px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <svg viewBox={LOGO_VIEWBOX} width={62} height={68} fill={p.fg}>
-              <path d={LOGO_PATH} />
+            <svg viewBox={BRAND_VIEWBOX} width={96} height={56} fill={p.fg}>
+              <path d={BRAND_PATH} />
             </svg>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 40 }}>Dreams</div>
