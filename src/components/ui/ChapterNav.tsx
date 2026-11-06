@@ -35,19 +35,17 @@ export function ChapterNav({ chapters }: { chapters: { id: string; label: string
 
   if (present.length < 3) return null;
   return (
-    <nav aria-label="Sur cette page" className="glass sticky top-0 z-30 -mx-[var(--gutter)] border-y border-[var(--line)] px-[var(--gutter)] transition-[top] duration-500 ease-[cubic-bezier(.16,1,.3,1)] md:top-[var(--nav-offset,4.25rem)]">
+    <nav aria-label="Sur cette page" className="dm-top sticky top-0 z-30 -mx-[var(--gutter)] px-[var(--gutter)] transition-[top] duration-300 ease-[cubic-bezier(.23,1,.32,1)] md:top-[var(--nav-offset,4rem)]">
       <div className="no-scrollbar flex gap-1 overflow-x-auto py-2">
-        {present.map((c, i) => (
+        {present.map((c) => (
           <button
             key={c.id}
             onClick={() => go(c.id)}
-            className={`relative shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors ${current === c.id ? "text-foreground" : "text-muted hover:text-foreground"}`}
+            aria-current={current === c.id ? "true" : undefined}
+            className={`relative min-h-10 shrink-0 rounded-full px-4 text-[14px] transition-colors duration-150 ${current === c.id ? "text-background" : "text-muted hover:text-foreground"}`}
           >
-            {current === c.id && <motion.span layoutId="chapter-pill" className="absolute inset-0 rounded-full bg-surface-2" transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }} />}
-            <span className="relative">
-              <span className="mr-1.5 font-mono text-[10px] text-accent">{String(i + 1).padStart(2, "0")}</span>
-              {c.label}
-            </span>
+            {current === c.id && <motion.span layoutId="chapter-pill" className="absolute inset-0 rounded-full bg-foreground" transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }} />}
+            <span className="relative">{c.label}</span>
           </button>
         ))}
       </div>

@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if ((await userCount()) === 0) redirect("/inscription"); // tout premier lancement
   const { supprime } = await searchParams;
   return (
-    <AuthShell title="Connexion" subtitle="Le journal de cinéma de la bande.">
+    <AuthShell title="Connexion" subtitle="Le journal de cinéma entre amis.">
       <LoginForm deleted={Boolean(supprime)} />
     </AuthShell>
   );

@@ -52,16 +52,19 @@ export function EventForm({ initialFilm, defaultDate, members = [] }: { initialF
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="w-full rounded-2xl border border-dashed border-border p-5 text-lg transition hover:border-accent hover:text-accent">
-        + Planifier une séance
-      </button>
+      <div>
+        <p className="mb-5 text-[14.5px] text-[var(--text-2)]">Un film, une date, un lieu : la séance s&apos;ajoute au programme et à l&apos;agenda des invités.</p>
+        <button onClick={() => setOpen(true)} className="btn btn-primary w-full">
+          Nouvelle séance
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4 rounded-3xl border border-accent/40 bg-surface p-5">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl">Nouvelle séance</h2>
+        <p className="text-[15px]">Nouvelle séance</p>
         <button onClick={() => setOpen(false)} className="text-sm text-muted hover:text-foreground">Annuler</button>
       </div>
 

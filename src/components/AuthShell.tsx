@@ -1,32 +1,28 @@
-import { Smoke } from "./fx/Smoke";
-import { BrushYume } from "./Logo";
+import { BrandIcon } from "./Logo";
 import { TitleWords } from "./ui/PageHeader";
 
 /*
- * Écrans de connexion et d'inscription (sans la navigation de l'appli) : on entre dans la salle.
- * La fumée flotte dans le faisceau du projecteur (WebGL) ; le 夢 tracé au pinceau en grand, et le formulaire sur une plaque de verre.
+ * Écrans de connexion et d'inscription (sans la navigation de l'appli).
+ * À gauche, l'enseigne : l'étoile argent dans son écrin noir, le nom en Bodoni, la promesse en italique.
+ * À droite, le formulaire, sur un panneau anthracite. Rien d'autre : on vient pour entrer.
  */
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <div className="relative ml-[calc(50%-50vw)] min-h-[100svh] w-screen overflow-hidden">
-      <Smoke className="absolute inset-0" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
-
-      <div className="relative mx-auto grid min-h-[100svh] max-w-[88rem] items-center gap-10 px-[var(--gutter)] py-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
-        <div className="text-center lg:text-left">
-          <BrushYume className="mx-auto h-24 w-auto text-accent drop-shadow-[0_0_40px_color-mix(in_srgb,var(--accent)_45%,transparent)] lg:mx-0 lg:h-44" />
-          <p className="eyebrow mt-8 lg:mt-12">Journal de cinéma · sur invitation</p>
-          <p className="mt-4 font-display text-[clamp(3rem,8vw,7.5rem)] leading-[0.86]">
+    <div className="relative ml-[calc(50%-50vw)] flex min-h-[100svh] w-screen flex-col overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_30%_40%,rgb(255_255_255/0.06),transparent_70%)]" aria-hidden />
+      <div className="relative mx-auto grid w-full max-w-[1480px] flex-1 items-center gap-12 px-[var(--gutter)] py-12 lg:grid-cols-[1.2fr_1fr] lg:gap-20">
+        <div>
+          <BrandIcon size={88} />
+          <p className="mt-10 font-display text-[clamp(4.6rem,15vw,13rem)] leading-[0.82]">
             <TitleWords text="Dreams" />
           </p>
-          <p className="mx-auto mt-6 hidden max-w-md text-lg leading-relaxed text-muted lg:mx-0 lg:block">
-            Ce qu&apos;on a vu, aimé, écrit et rangé sur l&apos;étagère. La salle est éteinte, la séance va commencer.
-          </p>
+          <p className="wide mt-4 text-muted">Movies · journal de cinéma sur invitation</p>
+          <p className="serif mt-6 hidden max-w-md text-[1.6rem] leading-snug text-[var(--text-2)] lg:block">Ce qu&apos;on a vu, aimé, écrit et rangé sur l&apos;étagère. La séance va commencer.</p>
         </div>
 
-        <div className="card glass mx-auto w-full max-w-md !rounded-[1.75rem] p-6 shadow-[0_40px_120px_-40px_#000] md:p-9">
-          <h1 className="font-display text-4xl leading-none">{title}</h1>
-          <p className="mt-3 mb-7 text-sm text-muted">{subtitle}</p>
+        <div className="card relative mx-auto w-full max-w-md p-7 md:p-10">
+          <h1 className="text-[3rem] leading-none">{title}</h1>
+          <p className="mt-3 mb-8 text-[15px] text-muted">{subtitle}</p>
           {children}
         </div>
       </div>

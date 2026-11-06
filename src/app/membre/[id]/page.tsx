@@ -1,14 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
-import { Projection } from "@/components/fx/Projection";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityFeed, TextKind } from "@/components/ActivityFeed";
-import { DvdCase } from "@/components/DvdCase";
+import { SpineRow } from "@/components/dreams/SpineRow";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { ownedFilms } from "@/lib/collection";
-import { discStyles } from "@/lib/disc-style";
 import { formatLongDate } from "@/lib/format";
 import { topPeople } from "@/lib/people";
 import { favoriteFilms, recentDiary } from "@/lib/queries";
@@ -42,61 +40,93 @@ export default async function MemberPage({ params }: Props) {
   ]);
   const isMe = id === me.id;
   const hero = favorites.find((f) => f.backdrop_path);
-  // Étiquettes des disques : couleurs des images et maquettes choisies par ce membre
-  const styles = await discStyles(
-    [...favorites.slice(0, 10), ...owned.slice(0, 6)].map((f) => ({ id: f.id, image: backdrop(f.backdrop_path) ?? poster(f.poster_path, "w342") })),
-    id,
-  );
 
   return (
-    <div className="space-y-12 pt-4 md:pt-14">
-      {/* En-tête du profil */}
-      <header className="card relative overflow-hidden !rounded-[1.75rem]">
-        {hero && <Projection src={backdrop(hero.backdrop_path)!} className="absolute inset-0 opacity-55" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
-        <div className="relative flex flex-wrap items-end gap-5 p-6 pt-24 md:p-8 md:pt-32">
-          <span className="font-display flex size-24 items-center justify-center rounded-full bg-accent text-5xl text-on-accent shadow-[0_20px_50px_-10px_var(--accent)] ring-4 ring-surface">{member.name.slice(0, 1).toUpperCase()}</span>
-          <div className="min-w-0 flex-1">
-            <p className="eyebrow mb-3">Membre de la bande</p>
-            <h1 className="font-display text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.9]">{member.username ? `@${member.username}` : member.name}</h1>
-            <p className="mt-2 text-sm text-muted">{member.username && `${member.firstName} · `}Membre depuis le {formatLongDate(member.createdAt.slice(0, 10))}</p>
-          </div>
-          {isMe && <Link href="/compte" className="btn btn-ghost glass">Modifier mon compte</Link>}
+    <div className="space-y-16 md:space-y-24">
+      {/* En-tête du profil : l'image de son film préféré, plein cadre, et sa carte de membre */}
+      <header className="relative">
+        <div className="full-bleed absolute inset-x-0 top-[-4rem] bottom-0 overflow-hidden" aria-hidden>
+          {hero && <img src={backdrop(hero.backdrop_path)!} alt="" className="dm-hero-img opacity-70" />}
+          <div className="dm-hero-fade" />
         </div>
-        <div className="relative grid grid-cols-2 border-t border-border bg-surface/80 backdrop-blur md:grid-cols-4">
+        <div className="relative flex min-h-[min(62svh,560px)] flex-col justify-end pt-20 pb-8">
+          <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-end sm:gap-6">
+            <span className="flex size-24 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--accent),color-mix(in_srgb,var(--accent)_40%,#000))] font-display text-5xl text-on-accent shadow-[0_20px_50px_-20px_rgb(0_0_0/0.9)] ring-4 ring-background md:size-32 md:text-7xl">
+              {member.name.slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1 self-stretch sm:self-auto">
+              <h1 className="text-[clamp(2.6rem,7vw,6rem)] leading-[0.95] break-words">{member.username ? `@${member.username}` : member.name}</h1>
+              <p className="mt-2 text-[15px] text-muted">
+                {member.username && `${member.firstName}, `}membre depuis le {formatLongDate(member.createdAt.slice(0, 10))}
+              </p>
+            </div>
+            {isMe && (
+              <Link href="/compte" className="btn">
+                Modifier mon compte
+              </Link>
+            )}
+          </div>
+        </div>
+        <dl className="relative grid grid-cols-2 border-y border-[var(--dm-line)] md:grid-cols-4">
           {[
-            [stats.watched.toLocaleString("fr-FR"), "films"],
+            [stats.watched.toLocaleString("fr-FR"), "films vus"],
             [String(stats.thisYear), `en ${new Date().getFullYear()}`],
             [stats.avgRating != null ? `${stats.avgRating.toFixed(1).replace(".", ",")}★` : "—", "note moyenne"],
             [String(owned.length), "dans sa collection"],
-          ].map(([v, l]) => (
-            <div key={l} className="border-border p-5 md:p-6 [&:not(:last-child)]:border-r">
-              <div className="font-display text-4xl leading-none text-accent tabular">{v}</div>
-              <div className="eyebrow mt-2">{l}</div>
+          ].map(([v, l], i) => (
+            <div key={l} className={`flex flex-col-reverse py-6 md:py-8 ${i % 2 ? "border-l border-[var(--dm-line)] pl-5 md:pl-8" : ""} ${i === 2 ? "md:border-l md:border-[var(--dm-line)] md:pl-8" : ""} ${i > 1 ? "border-t border-[var(--dm-line)] md:border-t-0" : ""}`}>
+              <dt className="mt-2 text-[14px] text-muted">{l}</dt>
+              <dd className="font-display text-[clamp(2.4rem,5vw,4rem)] leading-none tabular">{v}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </header>
 
-      {/* Ses films préférés, en DVD, qu'on fait défiler du doigt */}
+      {/* Sa collection : ses DVD, vus par la tranche, chacun à l'épaisseur de son édition */}
+      {owned.length > 0 && (
+        <section data-reveal>
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <h2 className="text-[2rem] leading-none md:text-[2.6rem]">{isMe ? "Ma" : "Sa"} collection</h2>
+            <p className="text-[14px] text-muted">{owned.length} boîtiers</p>
+          </div>
+          <div className="no-scrollbar bleed overflow-x-auto">
+            <SpineRow films={owned.map((o) => ({ id: o.id, title: o.title_fr ?? o.name, director: o.director, runtime: o.runtime, edition: o.edition, caseType: o.caseType, color: o.color, href: `/film/${o.id}` }))} height={260} />
+          </div>
+        </section>
+      )}
+
+      {/* Ses 10 films préférés : un classement, donc numéroté */}
       {favorites.length > 0 ? (
         <section>
-          <div className="mb-4 flex items-baseline justify-between gap-4">
-            <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Films préférés</h2>
-            {isMe && <Link href="/preferes" className="text-sm text-muted hover:text-accent">Modifier</Link>}
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <h2 className="text-[2rem] leading-none md:text-[2.6rem]">{isMe ? "Mes" : "Ses"} 10 films</h2>
+            {isMe && (
+              <Link href="/preferes" className="arrow-link min-h-10 text-[14px] text-muted hover:text-foreground">
+                Modifier le classement
+              </Link>
+            )}
           </div>
-          <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-5 md:overflow-visible md:px-0 lg:grid-cols-10">
-            {favorites.slice(0, 10).map((f) => (
-              <div key={f.id} className="w-28 shrink-0 snap-start md:w-auto">
-                <DvdCase compact film={{ id: f.id, href: `/film/${f.id}`, title: f.title_fr ?? f.name, year: f.year, director: f.director, runtime: f.runtime, image: backdrop(f.backdrop_path), cover: poster(f.poster_path, "w342"), ...styles.get(f.id) }} />
-              </div>
+          <ol className="grid grid-cols-3 gap-x-4 gap-y-8 sm:grid-cols-5 md:gap-x-6">
+            {favorites.slice(0, 10).map((f, i) => (
+              <li key={f.id}>
+                <Link href={`/film/${f.id}`} className="group block">
+                  <div className="poster aspect-[2/3]">
+                    {f.poster_path && <img src={poster(f.poster_path, "w342")!} alt={f.title_fr ?? f.name} loading="lazy" className="size-full object-cover" />}
+                  </div>
+                  <p className="mt-3 flex items-baseline gap-2">
+                    <span className="font-display text-2xl leading-none tabular text-muted">{i + 1}</span>
+                    <span className="truncate text-[14.5px] font-medium">{f.title_fr ?? f.name}</span>
+                  </p>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
       ) : (
         isMe && (
-          <Link href="/preferes" className="block rounded-2xl border border-dashed border-border p-6 text-center text-muted hover:border-accent hover:text-foreground">
-            Choisis tes 10 films préférés : ils s&apos;afficheront ici en DVD.
+          <Link href="/preferes" className="card card-hover block p-8 text-center">
+            <span className="block font-display text-3xl">Choisissez vos 10 films</span>
+            <span className="mt-2 block text-[15px] text-muted">Ils s&apos;afficheront ici, en tête de votre profil.</span>
           </Link>
         )
       )}
@@ -104,7 +134,7 @@ export default async function MemberPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-12">
           <section>
-            <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Critiques Dreams</h2>
+            <h2 className="mb-5 text-[2rem] leading-none md:text-[2.4rem]">Critiques Dreams</h2>
             {critiques.length ? (
               <div className="space-y-3">
                 {critiques.map((c) => (
@@ -126,7 +156,7 @@ export default async function MemberPage({ params }: Props) {
           </section>
 
           <section>
-            <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Activité récente</h2>
+            <h2 className="mb-5 text-[2rem] leading-none md:text-[2.4rem]">Activité récente</h2>
             <ActivityFeed items={feed} />
           </section>
         </div>
@@ -161,20 +191,6 @@ export default async function MemberPage({ params }: Props) {
                   </li>
                 ))}
               </ol>
-            </section>
-          )}
-          {owned.length > 0 && (
-            <section>
-              <h3 className="mb-3 text-xl">Sa collection</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {owned.slice(0, 6).map((o) => (
-                  <DvdCase
-                    key={o.id}
-                    compact
-                    film={{ id: o.id, href: `/film/${o.id}`, title: o.title_fr ?? o.name, year: o.year, director: o.director, runtime: o.runtime, image: backdrop(o.backdrop_path), cover: o.cover || poster(o.poster_path, "w342"), format: o.format, caseType: o.caseType, ...styles.get(o.id) }}
-                  />
-                ))}
-              </div>
             </section>
           )}
         </aside>

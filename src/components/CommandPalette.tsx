@@ -2,11 +2,9 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FilmHit, PersonHit } from "@/lib/search";
-import { THEMES, type Theme } from "@/lib/theme";
-import { applyTheme } from "@/lib/theme-client";
 import { longEnough } from "@/lib/titles";
 
 const img = (p: string | null) => (!p ? null : p.startsWith("/media/") ? p : `https://image.tmdb.org/t/p/w92${p}`);
@@ -27,7 +25,7 @@ export const PAGES = [
   { href: "/agenda", label: "Agenda", hint: "séances, calendrier" },
   { href: "/stats", label: "Mes stats", hint: "statistiques, chiffres" },
   { href: "/stats?vue=frise", label: "Ma frise", hint: "années, chronologie" },
-  { href: "/activite", label: "Activité de la bande", hint: "communauté, fil" },
+  { href: "/activite", label: "Activité des amis", hint: "communauté, fil" },
   { href: "/membres", label: "Membres", hint: "amis, profils" },
   { href: "/recherche", label: "Recherche avancée", hint: "chercher" },
   { href: "/compte", label: "Mon compte", hint: "profil, import letterboxd, mot de passe" },
@@ -56,6 +54,9 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
     setOpen(false);
     setQ("");
   }, []);
+  // changer de page referme la palette
+  const path = usePathname();
+  useEffect(() => close(), [path, close]);
 
   // ⌘K / Ctrl+K partout, « / » hors des champs de saisie
   useEffect(() => {
@@ -144,20 +145,9 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
       round: true,
       run: () => go(`/personne/${p.id}`),
     }));
-    const themes = THEMES.filter((t) => !query || norm(`theme thème ${t.label} ${t.film} ${t.director}`).includes(query)).map<Item>((t) => ({
-      key: `theme:${t.key}`,
-      group: "Thème",
-      label: t.film,
-      sub: t.director,
-      run: () => {
-        applyTheme(t.key as Theme);
-        close();
-        router.refresh();
-      },
-    }));
     const search = query ? [{ key: "search", group: "Recherche", label: `Chercher « ${q.trim()} » partout`, run: () => go(`/recherche?q=${encodeURIComponent(q.trim())}`) }] : [];
-    return query ? [...films, ...people, ...pages.slice(0, 5), ...search, ...themes.slice(0, 3)] : [...pages, ...themes];
-  }, [q, hits, isAdmin, go, close, router]);
+    return query ? [...films, ...people, ...pages.slice(0, 5), ...search] : pages;
+  }, [q, hits, isAdmin, go]);
 
   useEffect(() => setActive(0), [q, hits]);
 
@@ -184,10 +174,9 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
       {open && (
         <motion.div
           className="fixed inset-0 z-[80] flex items-start justify-center px-3 pt-[max(env(safe-area-inset-top),8vh)]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={false}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.1 }}
           onMouseDown={close}
         >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -195,14 +184,13 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
             role="dialog"
             aria-modal="true"
             aria-label="Aller à…"
-            className="card relative flex max-h-[76vh] w-full max-w-2xl flex-col overflow-hidden !rounded-2xl shadow-[0_40px_120px_-20px_#000]"
-            initial={{ opacity: 0, y: -14, scale: 0.98, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, scale: 0.985, filter: "blur(4px)" }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="relative flex max-h-[76vh] w-full max-w-2xl flex-col overflow-hidden rounded-[22px] border border-[var(--dm-line-2)] bg-[color-mix(in_srgb,var(--surface)_94%,transparent)] shadow-[0_40px_100px_-30px_rgb(0_0_0/0.9)] backdrop-blur-2xl"
+            initial={false}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 border-b border-border px-5">
+            <div className="flex items-center gap-3 border-b border-[var(--dm-line)] px-5">
               <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" aria-hidden>
                 <path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5" />
               </svg>
@@ -218,10 +206,10 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
                 aria-controls="palette-list"
                 aria-activedescendant={items[active] ? `palette-${active}` : undefined}
                 autoComplete="off"
-                className="h-16 min-w-0 flex-1 bg-transparent text-lg outline-none placeholder:text-muted"
+                className="h-16 min-w-0 flex-1 bg-transparent text-[1.15rem] outline-none placeholder:text-muted"
               />
-              {loading && <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-border border-t-accent" aria-hidden />}
-              <kbd className="eyebrow hidden rounded-md border border-border px-1.5 py-1 sm:block">Échap</kbd>
+              {loading && <span className="size-4 shrink-0 animate-spin rounded-full border border-border border-t-accent" aria-hidden />}
+              <kbd className="dm-kbd hidden sm:block">Échap</kbd>
             </div>
 
             <div ref={list} id="palette-list" role="listbox" className="overflow-y-auto overscroll-contain p-2" data-lenis-prevent>
@@ -231,7 +219,7 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
                 lastGroup = it.group;
                 return (
                   <div key={it.key}>
-                    {header && <p className="eyebrow px-3 pt-4 pb-2">{it.group}</p>}
+                    {header && <p className="eyebrow mx-1 mt-3 mb-1 px-2">{it.group}</p>}
                     <button
                       id={`palette-${i}`}
                       data-index={i}
@@ -239,26 +227,19 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
                       aria-selected={i === active}
                       onMouseMove={() => setActive(i)}
                       onClick={it.run}
-                      className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${i === active ? "bg-surface-2" : ""}`}
+                      className={`relative flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left ${i === active ? "bg-[color-mix(in_srgb,var(--foreground)_9%,transparent)]" : ""}`}
                     >
-                      {i === active && <motion.span layoutId="palette-active" className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-accent" transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} />}
+                      
                       {it.image !== undefined && (
-                        <span className={`shrink-0 overflow-hidden bg-surface-2 ${it.round ? "size-9 rounded-full" : "aspect-[2/3] w-8 rounded"}`}>
+                        <span className={`shrink-0 overflow-hidden bg-surface-2 ${it.round ? "size-9 rounded-full" : "aspect-[2/3] w-8 rounded-[3px]"}`}>
                           {it.image && <img src={it.image} alt="" className="size-full object-cover" />}
-                        </span>
-                      )}
-                      {it.group === "Thème" && (
-                        <span className="flex shrink-0 -space-x-1.5">
-                          {THEMES.find((t) => `theme:${t.key}` === it.key)?.swatch.map((c) => (
-                            <span key={c} className="size-4 rounded-full ring-2 ring-surface" style={{ background: c }} />
-                          ))}
                         </span>
                       )}
                       <span className="min-w-0 flex-1">
                         <span className="block truncate">{it.label}</span>
                         {it.sub && <span className="block truncate text-xs text-muted">{it.sub}</span>}
                       </span>
-                      {it.meta && <span className={`shrink-0 font-mono text-xs ${it.meta.startsWith("✓") ? "text-accent" : "text-muted"}`}>{it.meta}</span>}
+                      {it.meta && <span className={`shrink-0 tabular text-xs ${it.meta.startsWith("✓") ? "text-accent" : "text-muted"}`}>{it.meta}</span>}
                       {i === active && <span className="eyebrow shrink-0">↵</span>}
                     </button>
                   </div>
@@ -266,7 +247,7 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
               })}
             </div>
 
-            <div className="hidden items-center gap-4 border-t border-border px-5 py-3 sm:flex">
+            <div className="hidden items-center gap-4 border-t border-[var(--dm-line)] px-5 py-3 sm:flex">
               <span className="eyebrow">↑↓ choisir</span>
               <span className="eyebrow">↵ ouvrir</span>
               <span className="eyebrow ml-auto">⌘K ou / pour ouvrir</span>

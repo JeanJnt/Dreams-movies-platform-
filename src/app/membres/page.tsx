@@ -14,7 +14,7 @@ export default async function MembersPage() {
   const list = await members();
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <PageHeader eyebrow="La bande" title="Membres">
+      <PageHeader eyebrow="Amis" title="Amis">
         <CommunityTabs active="membres" />
       </PageHeader>
       <div className="grid gap-3 sm:grid-cols-2">

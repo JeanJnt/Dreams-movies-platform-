@@ -65,7 +65,7 @@ function splitTitle(title: string, max = 13) {
   return lines.slice(0, 3);
 }
 
-const display = { fontFamily: "var(--display), serif", fontWeight: "var(--display-weight)" as unknown as number };
+const display = { fontFamily: "var(--font-archivo), sans-serif", fontWeight: 900, fontStretch: "62%" } as const;
 const sans = { fontFamily: "var(--font-geist-sans), sans-serif" };
 
 export function DiscLabel({ disc }: { disc: DiscData }) {

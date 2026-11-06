@@ -1,18 +1,18 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-export function Arrow({ className = "size-3.5" }: { className?: string }) {
+export function Arrow({ className = "size-4" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
   );
 }
 
-// Lien « Tout voir → » dont la flèche avance au survol.
+// Lien « Tout voir » : la flèche avance au survol.
 export function MoreLink({ href, children = "Tout voir" }: { href: string; children?: ReactNode }) {
   return (
-    <Link href={href} className="arrow-link shrink-0 text-sm text-muted transition-colors hover:text-accent">
+    <Link href={href} className="arrow-link inline-flex min-h-10 shrink-0 items-center rounded-full px-1 text-[14px] text-muted transition-colors hover:text-foreground">
       {children}
       <Arrow />
     </Link>
@@ -20,11 +20,10 @@ export function MoreLink({ href, children = "Tout voir" }: { href: string; child
 }
 
 /*
- * Une section de page : numéro en chasse fixe, titre, lien « Tout voir ».
- * Elle apparaît en fondu quand on l'atteint en défilant (CSS seulement).
+ * Une section de page : un filet, le titre en Bodoni, la précision (kicker) dessous en gris,
+ * « Tout voir » à droite. Pas de numéro de rubrique : le contenu n'est pas une suite ordonnée.
  */
 export function Section({
-  index,
   title,
   kicker,
   href,
@@ -32,7 +31,6 @@ export function Section({
   aside,
   children,
   className = "",
-  reveal = true,
 }: {
   index?: number | string;
   title: ReactNode;
@@ -45,17 +43,11 @@ export function Section({
   reveal?: boolean;
 }) {
   return (
-    <section className={`${reveal ? "reveal" : ""} ${className}`}>
-      <div className="mb-5 flex items-end justify-between gap-4 md:mb-7">
+    <section className={className} data-reveal>
+      <div className="mb-6 flex items-end justify-between gap-4 border-t border-[var(--line)] pt-5 md:mb-8 md:pt-7">
         <div className="min-w-0">
-          {(index != null || kicker) && (
-            <p className="eyebrow mb-2.5">
-              {index != null && <span className="eyebrow-num">{String(index).padStart(2, "0")}</span>}
-              {index != null && kicker && <span className="mx-2 text-border">/</span>}
-              {kicker}
-            </p>
-          )}
-          <h2 className="font-display text-[1.75rem] leading-[1.05] md:text-[2.5rem]">{title}</h2>
+          <h2 className="text-[2rem] leading-none md:text-[2.75rem]">{title}</h2>
+          {kicker && <p className="mt-2.5 text-[14.5px] text-muted">{kicker}</p>}
         </div>
         {aside ?? (href && <MoreLink href={href}>{linkLabel}</MoreLink>)}
       </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrushYume } from "./Logo";
+import { BrandIcon } from "./Logo";
 
 const COLUMNS = [
   {
@@ -31,7 +31,7 @@ const COLUMNS = [
     ],
   },
   {
-    title: "La bande",
+    title: "Amis",
     links: [
       ["/activite", "Activité"],
       ["/membres", "Membres"],
@@ -40,23 +40,24 @@ const COLUMNS = [
   },
 ] as const;
 
-// Le pied de page, comme un générique de fin : tout le site d'un coup d'œil (ordinateur seulement).
+// Le pied de page : le plan du site en quatre colonnes, calme ; le 夢 et le nom en signature.
 export function Footer() {
   return (
-    <footer className="relative mt-8 hidden border-t border-[var(--line)] md:block">
-      <div className="mx-auto grid max-w-[88rem] grid-cols-[1.3fr_repeat(4,1fr)] gap-10 px-10 pt-16 pb-12">
+    <footer className="relative mt-28 hidden border-t border-[var(--line)] md:block">
+      <div className="mx-auto grid max-w-[1480px] grid-cols-[1.4fr_repeat(4,1fr)] gap-8 px-[var(--gutter)] pt-14 pb-16">
         <div>
-          <BrushYume className="h-14 w-auto text-accent" />
-          <p className="mt-5 font-display text-3xl leading-none">Dreams</p>
-          <p className="mt-3 max-w-[16rem] text-sm leading-relaxed text-muted">Le journal de cinéma de la bande : ce qu&apos;on a vu, aimé, écrit et rangé sur l&apos;étagère.</p>
+          <BrandIcon size={56} />
+          <p className="mt-5 font-display text-[2.6rem] leading-none">Dreams</p>
+          <p className="wide mt-2 text-muted">Movies</p>
+          <p className="mt-5 max-w-[24ch] text-[14px] text-muted">Le journal de cinéma entre amis : films vus, critiques, collection, séances.</p>
         </div>
         {COLUMNS.map((c) => (
           <nav key={c.title} aria-label={c.title}>
-            <p className="eyebrow mb-5">{c.title}</p>
-            <ul className="space-y-2.5 text-sm">
+            <p className="wide mb-4 text-muted">{c.title}</p>
+            <ul className="space-y-1">
               {c.links.map(([href, label]) => (
                 <li key={href}>
-                  <Link href={href} className="link-draw text-foreground/75 hover:text-foreground">
+                  <Link href={href} className="inline-flex min-h-8 items-center text-[15px] text-[var(--text-2)] transition-colors hover:text-foreground">
                     {label}
                   </Link>
                 </li>
@@ -64,12 +65,6 @@ export function Footer() {
             </ul>
           </nav>
         ))}
-      </div>
-      <div className="mx-auto flex max-w-[88rem] items-center justify-between border-t border-[var(--line)] px-10 py-6">
-        <p className="eyebrow">夢 · d&apos;après Les Rêves d&apos;Akira Kurosawa, 1990</p>
-        <p className="eyebrow">
-          <kbd className="font-mono">⌘K</kbd> pour tout trouver
-        </p>
       </div>
     </footer>
   );

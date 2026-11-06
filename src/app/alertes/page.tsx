@@ -45,27 +45,36 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
   const now = playing.filter((p) => match(p.title) || match(p.original));
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-5">
-        <div>
-          <PageHeader eyebrow="Découvrir · en salle" title="Au cinéma" />
-          <p className="mt-4 text-sm text-muted">
-            Séances à <span className="text-foreground">{me.city}</span> · <Link href="/compte#profil" className="hover:text-accent">changer</Link>
-            {checkedAt && <> · mis à jour {new Date(checkedAt).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}</>}
-          </p>
-        </div>
-        <form action="/alertes" className="flex gap-2">
+    <div className="space-y-16">
+      <header className="space-y-8">
+        <PageHeader
+          eyebrow={`Séances à ${me.city}`}
+          number={checkedAt ? `mis à jour ${new Date(checkedAt).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}` : undefined}
+          title="Au cinéma"
+          actions={
+            <Link href="/compte#profil" className="btn btn-sm">
+              Changer de ville
+            </Link>
+          }
+        />
+        <form action="/alertes" className="flex max-w-3xl gap-2">
           <input
             name="q"
             defaultValue={q}
             type="search"
             placeholder={isParis ? "Ce film passe-t-il à Paris ?" : "Ce film est-il en salle ?"}
-            className="min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2.5 outline-none focus:border-accent"
+            aria-label="Chercher un film en salle"
+            className="field min-w-0 flex-1 !min-h-14 !rounded-full !px-6 !text-[1.05rem]"
           />
-          {q && <Link href="/alertes" className="flex items-center rounded-full px-3 text-sm text-muted">Effacer</Link>}
+          {q && <Link href="/alertes" className="btn btn-ghost">Effacer</Link>}
         </form>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <AlertSettings initial={sources} />
+        <div className="card flex flex-wrap items-center justify-between gap-4 p-4 md:p-5">
+          <div className="min-w-0">
+            <p className="text-[15px]">Me prévenir pour</p>
+            <div className="mt-2">
+              <AlertSettings initial={sources} />
+            </div>
+          </div>
           <PushToggle />
         </div>
       </header>
@@ -73,12 +82,12 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
       {/* Recherche dans tout le programme parisien, pas seulement mes films */}
       {q && isParis && (
         <section>
-          <h2 className="mb-3 text-xl">Dans le programme de Paris Ciné Info</h2>
+          <h2 className="mb-5 text-[2rem] leading-none">Dans le programme de Paris Ciné Info</h2>
           {programme.length ? (
-            <ul className="divide-y divide-border overflow-hidden card">
+            <ul className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
               {programme.map((p) => (
                 <li key={`${p.title}-${p.year}`}>
-                  <a href={showtimeLinks(p.title, "Paris", "FR")[0].href} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-2">
+                  <a href={showtimeLinks(p.title, "Paris", "FR")[0].href} target="_blank" rel="noreferrer" className="flex min-h-14 items-center justify-between gap-3 py-3 transition-colors hover:text-white">
                     <span className="min-w-0">
                       <span className="block truncate">{p.title} <span className="text-muted">{p.year}</span></span>
                       {p.original && p.original !== p.title && <span className="block truncate text-xs text-muted">{p.original}</span>}
@@ -97,23 +106,26 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
       )}
 
       {!q && alerts.length === 0 && (
-        <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted">Aucun des films que tu surveilles n&apos;est en salle en ce moment.</div>
+        <div className="card px-6 py-14 text-center">
+          <p className="font-display text-2xl">Aucun de vos films n&apos;est en salle</p>
+          <p className="mt-2 text-[15px] text-muted">Vous serez prévenu dès qu&apos;un film de votre watchlist ou un coup de cœur ressort.</p>
+        </div>
       )}
 
       {/* Mes films à Paris : une grille d'affiches, plus légère que des cartes */}
       {mine.some((a) => a.kind === "paris") && (
         <section>
-          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">
-            {KINDS.paris.title} <span className="text-base text-muted">{mine.filter((a) => a.kind === "paris").length}</span>
+          <h2 className="mb-6 text-[2rem] leading-none md:text-[2.6rem]">
+            {KINDS.paris.title} <span className="ml-2 text-[15px] text-muted tabular">{mine.filter((a) => a.kind === "paris").length}</span>
           </h2>
           <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
             {mine.filter((a) => a.kind === "paris").map((a) => (
               <div key={a.tmdbId}>
-                <Link href={`/film/${a.filmId}`} className="relative block aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
+                <Link href={`/film/${a.filmId}`} className="poster relative block aspect-[2/3]">
                   {a.poster && <img src={poster(a.poster, "w342")!} alt={a.title} loading="lazy" className="size-full object-cover" />}
-                  {!a.seen && <span className="absolute top-1 left-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] text-on-accent">Nouveau</span>}
+                  {!a.seen && <span className="sticker absolute top-1.5 left-1.5">Nouveau</span>}
                 </Link>
-                <a href={showtimeLinks(a.title, me.city, me.country)[0].href} target="_blank" rel="noreferrer" className="mt-1.5 block text-xs leading-tight hover:text-accent">
+                <a href={showtimeLinks(a.title, me.city, me.country)[0].href} target="_blank" rel="noreferrer" className="mt-2 block text-[13.5px] leading-snug hover:text-white">
                   <span className="line-clamp-2">{a.title}</span>
                   <span className="text-muted">{a.note?.replace(" à Paris", "")}</span>
                 </a>
@@ -128,8 +140,8 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
         if (!list.length) return null;
         return (
           <section key={kind}>
-            <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{KINDS[kind].title}</h2>
-            <div className="grid gap-4 md:grid-cols-2">
+            <h2 className="mb-6 text-[2rem] leading-none md:text-[2.6rem]">{KINDS[kind].title}</h2>
+            <div className="grid gap-4 lg:grid-cols-2">
               {list.map((a) => <AlertCard key={a.tmdbId} alert={a} city={me.city} country={me.country} />)}
             </div>
           </section>
@@ -138,15 +150,15 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
 
       {now.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Tous les films à l&apos;affiche</h2>
+          <h2 className="mb-6 text-[2rem] leading-none md:text-[2.6rem]">Tous les films à l&apos;affiche</h2>
           <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-6 md:overflow-visible md:px-0 lg:grid-cols-8">
             {now.map((p) => (
               <div key={p.tmdbId} className={`w-28 shrink-0 snap-start md:w-auto ${p.seen ? "opacity-50" : ""}`}>
-                <Link href={p.filmId ? `/film/${p.filmId}` : `/tmdb/${p.tmdbId}`} className="relative block aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
+                <Link href={p.filmId ? `/film/${p.filmId}` : `/tmdb/${p.tmdbId}`} className="poster relative block aspect-[2/3]">
                   {p.poster && <img src={poster(p.poster, "w342")!} alt={p.title} loading="lazy" className="size-full object-cover" />}
-                  {p.wanted && <span className="absolute top-1 left-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] text-on-accent">Watchlist</span>}
+                  {p.wanted && <span className="sticker absolute top-1.5 left-1.5">Watchlist</span>}
                 </Link>
-                <a href={showtimeLinks(p.title, me.city, me.country)[0].href} target="_blank" rel="noreferrer" className="mt-1.5 line-clamp-2 block text-xs leading-tight hover:text-accent">
+                <a href={showtimeLinks(p.title, me.city, me.country)[0].href} target="_blank" rel="noreferrer" className="mt-2 line-clamp-2 block text-[13.5px] leading-snug hover:text-white">
                   {p.title}
                 </a>
               </div>
@@ -155,41 +167,40 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
         </section>
       )}
 
-      <p className="text-xs text-muted">
+      <p className="text-[13px] text-muted">
         Sorties en salle : TMDB.{isParis && " Programme des salles parisiennes : Paris Ciné Info."} Mise à jour automatique 4 fois par jour.
       </p>
     </div>
   );
 }
 
+// Un film surveillé qui passe en salle : un billet large, le photogramme à gauche, l'essentiel à droite
 function AlertCard({ alert: a, city, country }: { alert: Alert; city: string; country: string }) {
   const bg = backdrop(a.backdrop);
   return (
-    <article className="relative overflow-hidden card">
-      {bg && <img src={bg} alt="" className="absolute inset-0 size-full object-cover opacity-15" />}
-      <div className="relative flex gap-4 p-4">
-        <Link href={`/film/${a.filmId}`} className="w-20 shrink-0">
-          <div className="aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
-            {a.poster && <img src={poster(a.poster, "w342")!} alt={a.title} className="size-full object-cover" />}
-          </div>
+    <article className="card grid overflow-hidden !p-0 sm:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <Link href={`/film/${a.filmId}`} className="relative block aspect-[2.39/1] sm:aspect-auto" tabIndex={-1} aria-hidden>
+        {bg ? <img src={bg} alt="" className="absolute inset-0 size-full object-cover" /> : a.poster && <img src={poster(a.poster, "w342")!} alt="" className="absolute inset-0 size-full object-cover" />}
+        <span className="absolute inset-0 bg-[linear-gradient(90deg,transparent_60%,rgb(11_11_12/0.9))] max-sm:bg-[linear-gradient(0deg,rgb(11_11_12/0.9),transparent_60%)]" />
+      </Link>
+      <div className="flex min-w-0 flex-col p-5 md:p-6">
+        <p className="wide text-muted">
+          {KINDS[a.kind].badge} · {SOURCE_LABEL[a.source]}
+          {!a.seen && <span className="text-foreground"> · nouveau</span>}
+        </p>
+        <Link href={`/film/${a.filmId}`} className="mt-3 font-display text-[1.8rem] leading-tight">
+          {a.title}
         </Link>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <p className="text-xs text-muted">
-            {KINDS[a.kind].badge} · {SOURCE_LABEL[a.source]}
-            {!a.seen && <span className="text-accent"> · nouveau</span>}
+        <p className="mt-1 text-[14px] text-muted">{[a.director, a.year].filter(Boolean).join(", ")}</p>
+        {a.releaseDate && (
+          <p className="mt-2 text-[14px] text-[var(--text-2)]">
+            {a.kind === "bientot" ? "Sortie le " : "En salle depuis le "}
+            {formatLongDate(a.releaseDate)}
           </p>
-          <Link href={`/film/${a.filmId}`} className="mt-1 text-lg leading-tight font-semibold hover:text-accent">{a.title}</Link>
-          <p className="text-sm text-muted">{[a.director, a.year].filter(Boolean).join(" · ")}</p>
-          {a.releaseDate && (
-            <p className="mt-1 text-sm">
-              {a.kind === "bientot" ? "Sortie le " : "En salle depuis le "}
-              {formatLongDate(a.releaseDate)}
-            </p>
-          )}
-          <a href={showtimeLinks(a.title, city, country)[0].href} target="_blank" rel="noreferrer" className="mt-auto self-start pt-3 text-sm text-accent">
-            Séances
-          </a>
-        </div>
+        )}
+        <a href={showtimeLinks(a.title, city, country)[0].href} target="_blank" rel="noreferrer" className="btn btn-sm mt-auto self-start">
+          Voir les séances
+        </a>
       </div>
     </article>
   );

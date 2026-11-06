@@ -8,13 +8,13 @@ import { Stars } from "./Stars";
 export function Poster({ film, size = "w342", className = "" }: { film: Film; size?: "w185" | "w342" | "w500"; className?: string }) {
   const src = poster(film.poster_path, size);
   return (
-    <div className={`poster aspect-[2/3] rounded-lg ${className}`}>
+    <div className={`poster aspect-[2/3] ${className}`}>
       {src ? (
         <img src={src} alt={film.title_fr ?? film.name} loading="lazy" decoding="async" className="size-full object-cover" />
       ) : (
         <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center">
-          <span className="font-display text-base leading-tight text-foreground/80">{film.title_fr ?? film.name}</span>
-          {film.year && <span className="font-mono text-[10px] text-muted">{film.year}</span>}
+          <span className="font-display text-lg leading-tight">{film.title_fr ?? film.name}</span>
+          {film.year && <span className="text-[12px] text-muted">{film.year}</span>}
         </div>
       )}
     </div>
@@ -25,13 +25,18 @@ export function FilmCard({ film, caption, dim = false }: { film: Film; caption?:
   const title = film.title_fr ?? film.name;
   return (
     <div className={`group relative transition-opacity duration-300 ${dim ? "opacity-40 hover:opacity-100" : ""}`}>
-      <Link href={`/film/${film.id}`} className="block" aria-label={title}>
+      <Link href={`/film/${film.id}`} className="relative block" aria-label={title}>
         <Poster film={film} />
+        {/* Coup de cœur : une gommette rouge collée en biais sur l'affiche */}
+        {film.liked && (
+          <span className="sticker sticker-round absolute top-2 right-2 z-10 !size-7 text-[13px]" aria-label="coup de cœur">
+            ♥
+          </span>
+        )}
       </Link>
-      <div className="mt-2.5 flex h-4 items-center gap-1.5 text-xs">
+      <div className="mt-2.5 flex h-4 items-center gap-1.5 text-[12.5px]">
         {film.rating != null && <Stars rating={film.rating} />}
-        {film.liked && <span className="text-heart" aria-label="coup de cœur">♥</span>}
-        {caption && <span className="truncate font-mono text-[10.5px] tracking-wide text-muted uppercase">{caption}</span>}
+        {caption && <span className="truncate text-muted">{caption}</span>}
         {/* Lien direct vers la fiche Letterboxd du film */}
         <a
           href={letterboxdUrl(film)}

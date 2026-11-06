@@ -33,7 +33,7 @@ export function DiscCarousel({ discs, label }: { discs: Disc[]; label?: string }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).closest("input, textarea, select")) return;
+      if ((e.target as HTMLElement).closest?.("input, textarea, select")) return;
       if (e.key === "ArrowRight") go(active + 1);
       if (e.key === "ArrowLeft") go(active - 1);
     };

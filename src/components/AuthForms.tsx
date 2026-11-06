@@ -49,7 +49,7 @@ export function SignupForm({ first }: { first: boolean }) {
       ) : (
         <label className="block space-y-1.5">
           <span className="text-sm text-muted">Code d&apos;invitation</span>
-          <input name="invite" required autoComplete="off" placeholder="ABCD-EFGH2" className={`${input} font-mono tracking-widest uppercase`} />
+          <input name="invite" required autoComplete="off" placeholder="ABCD-EFGH2" className={`${input} tabular tracking-widest uppercase`} />
         </label>
       )}
       <label className="block space-y-1.5">

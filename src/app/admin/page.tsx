@@ -36,7 +36,7 @@ export default async function AdminPage() {
               const expired = !i.used_at && String(i.expires_at) < now;
               return (
                 <li key={String(i.code)} className="flex items-center gap-3 py-2">
-                  <span className="font-mono tracking-wider">{String(i.code)}</span>
+                  <span className="tabular tracking-wider">{String(i.code)}</span>
                   <span className="flex-1 truncate text-muted">{i.note ? String(i.note) : ""}</span>
                   {i.used_by ? (
                     <span className="text-accent">✓ {String(i.used_by)}</span>

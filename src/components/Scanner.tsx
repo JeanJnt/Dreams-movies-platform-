@@ -82,7 +82,7 @@ export function Scanner({ formats, caseTypes }: Props) {
             <video ref={video} className="size-full object-cover" muted playsInline />
             {camera === "on" && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="relative h-1/3 w-3/4 rounded-xl border-2 border-accent shadow-[0_0_0_999px_#0008]">
+                <div className="relative h-1/3 w-3/4 rounded-xl border border-accent shadow-[0_0_0_999px_#0008]">
                   <div className="scan-line h-0.5 w-full bg-accent" />
                 </div>
               </div>

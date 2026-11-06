@@ -40,7 +40,7 @@ export function DiscStylePicker({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="block size-full"
+        className="relative block size-full rounded-full"
         aria-label="Choisir l'habillage du disque"
       >
         <DiscLabel

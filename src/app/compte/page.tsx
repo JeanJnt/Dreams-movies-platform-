@@ -7,6 +7,7 @@ import { LetterboxdConnect } from "@/components/LetterboxdConnect";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ThemeChoice } from "@/components/ThemeChoice";
 
 export const metadata: Metadata = { title: "Mon compte" };
 export const dynamic = "force-dynamic";
@@ -28,54 +29,101 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const host = (await headers()).get("host") ?? "localhost:3000";
   const calendar = `webcal://${host}/agenda/ics?token=${info.calendar_token}`;
 
+  const sections = [
+    { id: "import", label: "Import Letterboxd" },
+    { id: "profil", label: "Profil" },
+    { id: "theme", label: "Thème" },
+    { id: "agenda", label: "Agenda" },
+    { id: "securite", label: "Sécurité" },
+    { id: "donnees", label: "Mes données" },
+  ];
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <PageHeader eyebrow="Réglages" title="Mon compte" lede={<>
-          {me.username ? <b className="text-foreground">@{me.username}</b> : me.name} · {me.email}
-          {me.isAdmin && <> · <Link href="/admin" className="text-accent hover:underline">Administration</Link></>}
-      </>} />
+    <div className="space-y-12">
+      <PageHeader
+        eyebrow="Réglages"
+        number={me.email}
+        title="Mon compte"
+        actions={
+          <>
+            <Link href={`/membre/${me.id}`} className="btn">
+              Voir mon profil
+            </Link>
+            {me.isAdmin && (
+              <Link href="/admin" className="btn">
+                Administration
+              </Link>
+            )}
+          </>
+        }
+      />
 
-      <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
+      <div className="grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-16">
+        {/* sommaire des réglages */}
+        <nav aria-label="Réglages" className="no-scrollbar bleed flex gap-1 overflow-x-auto lg:sticky lg:top-[calc(var(--nav-offset,4.5rem)+1.5rem)] lg:mx-0 lg:flex-col lg:self-start lg:px-0">
+          {sections.map((x) => (
+            <a key={x.id} href={`#${x.id}`} className="chip !shadow-none hover:!bg-white/[0.05] lg:!justify-start">
+              {x.label}
+            </a>
+          ))}
+        </nav>
 
-      {/* Pendant l'accueil d'un nouveau membre, la connexion Letterboxd apparaît à la fin de l'import. */}
-      {(!onboarding || info.letterboxd_username) && (
-        <LetterboxdConnect connected={(info.letterboxd_username as string) ?? null} syncedAt={(info.letterboxd_synced_at as string) ?? null} />
-      )}
+        <div className="min-w-0 divide-y divide-[var(--line)] border-y border-[var(--line)]">
+          <Setting id="import" title="Import Letterboxd" text="Vos films, notes, critiques et listes arrivent depuis l'export Letterboxd ; la synchronisation garde ensuite le journal à jour.">
+            <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
+            {/* Pendant l'accueil d'un nouveau membre, la connexion Letterboxd apparaît à la fin de l'import. */}
+            {(!onboarding || info.letterboxd_username) && <LetterboxdConnect connected={(info.letterboxd_username as string) ?? null} syncedAt={(info.letterboxd_synced_at as string) ?? null} />}
+          </Setting>
 
-      <section id="profil" className={`space-y-4 rounded-3xl border bg-surface p-5 md:p-6 ${me.username ? "border-border" : "border-accent"}`}>
-        <h2 className="text-2xl">Profil et préférences</h2>
-        {!me.username && <p className="text-sm text-accent">Choisis ton pseudo : c&apos;est lui que les autres membres verront.</p>}
-        <ProfileForm user={me} />
-      </section>
+          <Setting id="profil" title="Profil et préférences" text={me.username ? "Ce que les autres membres voient de vous, et vos préférences d'affichage." : "Choisissez votre pseudo : c'est lui que les autres membres verront."}>
+            <ProfileForm user={me} />
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Link href="/preferes" className="btn btn-sm">
+                Mes 10 films préférés
+              </Link>
+              <Link href={`/membre/${me.id}`} className="btn btn-sm">
+                Voir mon profil comme les autres
+              </Link>
+            </div>
+          </Setting>
 
-      <section className="space-y-3 card rounded-3xl p-5 md:p-6">
-        <h2 className="text-2xl">Mon profil</h2>
-        <p className="text-sm text-muted">Ce que les autres membres voient de toi.</p>
-        <Link href="/preferes" className="mr-2 inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Mes 10 films préférés</Link>
-        <Link href={`/membre/${me.id}`} className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">Voir mon profil comme les autres le voient</Link>
-      </section>
+          <Setting id="theme" title="Thème" text="Noir et blanc, avec l'argent du logo ; ou noir et rouge vif. Seule la couleur des actions et des repères change.">
+            <ThemeChoice />
+          </Setting>
 
-      <section className="space-y-3 card rounded-3xl p-5 md:p-6">
-        <h2 className="text-2xl">Agenda dans mon téléphone</h2>
-        <p className="text-sm text-muted">Tes séances dans le calendrier de ton téléphone. Lien personnel, à ne pas partager.</p>
-        <a href={calendar} className="btn btn-primary">S&apos;abonner à mon agenda</a>
-      </section>
+          <Setting id="agenda" title="Agenda dans mon téléphone" text="Vos séances dans le calendrier de votre téléphone. Ce lien est personnel : ne le partagez pas.">
+            <a href={calendar} className="btn btn-primary">
+              S&apos;abonner à mon agenda
+            </a>
+          </Setting>
 
-      <section className="space-y-4 card rounded-3xl p-5 md:p-6">
-        <h2 className="text-2xl">Sécurité</h2>
-        <PasswordForm />
-        <p className="text-sm text-muted">{Number(info.sessions)} appareil(s) connecté(s).</p>
-        <SessionButtons />
-      </section>
+          <Setting id="securite" title="Sécurité" text={`${Number(info.sessions)} appareil${Number(info.sessions) > 1 ? "s" : ""} connecté${Number(info.sessions) > 1 ? "s" : ""} en ce moment.`}>
+            <PasswordForm />
+            <SessionButtons />
+          </Setting>
 
-      <section className="space-y-4 card rounded-3xl p-5 md:p-6">
-        <h2 className="text-2xl">Mes données</h2>
-        <p className="text-sm text-muted">Tes données t&apos;appartiennent : tu peux les récupérer ou tout effacer à tout moment.</p>
-        <a href="/compte/export" className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:border-accent">⬇ Exporter toutes mes données (JSON)</a>
-        <div>
-          <DeleteAccountForm />
+          <Setting id="donnees" title="Mes données" text="Vos données vous appartiennent : récupérez-les ou effacez tout, à tout moment.">
+            <a href="/compte/export" className="btn">
+              Exporter toutes mes données (JSON)
+            </a>
+            <DeleteAccountForm />
+          </Setting>
         </div>
-      </section>
+      </div>
     </div>
+  );
+}
+
+// Une rubrique de réglages : le titre et l'explication à gauche, les contrôles à droite
+function Setting({ id, title, text, children }: { id: string; title: string; text: string; children: React.ReactNode }) {
+  return (
+    <section id={id} aria-labelledby={`${id}-t`} className="grid scroll-mt-28 gap-6 py-10 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] md:gap-12">
+      <div>
+        <h2 id={`${id}-t`} className="text-[1.9rem] leading-none">
+          {title}
+        </h2>
+        <p className="mt-3 text-[14.5px] leading-relaxed text-muted">{text}</p>
+      </div>
+      <div className="min-w-0 space-y-5">{children}</div>
+    </section>
   );
 }

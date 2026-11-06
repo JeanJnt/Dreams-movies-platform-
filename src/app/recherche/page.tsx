@@ -15,15 +15,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Découvrir · dans toutes les langues" title="Rechercher" />
+      <PageHeader eyebrow="Films, séries et personnes, dans toutes les langues" title="Rechercher" />
       <SearchBox defaultValue={q} />
 
       {q && !films.length && !people.length && <p className="text-muted">Aucun résultat pour « {q} ».</p>}
 
       {people.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-1">
+        <div className="no-scrollbar bleed flex gap-2 overflow-x-auto pb-1">
           {people.map((p) => (
-            <Link key={p.id} href={`/personne/${p.id}`} className="flex shrink-0 items-center gap-3 rounded-full border border-border bg-surface py-1.5 pr-4 pl-1.5 hover:border-accent/50">
+            <Link key={p.id} href={`/personne/${p.id}`} className="ticket shrink-0 !min-h-0 !gap-3 !py-1.5 !pr-5 !pl-1.5">
               <span className="size-10 overflow-hidden rounded-full bg-surface-2">
                 {p.photo && <img src={poster(p.photo, "w185")!} alt="" className="size-full object-cover" />}
               </span>
@@ -36,23 +36,26 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {films.map((r) => (
-          <Link key={r.key} href={r.href} className="group flex gap-4 card rounded-xl p-3 hover:border-accent/50">
-            <div className="aspect-[2/3] w-16 shrink-0 overflow-hidden rounded bg-surface-2">
-              {r.poster && <img src={poster(r.poster, "w185")!} alt="" loading="lazy" className="size-full object-cover" />}
-            </div>
-            <div className="min-w-0">
-              <h2 className="font-medium group-hover:text-accent">
-                {r.title} <span className="text-muted">{r.year}</span>
-              </h2>
-              {r.sub && <p className="text-xs text-muted">{r.sub}</p>}
-              <p className="mt-1 line-clamp-2 text-xs text-muted">{r.overview}</p>
-              {r.seen && <span className="mt-1 inline-block text-xs text-accent">✓ vu</span>}
-            </div>
-          </Link>
-        ))}
-      </div>
+      {films.length > 0 && (
+        <ul className="grid grid-cols-3 gap-x-4 gap-y-8 sm:grid-cols-4 md:grid-cols-5 md:gap-x-6 lg:grid-cols-6">
+          {films.map((r) => (
+            <li key={r.key}>
+              <Link href={r.href} className="group block">
+                <div className="poster aspect-[2/3]">
+                  {r.poster ? (
+                    <img src={poster(r.poster, "w342")!} alt="" loading="lazy" className="size-full object-cover" />
+                  ) : (
+                    <span className="flex size-full items-center justify-center p-3 text-center font-display text-lg leading-tight">{r.title}</span>
+                  )}
+                  {r.seen && <span className="sticker absolute top-2 left-2">Vu</span>}
+                </div>
+                <h2 className="mt-3 line-clamp-2 text-[14.5px] leading-snug font-medium">{r.title}</h2>
+                <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{[r.year, r.sub].filter(Boolean).join(" · ")}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

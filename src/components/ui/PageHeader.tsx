@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
+import { SectionTabs } from "./SectionTabs";
 
-// Découpe un titre en mots qui montent l'un après l'autre (animation CSS, rendue côté serveur).
+// Découpe un titre en mots qui se lèvent l'un après l'autre (CSS, rendu côté serveur).
 export function TitleWords({ text, offset = 0 }: { text: string; offset?: number }) {
   return (
     <span className="title-words">
@@ -18,9 +19,10 @@ export function TitleWords({ text, offset = 0 }: { text: string; offset?: number
 }
 
 /*
- * En-tête de page, façon revue de cinéma :
- *   petite mention en chasse fixe (« Journal — 570 films »), très grand titre, chapeau, actions à droite.
- * h1.page-title reste le point d'accroche des thèmes (motif sous le titre, tailles propres à chaque film).
+ * L'en-tête des pages de rubrique :
+ *   en haut, les onglets de la rubrique (où l'on est, ce qu'il y a à côté) ;
+ *   puis le titre en Bodoni (composé ligne par ligne par GSAP), la mention de contexte et le compteur en gris,
+ *   le chapeau, et les actions à droite (une seule action principale, en blanc).
  */
 export function PageHeader({
   eyebrow,
@@ -30,6 +32,8 @@ export function PageHeader({
   children,
   size = "xl",
   back,
+  number,
+  tabs = true,
 }: {
   eyebrow?: ReactNode;
   title: string;
@@ -38,28 +42,33 @@ export function PageHeader({
   children?: ReactNode;
   size?: "xl" | "lg";
   back?: { href: string; label: string };
+  number?: ReactNode;
+  tabs?: boolean;
 }) {
   return (
-    <header className="pt-4 pb-2 md:pt-14">
+    <header className="relative pt-4 pb-2 md:pt-6">
+      {tabs && <SectionTabs />}
       {back && (
-        <Link href={back.href} className="arrow-link eyebrow mb-5 hover:text-foreground">
-          <svg viewBox="0 0 24 24" className="size-3.5 rotate-180" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
-            <path d="M5 12h14M13 6l6 6-6 6" />
+        <Link href={back.href} className="arrow-link mt-6 inline-flex min-h-10 items-center gap-1 text-[14px] text-muted transition-colors hover:text-foreground">
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden>
+            <path d="M15 18l-6-6 6-6" />
           </svg>
           {back.label}
         </Link>
       )}
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
-        <div className="min-w-0 max-w-4xl">
-          {eyebrow && <p className="eyebrow mb-4 flex items-center gap-3 md:mb-5"><span className="h-px w-8 bg-accent" aria-hidden />{eyebrow}</p>}
-          <h1
-            className={`page-title font-display leading-[0.92] text-balance ${
-              size === "xl" ? "text-[clamp(2.9rem,8.5vw,6.75rem)]" : "text-[clamp(2.4rem,6.5vw,4.75rem)]"
-            }`}
-          >
-            <TitleWords text={title} />
+      <div className="mt-10 flex flex-wrap items-end justify-between gap-x-10 gap-y-6 md:mt-16">
+        <div className="min-w-0 max-w-5xl">
+          <h1 data-split className={`page-title ${size === "xl" ? "text-[clamp(3.2rem,8vw,7.8rem)]" : "text-[clamp(2.6rem,6vw,5.2rem)]"} leading-[0.94]`}>
+            {title}
           </h1>
-          {lede && <div className="mt-5 max-w-2xl text-base leading-relaxed text-muted md:text-lg">{lede}</div>}
+          {(eyebrow || number) && (
+            <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] text-muted">
+              {eyebrow && <span>{eyebrow}</span>}
+              {eyebrow && number && <span aria-hidden className="h-3 w-px bg-current opacity-40" />}
+              {number && <span className="tabular">{number}</span>}
+            </p>
+          )}
+          {lede && <div className="mt-5 max-w-2xl text-[17px] leading-relaxed text-[var(--text-2)]">{lede}</div>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>

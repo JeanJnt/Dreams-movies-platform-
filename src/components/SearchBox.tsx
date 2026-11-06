@@ -101,13 +101,13 @@ export function SearchBox({ defaultValue = "", compact = false }: { defaultValue
           className={
             compact
               ? "w-full rounded-full border border-transparent bg-surface-2/70 px-4 py-1.5 text-sm outline-none transition placeholder:text-muted focus:border-accent focus:bg-surface"
-              : "w-full card rounded-xl px-4 py-3 text-lg outline-none focus:border-accent"
+              : "w-full rounded-full border border-[var(--dm-line-2)] bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-7 py-5 text-[1.2rem] outline-none backdrop-blur-xl transition-colors placeholder:text-muted focus:border-[color-mix(in_srgb,var(--foreground)_50%,transparent)] md:text-[1.35rem]"
           }
         />
       </form>
 
       {show && (
-        <div id="search-suggestions" role="listbox" className={`absolute top-full z-50 mt-2 max-h-[70vh] overflow-y-auto card rounded-xl py-1 shadow-2xl shadow-black/40 ${compact ? "right-0 w-[26rem] max-w-[90vw]" : "inset-x-0"}`}>
+        <div id="search-suggestions" role="listbox" className={`absolute top-full z-50 mt-2 max-h-[70vh] overflow-y-auto card !rounded-2xl p-1.5 shadow-2xl shadow-black/40 ${compact ? "right-0 w-[26rem] max-w-[90vw]" : "inset-x-0"}`}>
           {!items.length && <p className="px-3 py-2 text-sm text-muted">Aucune suggestion. Appuie sur Entrée pour chercher.</p>}
           {hits.films.map((f, i) => (
             <button key={f.key} type="button" role="option" aria-selected={i === active} onMouseEnter={() => setActive(i)} onClick={() => go(f.href)} className={row(i)}>

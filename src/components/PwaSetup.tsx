@@ -12,7 +12,7 @@ export function PwaSetup() {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
     const onKey = (e: KeyboardEvent) => {
-      const typing = (e.target as HTMLElement).closest("input, textarea, select, [contenteditable]");
+      const typing = (e.target as HTMLElement).closest?.("input, textarea, select, [contenteditable]");
       if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         router.push("/recherche");
