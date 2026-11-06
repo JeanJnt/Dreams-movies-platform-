@@ -11,7 +11,7 @@ export default async function ActivityPage() {
   const items = await activity({ limit: 60 });
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <PageHeader eyebrow="Amis" title="Activité" lede="Ce que les membres regardent, notent, critiquent et collectionnent.">
+      <PageHeader eyebrow="Communauté" title="Activité" lede="Ce que vos amis regardent, notent, critiquent et collectionnent.">
         <CommunityTabs active="activite" />
       </PageHeader>
       <ActivityFeed items={items} />

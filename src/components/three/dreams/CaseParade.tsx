@@ -198,6 +198,9 @@ export function CaseParade({ rows, start = 0 }: { rows: ParadeRow[]; start?: num
             <Link href={cur.film.href} className="btn btn-primary">
               Voir la fiche
             </Link>
+            <Link href={`${cur.film.href}?personnaliser`} className="btn">
+              Personnaliser
+            </Link>
           </div>
           <label className="md:col-span-2">
             <span className="sr-only">Position dans la collection</span>

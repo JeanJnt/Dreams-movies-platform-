@@ -64,7 +64,7 @@ export async function notifyNewAlerts(u: number) {
   const payload =
     rows.length === 1
       ? { title: titles[0], body: `${titles[0]} ${where(rows[0].kind)}.`, url: `/film/${rows[0].film_id}`, tag: "alertes" }
-      : { title: `${rows.length} de tes films au cinéma`, body: `${titles.slice(0, 3).join(", ")}${rows.length > 3 ? "…" : ""}`, url: "/alertes", tag: "alertes" };
+      : { title: `${rows.length} de vos films au cinéma`, body: `${titles.slice(0, 3).join(", ")}${rows.length > 3 ? "…" : ""}`, url: "/alertes", tag: "alertes" };
   await sendPush(u, payload);
   await db().execute({ sql: "UPDATE alerts SET notified = 1 WHERE user_id = ? AND notified = 0", args: [u] });
   return rows.length;

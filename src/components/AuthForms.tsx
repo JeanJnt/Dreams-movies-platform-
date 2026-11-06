@@ -16,7 +16,7 @@ export function LoginForm({ deleted }: { deleted?: boolean }) {
   const [state, action, pending] = useActionState(loginAction, undefined);
   return (
     <form action={action} className="space-y-4">
-      {deleted && <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm">Ton compte et toutes tes données ont été supprimés.</p>}
+      {deleted && <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm">Votre compte et toutes vos données ont été supprimés.</p>}
       <Message state={state} />
       <label className="block space-y-1.5">
         <span className="text-sm text-muted">Email</span>
@@ -32,7 +32,7 @@ export function LoginForm({ deleted }: { deleted?: boolean }) {
       <p className="text-center text-sm text-muted">
         Pas encore de compte ? <Link href="/inscription" className="text-accent hover:underline">Créer un compte avec une invitation</Link>
       </p>
-      <p className="text-center text-xs text-muted">Mot de passe oublié ? Demande à l&apos;administrateur un mot de passe provisoire.</p>
+      <p className="text-center text-xs text-muted">Mot de passe oublié ? Demandez un mot de passe provisoire à l&apos;administrateur.</p>
     </form>
   );
 }
@@ -44,7 +44,7 @@ export function SignupForm({ first }: { first: boolean }) {
       <Message state={state} />
       {first ? (
         <p className="rounded-xl bg-accent-soft px-4 py-3 text-sm text-accent">
-          Premier compte : tu deviens <b>administrateur</b>, et tu récupères les films déjà importés.
+          Premier compte : vous devenez <b>administrateur</b> et récupérez les films déjà importés.
         </p>
       ) : (
         <label className="block space-y-1.5">
@@ -57,8 +57,8 @@ export function SignupForm({ first }: { first: boolean }) {
         <input name="name" required maxLength={60} autoComplete="given-name" className={input} />
       </label>
       <label className="block space-y-1.5">
-        <span className="text-sm text-muted">Pseudo (visible des autres membres)</span>
-        <input name="username" required minLength={3} maxLength={21} pattern="@?[a-zA-Z0-9._]{3,20}" autoComplete="username" placeholder="ex. ogzy" className={input} />
+        <span className="text-sm text-muted">Pseudo public</span>
+        <input name="username" required minLength={3} maxLength={21} pattern="@?[a-zA-Z0-9._]{3,20}" autoComplete="username" placeholder="votre-pseudo" className={input} />
       </label>
       <label className="block space-y-1.5">
         <span className="text-sm text-muted">Email</span>

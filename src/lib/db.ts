@@ -224,6 +224,12 @@ const PER_USER: { name: string; create: string; columns: string[]; indexes?: str
     create: `CREATE TABLE IF NOT EXISTS film_images (user_id INTEGER NOT NULL, film_id INTEGER NOT NULL, kind TEXT NOT NULL, image TEXT NOT NULL, color TEXT, PRIMARY KEY (user_id, film_id, kind))`,
     columns: ["film_id", "kind", "image", "color"],
   },
+  {
+    // Boîtier et disque personnalisés par chacun (JSON, voir design-types.ts) ; prev : la version d'avant
+    name: "object_designs",
+    create: `CREATE TABLE IF NOT EXISTS object_designs (user_id INTEGER NOT NULL, film_id INTEGER NOT NULL, data TEXT NOT NULL, prev TEXT, updated_at TEXT NOT NULL DEFAULT (datetime('now')), PRIMARY KEY (user_id, film_id))`,
+    columns: ["film_id", "data", "prev", "updated_at"],
+  },
 ];
 
 // Toutes les tables d'un utilisateur (pour l'export, la suppression du compte et la reprise des données).

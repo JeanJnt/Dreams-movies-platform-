@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return new Response("Abonnement invalide", { status: 400 });
   }
   // Une première notification, pour vérifier que tout marche
-  await sendPush(me.id, { title: "Dreams", body: "Les notifications sont activées : tu seras prévenu quand tes films passent au cinéma.", url: "/alertes", tag: "bienvenue" });
+  await sendPush(me.id, { title: "Dreams", body: "Notifications activées : vous serez prévenu quand vos films passent au cinéma.", url: "/alertes", tag: "bienvenue" });
   return Response.json({ ok: true });
 }
 

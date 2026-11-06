@@ -1074,3 +1074,220 @@ html[data-theme="rouge"] ::selection {
   background: #ff1f2e;
   color: #fff;
 }
+
+/* onglet actif de la barre du téléphone */
+.tab-on {
+  background: rgb(255 255 255 / 0.08);
+  color: var(--foreground);
+}
+
+/* ============================================================================
+ * Thème « Noir et rouge » — l'identité rouge, sur toute l'expérience
+ * Palette : rouge signal #ff1f2e · rouge clair #ff5560 · rouge profond #c8101d · rouge vin #7a0a12 · nuit rouge #160607
+ * Les titres de pages et de sections passent en rouge ; le texte courant reste ivoire (contraste AA) ;
+ * surfaces, filets et halos sont teintés de rouge, sans jamais devenir une plaque rouge sous du texte.
+ * ========================================================================== */
+html[data-theme="rouge"] {
+  --red: #ff1f2e;
+  --red-light: #ff5560;
+  --red-deep: #c8101d;
+  --red-wine: #7a0a12;
+  --red-night: #160607;
+  --surface: #0e0506;
+  --surface-2: #170809;
+  --surface-3: #220b0d;
+  --line: rgb(255 70 82 / 0.1);
+  --line-2: rgb(255 70 82 / 0.2);
+  --line-3: rgb(255 70 82 / 0.34);
+  --muted: #b08a8c;
+  --faint: #6d4648;
+  --text-2: #d8c3c3;
+  scrollbar-color: rgb(255 31 46 / 0.55) transparent;
+}
+html[data-theme="rouge"] body::before {
+  background:
+    radial-gradient(100% 60% at 50% -14%, rgb(255 31 46 / 0.22), transparent 70%),
+    radial-gradient(70% 50% at 100% 100%, rgb(122 10 18 / 0.28), transparent 70%),
+    radial-gradient(60% 45% at 0% 70%, rgb(122 10 18 / 0.16), transparent 70%);
+}
+/* titres de pages et de sections */
+html[data-theme="rouge"] h1,
+html[data-theme="rouge"] h2,
+html[data-theme="rouge"] .page-title {
+  color: var(--red);
+}
+html[data-theme="rouge"] :is(h1, h2) .text-muted {
+  color: var(--muted);
+}
+html[data-theme="rouge"] .card h2,
+html[data-theme="rouge"] .credits + h2 {
+  color: var(--red-light);
+}
+/* libellés de générique et mentions */
+html[data-theme="rouge"] .wide,
+html[data-theme="rouge"] .billing,
+html[data-theme="rouge"] .credits > dt {
+  color: var(--red-light);
+  opacity: 0.85;
+}
+html[data-theme="rouge"] .eyebrow {
+  color: #c89a9d;
+}
+html[data-theme="rouge"] .credits {
+  border-top-color: rgb(255 31 46 / 0.45);
+}
+/* surfaces : un panneau nuit rouge, une tranche de lumière rouge en haut */
+html[data-theme="rouge"] .card {
+  background: linear-gradient(180deg, #1a0809, #0e0506 65%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 70 82 / 0.16),
+    0 0 0 1px var(--line);
+}
+html[data-theme="rouge"] .card-hover:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 70 82 / 0.24),
+    0 0 0 1px rgb(255 31 46 / 0.4),
+    0 24px 50px -24px rgb(255 31 46 / 0.35);
+}
+html[data-theme="rouge"] .ticket:hover {
+  box-shadow: inset 0 0 0 1px rgb(255 31 46 / 0.45);
+}
+/* interactions */
+html[data-theme="rouge"] .btn:hover {
+  border-color: rgb(255 31 46 / 0.55);
+}
+html[data-theme="rouge"] .chip:hover {
+  box-shadow: inset 0 0 0 1px rgb(255 31 46 / 0.55);
+}
+html[data-theme="rouge"] .section-tab[aria-current="page"],
+html[data-theme="rouge"] .section-tab:hover {
+  color: var(--red-light);
+}
+html[data-theme="rouge"] .link-draw {
+  background-image: linear-gradient(var(--red), var(--red));
+}
+html[data-theme="rouge"] a:hover .font-display,
+html[data-theme="rouge"] .group:hover .font-display {
+  color: var(--red-light);
+}
+html[data-theme="rouge"] :focus-visible {
+  outline-color: var(--red-light);
+}
+html[data-theme="rouge"] :is(a, .group):hover > .poster,
+html[data-theme="rouge"] .group:hover .poster {
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.6),
+    0 34px 54px -26px rgb(255 31 46 / 0.55),
+    0 0 0 1px rgb(255 31 46 / 0.5);
+}
+/* navigation */
+html[data-theme="rouge"] .nav-bar {
+  background: linear-gradient(180deg, rgb(14 4 5 / 0.92), rgb(14 4 5 / 0.7));
+  box-shadow: 0 1px 0 rgb(255 31 46 / 0.22);
+}
+html[data-theme="rouge"] .nav-bar a[aria-current="page"] {
+  color: var(--red-light);
+}
+html[data-theme="rouge"] .tabbar {
+  background: linear-gradient(180deg, rgb(34 10 12 / 0.94), rgb(14 4 5 / 0.96));
+  box-shadow:
+    inset 0 1px 0 rgb(255 70 82 / 0.22),
+    inset 0 0 0 1px rgb(255 31 46 / 0.14),
+    0 20px 40px -12px rgb(0 0 0 / 0.95);
+}
+html[data-theme="rouge"] .tab-on {
+  background: rgb(255 31 46 / 0.16);
+  color: var(--red-light);
+}
+html[data-theme="rouge"] .avatar {
+  background: radial-gradient(circle at 32% 28%, #5a1016, #1a0507 70%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 120 128 / 0.3),
+    0 0 0 1px rgb(255 31 46 / 0.5);
+  color: #ffd9db;
+}
+html[data-theme="rouge"] footer nav p.wide {
+  color: var(--red);
+}
+html[data-theme="rouge"] .skip-link {
+  background: var(--red);
+  color: #fff;
+}
+
+/* version allégée du chargement : le reflet balaie l'étoile en boucle */
+.loader-sheen .brand-sweep {
+  animation: sheen-loop 1.6s var(--ease-io) infinite;
+}
+@keyframes sheen-loop {
+  from {
+    transform: skewX(-18deg) translateX(0);
+  }
+  to {
+    transform: skewX(-18deg) translateX(2600px);
+  }
+}
+/* le premier chargement : un rideau noir et l'étoile, retiré dès que l'appli est prête */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background: #000;
+  transition: opacity 0.45s var(--ease), visibility 0.45s;
+}
+.splash[data-done] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Tranches : la composition suit la maquette de la jaquette (matières et compositions variées) */
+.spine[data-look="cadre"],
+.spine[data-look="bichromie"] {
+  /* papier mat : pas de film brillant, un léger grain */
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.12),
+    0 10px 18px -12px #000;
+}
+.spine[data-look="cadre"]::after,
+.spine[data-look="bichromie"]::after {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.08), transparent 25%, transparent 75%, rgb(0 0 0 / 0.1));
+}
+.spine[data-look="cadre"] .spine-star,
+.spine[data-look="bichromie"] .spine-star {
+  background: var(--spine-ink);
+}
+/* typographique : le titre en grand, sans étoile en tête */
+.spine[data-look="typo"] .spine-title {
+  font: 400 15px/1 var(--font-bungee), sans-serif;
+  letter-spacing: 0.04em;
+}
+.spine[data-look="typo"] .spine-star {
+  order: 9;
+  margin-top: auto;
+  max-width: 22px;
+}
+/* bande : un filet de la couleur du titre en tête et en pied */
+.spine[data-look="bande"] {
+  border-top: 5px solid var(--spine-ink);
+  border-bottom: 5px solid var(--spine-ink);
+}
+/* affiche : la couleur franche, le titre en gras */
+.spine[data-look="affiche"] .spine-title {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.spine[data-look="affiche"] .spine-star {
+  background: var(--spine-ink);
+}
+/* plein cadre : noir brillant, titre en italique fin */
+.spine[data-look="plein"]::after {
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.16), transparent 22%, transparent 70%, rgb(255 255 255 / 0.08));
+}
+.spine[data-look="plein"] .spine-title {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  font-size: 12px;
+}

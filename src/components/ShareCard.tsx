@@ -25,7 +25,7 @@ export function ShareCard({ id, title }: { id: number; title: string }) {
       else setOpen(true);
     } catch (e) {
       // Après un long chargement, le téléphone peut refuser le partage : la carte est gardée, un second toucher suffit.
-      if ((e as Error).name === "NotAllowedError") setNote("Carte prête : touche encore « Partager ».");
+      if ((e as Error).name === "NotAllowedError") setNote("Carte prête : touchez à nouveau « Partager ».");
       else if ((e as Error).name !== "AbortError") setNote("Partage impossible pour le moment.");
     } finally {
       setBusy(false);

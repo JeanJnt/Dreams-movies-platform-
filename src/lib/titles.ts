@@ -41,12 +41,19 @@ export function titleIn(film: TitledFilm, lang: string): string | null {
   return null;
 }
 
-// { main: titre original, sub: titre traduit s'il est différent }
-export function filmTitles(film: TitledFilm, lang: TitleLang) {
-  const main = film.original_title || film.name;
-  const translated = lang === "none" ? null : titleIn(film, lang);
-  const sub = translated && normalize(translated) !== normalize(main) ? translated : null;
+// Le titre français en grand, le titre original dessous s'il est différent (sans doublon).
+// Sans titre français : le titre original seul.
+export function filmTitles(film: TitledFilm, _lang?: TitleLang) {
+  void _lang;
+  const fr = titleIn(film, "fr");
+  const original = film.original_title || film.name;
+  const main = fr || original;
+  const sub = original && normalize(original) !== normalize(main) ? original : null;
   return { main, sub };
+}
+// Le titre original à afficher sous un titre français (null s'il est identique)
+export function originalUnder(main: string, original: string | null | undefined) {
+  return original && normalize(original) !== normalize(main) ? original : null;
 }
 
 // Texte comparable : minuscules, sans accents ni ponctuation (« Cléo de 5 à 7 » → « cleo de 5 a 7 »).

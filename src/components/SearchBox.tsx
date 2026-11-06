@@ -108,7 +108,7 @@ export function SearchBox({ defaultValue = "", compact = false }: { defaultValue
 
       {show && (
         <div id="search-suggestions" role="listbox" className={`absolute top-full z-50 mt-2 max-h-[70vh] overflow-y-auto card !rounded-2xl p-1.5 shadow-2xl shadow-black/40 ${compact ? "right-0 w-[26rem] max-w-[90vw]" : "inset-x-0"}`}>
-          {!items.length && <p className="px-3 py-2 text-sm text-muted">Aucune suggestion. Appuie sur Entrée pour chercher.</p>}
+          {!items.length && <p className="px-3 py-2 text-sm text-muted">Aucune suggestion. Appuyez sur Entrée pour lancer la recherche.</p>}
           {hits.films.map((f, i) => (
             <button key={f.key} type="button" role="option" aria-selected={i === active} onMouseEnter={() => setActive(i)} onClick={() => go(f.href)} className={row(i)}>
               <span className="aspect-[2/3] w-9 shrink-0 overflow-hidden rounded bg-surface-2">

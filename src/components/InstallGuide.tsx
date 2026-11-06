@@ -16,39 +16,39 @@ const STEPS: Record<Platform, { title: string; steps: string[]; note?: string }>
   iphone: {
     title: "Sur iPhone et iPad (Safari)",
     steps: [
-      "Ouvre Dreams dans Safari.",
-      "Touche le bouton Partager (le carré avec une flèche vers le haut), en bas de l'écran.",
-      "Fais défiler et choisis « Sur l'écran d'accueil ».",
-      "Touche « Ajouter » : l'icône 夢 apparaît à côté de tes autres applis.",
+      "Ouvrez Dreams dans Safari.",
+      "Touchez le bouton Partager (le carré avec une flèche vers le haut), en bas de l'écran.",
+      "Faites défiler et choisissez « Sur l'écran d'accueil ».",
+      "Touchez « Ajouter » : l'icône de Dreams apparaît à côté de vos autres applications.",
     ],
-    note: "Dreams s'ouvre alors en plein écran, sans la barre de Safari, comme une vraie appli.",
+    note: "Dreams s'ouvre alors en plein écran, sans la barre de Safari, comme une application.",
   },
   android: {
     title: "Sur Android (Chrome)",
     steps: [
-      "Ouvre Dreams dans Chrome.",
-      "Touche « Installer l'appli » ci-dessous, ou le menu ⋮ puis « Installer l'application ».",
-      "Confirme : Dreams s'ajoute à ton écran d'accueil et à la liste de tes applis.",
+      "Ouvrez Dreams dans Chrome.",
+      "Touchez « Installer l'application » ci-dessous, ou le menu ⋮ puis « Installer l'application ».",
+      "Confirmez : Dreams s'ajoute à votre écran d'accueil et à vos applications.",
     ],
-    note: "Appui long sur l'icône : raccourcis vers Conseils, Scanner, Agenda et Au cinéma.",
+    note: "Appui long sur l'icône : raccourcis vers Recommandations, Scanner, Agenda et À l'affiche.",
   },
   windows: {
     title: "Sur Windows (Chrome ou Edge)",
     steps: [
-      "Ouvre Dreams dans Chrome ou Edge.",
-      "Clique sur « Installer l'appli » ci-dessous, ou sur l'icône d'installation à droite de la barre d'adresse.",
-      "Dreams s'ouvre dans sa propre fenêtre et apparaît dans le menu Démarrer : tu peux l'épingler à la barre des tâches.",
+      "Ouvrez Dreams dans Chrome ou Edge.",
+      "Cliquez sur « Installer l'application » ci-dessous, ou sur l'icône d'installation à droite de la barre d'adresse.",
+      "Dreams s'ouvre dans sa propre fenêtre et apparaît dans le menu Démarrer : vous pouvez l'épingler à la barre des tâches.",
     ],
-    note: "Astuce : touche « / » pour chercher un film depuis n'importe quelle page.",
+    note: "Raccourci : appuyez sur « / » ou Ctrl K pour rechercher un film depuis n'importe quelle page.",
   },
   mac: {
     title: "Sur Mac",
     steps: [
       "Avec Safari : menu Fichier → « Ajouter au Dock ».",
-      "Avec Chrome : clique sur « Installer l'appli » ci-dessous, ou sur l'icône d'installation dans la barre d'adresse.",
+      "Avec Chrome : cliquez sur « Installer l'application » ci-dessous, ou sur l'icône d'installation dans la barre d'adresse.",
       "Dreams s'ouvre dans sa propre fenêtre, avec son icône dans le Dock et le Launchpad.",
     ],
-    note: "Astuce : touche « / » pour chercher un film depuis n'importe quelle page.",
+    note: "Raccourci : appuyez sur « / » ou ⌘ K pour rechercher un film depuis n'importe quelle page.",
   },
 };
 
@@ -117,15 +117,12 @@ export function InstallGuide() {
             }}
             className="btn btn-primary mt-6 h-12 px-6"
           >
-            ⬇ Installer l&apos;appli
+            Installer l&apos;application
           </button>
         )}
         {guide.note && <p className="mt-5 text-sm text-muted">{guide.note}</p>}
       </section>
 
-      <p className="text-sm text-muted">
-        Pour installer Dreams sur ton téléphone, l&apos;appli doit d&apos;abord être en ligne (une adresse en https). Sur cet ordinateur, elle s&apos;installe déjà depuis Chrome ou Edge.
-      </p>
     </div>
   );
 }

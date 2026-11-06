@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { ObjectDesign } from "@/lib/design-types";
 import { EDITIONS, type EditionKey, type JacketTemplate } from "./editions";
 
 /*
@@ -25,6 +26,7 @@ export type CaseFilm = {
   countries?: string[];
   color?: string | null; // couleur dominante de l'image du film (films.disc_color)
   href: string;
+  design?: ObjectDesign; // l'habillage choisi par le membre (boîtier, disque)
 };
 
 export function imageUrl(path: string | null, size: "w342" | "w500" | "w780" | "w1280" = "w780") {

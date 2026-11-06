@@ -27,7 +27,7 @@ export function Columns({ data, unit = "films", highlight, labelEvery = 1, heigh
             )}
             <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-lg group-hover:block">
               {d.label} · <b>{d.value}</b> {unit}
-              {d.avg != null && ` · ${d.avg}★`}
+              {d.avg != null && ` · ${d.avg.toFixed(1).replace(".", ",")} ★`}
             </span>
           </div>
         ))}
@@ -50,14 +50,14 @@ export function Bars({ data, unit = "films" }: { data: Datum[]; unit?: string })
   return (
     <ul className="chart space-y-2.5">
       {data.map((d) => (
-        <li key={d.key} className="group grid grid-cols-[7.5rem_1fr_auto] items-center gap-3 text-sm" title={`${d.label} : ${d.value} ${unit}${d.avg != null ? `, moyenne ${d.avg}★` : ""}`}>
+        <li key={d.key} className="group grid grid-cols-[7.5rem_1fr_auto] items-center gap-3 text-sm" title={`${d.label} : ${d.value} ${unit}${d.avg != null ? `, moyenne ${d.avg.toFixed(1).replace(".", ",")} ★` : ""}`}>
           <span className="truncate">{d.label}</span>
           <span className="h-2.5 overflow-hidden rounded-full bg-surface-2">
             <span className="bar-x block h-full rounded-full bg-accent/80 transition-colors group-hover:bg-accent" style={{ width: `${(d.value / max) * 100}%` }} />
           </span>
           <span className="w-16 text-right text-xs text-muted tabular-nums">
             {d.value}
-            {d.avg != null && <span className="ml-1.5 opacity-70">{d.avg.toFixed(1)}★</span>}
+            {d.avg != null && <span className="ml-1.5 opacity-70">{d.avg.toFixed(1).replace(".", ",")} ★</span>}
           </span>
         </li>
       ))}

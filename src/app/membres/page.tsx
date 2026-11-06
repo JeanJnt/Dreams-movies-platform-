@@ -6,7 +6,7 @@ import { formatLongDate } from "@/lib/format";
 import { members } from "@/lib/social";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "Membres" };
+export const metadata: Metadata = { title: "Amis" };
 export const dynamic = "force-dynamic";
 
 export default async function MembersPage() {
@@ -14,7 +14,7 @@ export default async function MembersPage() {
   const list = await members();
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <PageHeader eyebrow="Amis" title="Amis">
+      <PageHeader eyebrow="Communauté" title="Amis">
         <CommunityTabs active="membres" />
       </PageHeader>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -22,8 +22,8 @@ export default async function MembersPage() {
           <Link key={m.id} href={`/membre/${m.id}`} className="card card-hover flex items-center gap-4 p-4">
             <span className="font-display flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-2xl text-on-accent">{m.name.slice(0, 1).toUpperCase()}</span>
             <span className="min-w-0">
-              <span className="font-display block truncate text-xl">{m.username ? `@${m.username}` : m.name}{m.id === me.id && <span className="ml-1 text-sm text-muted">(toi)</span>}</span>
-              <span className="block text-xs text-muted">{m.films.toLocaleString("fr-FR")} films · {m.critiques} critiques Dreams</span>
+              <span className="font-display block truncate text-xl">{m.username ? `@${m.username}` : m.name}{m.id === me.id && <span className="ml-1.5 text-sm text-muted">(vous)</span>}</span>
+              <span className="block text-xs text-muted">{m.films.toLocaleString("fr-FR")} film{m.films > 1 ? "s" : ""} vu{m.films > 1 ? "s" : ""} · {m.critiques} critique{m.critiques > 1 ? "s" : ""}</span>
               <span className="block text-xs text-muted">{m.lastActivity ? `Dernier film le ${formatLongDate(m.lastActivity.slice(0, 10))}` : `Membre depuis le ${formatLongDate(m.createdAt.slice(0, 10))}`}</span>
             </span>
           </Link>

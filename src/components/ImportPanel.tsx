@@ -20,7 +20,7 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
   const run = async (form: FormData) => {
     setError(null);
     setPhase("import");
-    setProgress({ label: "Lecture de ton export Letterboxd…", pct: 3 });
+    setProgress({ label: "Lecture de votre export Letterboxd…", pct: 3 });
     const res = await importLetterboxdAction(form);
     if (res.error || !res.summary) {
       setError(res.error ?? "Import impossible.");
@@ -41,16 +41,16 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
     }
 
     setPhase("reco");
-    setProgress({ label: "Analyse de tes films préférés…", pct: 62 });
+    setProgress({ label: "Analyse de vos films préférés…", pct: 62 });
     const seeds = await recoStepAction("seeds");
     const total = seeds.remaining || 1;
     for (let r = seeds; r.remaining; ) {
       r = await recoStepAction("details");
-      setProgress({ label: `Préparation de tes conseils : ${r.remaining} restants`, pct: 62 + Math.round(((total - r.remaining) / total) * 28) });
+      setProgress({ label: `Préparation de vos recommandations : ${r.remaining} restantes`, pct: 62 + Math.round(((total - r.remaining) / total) * 28) });
     }
-    setProgress({ label: "Plateformes de ta watchlist…", pct: 92 });
+    setProgress({ label: "Plateformes de votre watchlist…", pct: 92 });
     for (let r = await recoStepAction("providers"); r.remaining; r = await recoStepAction("providers")) {
-      setProgress({ label: `Plateformes de ta watchlist : ${r.remaining} restants`, pct: 94 });
+      setProgress({ label: `Plateformes de votre watchlist : ${r.remaining} restants`, pct: 94 });
     }
     setProgress({ label: "Films au cinéma…", pct: 97 });
     await recoStepAction("alerts");
@@ -61,10 +61,10 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
 
   return (
     <section className={`rounded-3xl border p-5 md:p-6 ${welcome ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>
-      <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{welcome ? "Bienvenue ! Importe ton Letterboxd" : "Importer depuis Letterboxd"}</h2>
+      <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{welcome ? "Bienvenue ! Importez votre Letterboxd" : "Importer depuis Letterboxd"}</h2>
       <p className="mt-2 text-sm text-muted">
-        Sur Letterboxd : <b>Settings → Import &amp; Export → Export your data</b>. Tu reçois un fichier .zip, dépose-le ici.
-        Tu peux réimporter quand tu veux : tes critiques Dreams, ta collection et ton agenda sont conservés.
+        Sur Letterboxd : <b>Settings → Import &amp; Export → Export your data</b>. Vous recevez un fichier .zip : déposez-le ici.
+        Vous pouvez réimporter à tout moment : vos critiques Dreams, votre collection et votre agenda sont conservés.
       </p>
 
       {(phase === "idle" || phase === "error") && (
@@ -81,7 +81,7 @@ export function ImportPanel({ welcome, letterboxdConnected }: { welcome?: boolea
             <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${progress.pct}%` }} />
           </div>
           <p className="text-sm text-muted">{progress.label}</p>
-          {phase !== "done" && <p className="text-xs text-muted">Garde cette page ouverte : la première fois, ça peut prendre quelques minutes.</p>}
+          {phase !== "done" && <p className="text-xs text-muted">Gardez cette page ouverte : le premier import peut prendre quelques minutes.</p>}
         </div>
       )}
 

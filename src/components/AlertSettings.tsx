@@ -7,7 +7,7 @@ const CHOICES = [
   { label: "Tout", keys: ["watchlist", "likes", "top"] },
   { label: "Watchlist", keys: ["watchlist"] },
   { label: "Coups de cœur", keys: ["likes"] },
-  { label: "Préférés", keys: ["top"] },
+  { label: "Mes 10 films", keys: ["top"] },
 ];
 
 // Quels films afficher et notifier : un seul choix, appliqué tout de suite.

@@ -17,7 +17,7 @@ import { CaseObject, useCaseAnim, type CaseFilmInfo } from "./CaseObject";
  * La boucle de rendu s'arrête quand la scène sort de l'écran. Sans WebGL : l'affiche, à plat.
  */
 const VIEWS = { face: -0.38, tranche: Math.PI / 2 - 0.15, dos: Math.PI - 0.3 } as const;
-type View = keyof typeof VIEWS;
+export type View = keyof typeof VIEWS;
 
 // La caméra : plus de recul quand le boîtier est ouvert, et sur écran étroit
 function Rig({ open }: { open: React.MutableRefObject<number> }) {
@@ -31,7 +31,8 @@ function Rig({ open }: { open: React.MutableRefObject<number> }) {
   return null;
 }
 
-export function FilmStage({ film, className = "" }: { film: CaseFilmInfo; className?: string }) {
+// focus : la vue imposée de l'extérieur (l'éditeur montre la face, le dos ou la tranche qu'on modifie) ; controls : les boutons de vue
+export function FilmStage({ film, className = "", focus, controls = true }: { film: CaseFilmInfo; className?: string; focus?: View; controls?: boolean }) {
   const wrap = useRef<HTMLDivElement>(null);
   const anim = useCaseAnim();
   const yaw = useRef({ v: VIEWS.face, vel: 0, target: VIEWS.face as number | null });
@@ -74,6 +75,10 @@ export function FilmStage({ film, className = "" }: { film: CaseFilmInfo; classN
     yaw.current.vel = 0;
     yaw.current.target = VIEWS[v] + Math.round((yaw.current.v - VIEWS[v]) / (Math.PI * 2)) * Math.PI * 2;
   };
+  useEffect(() => {
+    if (focus) choose(focus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
   const toggle = (next = !open) => {
     setOpen(next);
     if (next) {
@@ -131,7 +136,7 @@ export function FilmStage({ film, className = "" }: { film: CaseFilmInfo; classN
           <img src={`/api/img?s=w500&p=${encodeURIComponent(film.poster)}`} alt="" className="poster absolute top-1/2 left-1/2 w-[52%] -translate-x-1/2 -translate-y-1/2" />
         )}
       </div>
-      {gl && (
+      {gl && controls && (
         <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-2">
           <div className="flex rounded-full p-1 ring-1 ring-[var(--line-2)] backdrop-blur-xl" role="group" aria-label="Vue du boîtier">
             {(Object.keys(VIEWS) as View[]).map((v) => (

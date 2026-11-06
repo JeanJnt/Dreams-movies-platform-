@@ -58,7 +58,7 @@ export function CollectionAdder() {
         disabled={!picked.length || pending}
         className="btn btn-primary h-12 w-full disabled:opacity-40"
       >
-        {pending ? "Ajout…" : picked.length ? `Ajouter ${picked.length} film${picked.length > 1 ? "s" : ""} à ma collection` : "Choisis des films"}
+        {pending ? "Ajout…" : picked.length ? `Ajouter ${picked.length} film${picked.length > 1 ? "s" : ""} à ma collection` : "Choisissez des films"}
       </button>
     </div>
   );

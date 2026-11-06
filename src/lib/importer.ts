@@ -26,13 +26,13 @@ function readZip(buffer: Buffer): Map<string, string> {
     throw new Error("Ce fichier n'est pas un .zip valide.");
   }
   const entries = zip.getEntries();
-  if (entries.length > MAX_ENTRIES) throw new Error("Archive inattendue (trop de fichiers).");
+  if (entries.length > MAX_ENTRIES) throw new Error("Ce fichier ne ressemble pas à un export Letterboxd.");
   let total = 0;
   const files = new Map<string, string>();
   for (const entry of entries) {
     if (entry.isDirectory || !entry.entryName.endsWith(".csv")) continue;
     total += entry.header.size;
-    if (total > MAX_UNZIPPED) throw new Error("Archive inattendue (trop volumineuse une fois décompressée).");
+    if (total > MAX_UNZIPPED) throw new Error("Ce fichier ne ressemble pas à un export Letterboxd.");
     // On ne garde que le chemin relatif « propre » (pas de ../)
     const name = entry.entryName.replace(/\\/g, "/").replace(/^\/+/, "");
     if (name.includes("..")) continue;
@@ -51,7 +51,7 @@ const clip = (s: string | undefined, max: number) => (s ?? "").slice(0, max);
 export async function importLetterboxd(userId: number, zip: Buffer): Promise<ImportSummary> {
   await ensureSchema();
   const files = readZip(zip);
-  if (!files.has("watched.csv")) throw new Error("watched.csv introuvable : est-ce bien l'export Letterboxd (Settings → Import & Export) ?");
+  if (!files.has("watched.csv")) throw new Error("Ce fichier ne ressemble pas à un export Letterboxd. Exportez vos données depuis Letterboxd : Settings → Import & Export → Export your data.");
   const client = db();
   const u = Number(userId);
 

@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { BRAND_PATH } from "@/lib/brand-path";
 import { canvas, cover, fontsReady, FONTS, imageUrl, loadImage, toTexture, type CaseFilm } from "../cases/art";
 import type { DiscTemplate } from "../models/discTemplates";
+import { collectionNumber, deep, filmPalette, hex, INK, jacketStyle, lum, rgb, spineLook, type JacketStyle } from "@/lib/jacket-palette";
+export { collectionNumber, filmPalette, jacketStyle, type JacketStyle };
 
 /*
  * L'imprimerie de « La Collection Dreams » : la jaquette dépliée d'un boîtier DVD (dos | tranche | face).
@@ -13,7 +15,6 @@ import type { DiscTemplate } from "../models/discTemplates";
  * Échelle : 10 px par millimètre. Une jaquette DVD mesure 183 mm de haut, 129,5 mm par face ; la tranche suit le boîtier.
  */
 
-export type JacketStyle = "cadre" | "plein" | "typo" | "affiche" | "bande" | "bichromie";
 export const JACKET_STYLES: { key: JacketStyle; label: string; disc: DiscTemplate }[] = [
   { key: "cadre", label: "Cadre", disc: "blanc" },
   { key: "plein", label: "Plein cadre", disc: "photo" },
@@ -27,67 +28,7 @@ const PX = 10;
 export const JACKET = { face: 129.5 * PX, h: 183 * PX };
 export const jacketLayout = (mm: number) => ({ fw: JACKET.face, sw: Math.max(40, (mm - 0.5) * PX), h: JACKET.h });
 
-const hash = (s: string) => {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-  return h >>> 0;
-};
-// La maquette d'un film : toujours la même pour un film donné ; sans image, on reste typographique
-export function jacketStyle(film: Pick<CaseFilm, "id" | "title" | "backdrop" | "poster">): JacketStyle {
-  if (!film.backdrop && !film.poster) return "typo";
-  const order: JacketStyle[] = film.backdrop ? ["cadre", "plein", "typo", "affiche", "bande", "bichromie"] : ["affiche", "typo"];
-  return order[hash(`${film.id}${film.title}`) % order.length];
-}
 export const discFor = (s: JacketStyle) => JACKET_STYLES.find((x) => x.key === s)!.disc;
-export const collectionNumber = (id: number) => String(id).padStart(4, "0");
-
-/* --- couleurs --- */
-const hex = (c: string | null | undefined, f = "#3b3632") => (c && /^#[0-9a-f]{6}$/i.test(c) ? c : f);
-const rgb = (c: string) => {
-  const n = parseInt(c.slice(1), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-};
-const lum = (c: string) => {
-  const [r, g, b] = rgb(c);
-  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-};
-// assombrit une couleur pour en faire un fond d'impression profond (jamais criard)
-function deep(c: string, target = 0.2) {
-  const [r, g, b] = rgb(c);
-  const l = lum(c) || 0.01;
-  const k = Math.min(1, target / l);
-  const s = (v: number) => Math.round(v * k * 0.92 + 8);
-  return `rgb(${s(r)},${s(g)},${s(b)})`;
-}
-const PAPER = "#ebe7de";
-// le papier de la jaquette, à peine teinté par la couleur du film (12 %)
-function paper(c: string) {
-  const [r, g, b] = rgb(c);
-  const [pr, pg, pb] = rgb(PAPER);
-  const m = (x: number, y: number) => Math.round(x * 0.88 + y * 0.12);
-  return `rgb(${m(pr, r)},${m(pg, g)},${m(pb, b)})`;
-}
-// les couleurs d'une jaquette ne dépendent que du film (jamais du thème du site) :
-// tranche dans la couleur profonde du film, papier teinté, fonds sombres « noir du film »
-export function filmPalette(c: string | null | undefined, style: JacketStyle) {
-  const col = hex(c);
-  const spine = deep(col, 0.14);
-  switch (style) {
-    case "cadre":
-      return { bg: paper(col), ink: INK, soft: "#6d665c", spine, back: paper(col) };
-    case "affiche":
-      return { bg: paper(col), ink: INK, soft: "#6d665c", spine, back: paper(col) };
-    case "typo":
-      return { bg: deep(col, 0.18), ink: "#efe9dd", soft: "rgba(239,233,221,.62)", spine, back: deep(col, 0.08) };
-    case "bichromie":
-      return { bg: deep(col, 0.1), ink: "#f1ece2", soft: "rgba(241,236,226,.6)", spine, back: deep(col, 0.07) };
-    case "bande":
-      return { bg: deep(col, 0.07), ink: "#ece9e2", soft: "rgba(236,233,226,.55)", spine, back: deep(col, 0.07) };
-    default:
-      return { bg: deep(col, 0.06), ink: "#efebe3", soft: "rgba(239,235,227,.6)", spine, back: deep(col, 0.06) };
-  }
-}
-const INK = "#121110";
 
 /* --- typographie --- */
 const disp = (s: number, italic = false) => `${italic ? "italic " : ""}400 ${s}px ${FONTS.display}`;
@@ -207,8 +148,14 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
   const [still, poster] = await Promise.all([loadImage(imageUrl(film.backdrop, "w1280")), loadImage(imageUrl(film.poster, "w780"))]);
   const col = hex(film.color);
   const num = collectionNumber(film.id);
-  const title = film.title;
+  const D = film.design?.case ?? {};
+  const F = D.front ?? {}, B = D.back ?? {};
+  const title = F.title?.trim() || film.title;
+  const showT = F.showTitle !== false;
+  const subtitle = F.subtitle != null ? F.subtitle.trim() : film.originalTitle && film.originalTitle !== film.title ? film.originalTitle : "";
   const dir = film.director ?? "";
+  const custom = F.image ? await loadImage(F.image) : null;
+  const backImg = B.image ? await loadImage(B.image) : null;
 
   // Palette de la maquette : fond, encre, accent
   const pal = filmPalette(film.color, style);
@@ -223,17 +170,44 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
   ctx.fillRect(fx, 0, fw, h);
   const m = 110; // marge
   const head = (ink: string) => {
+    if (F.showHead === false) return;
     ctx.fillStyle = ink;
     ctx.font = sans(22, 500);
     tracked(ctx, dir ? `UN FILM DE ${dir.toUpperCase()}` : "LA COLLECTION DREAMS", fx + fw / 2, 150, 7, "center");
   };
   const foot = (ink: string, starColor: string | "silver" = "silver") => {
+    if (F.showFoot === false) return;
     star(ctx, fx + fw / 2, h - 132, 92, starColor);
     ctx.fillStyle = ink;
     ctx.font = sans(17, 500);
     tracked(ctx, `LA COLLECTION DREAMS  ·  N° ${num}`, fx + fw / 2, h - 66, 5, "center");
   };
-  switch (style) {
+  if (custom) {
+    // l'image a été recadrée au format exact de la face : elle est posée telle quelle, jamais déformée
+    ctx.drawImage(custom, fx, 0, fw, h);
+    if (showT || F.showHead !== false || F.showFoot !== false) {
+      const g = ctx.createLinearGradient(0, h * 0.55, 0, h);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, showT ? "rgba(0,0,0,.72)" : "rgba(0,0,0,.35)");
+      ctx.fillStyle = g;
+      ctx.fillRect(fx, 0, fw, h);
+    }
+    head("rgba(255,255,255,.85)");
+    if (showT) {
+      ctx.fillStyle = "#f3efe7";
+      ctx.textAlign = "center";
+      const ts = fitSize(ctx, title, fw - m * 2, 120, (z) => disp(z));
+      ctx.font = disp(ts);
+      const tl = lines(ctx, title, fw - m * 2).slice(0, 3);
+      tl.forEach((l, i) => ctx.fillText(l, fx + fw / 2, h - 330 - (tl.length - 1 - i) * ts));
+      if (subtitle) {
+        ctx.font = disp(38, true);
+        ctx.fillStyle = "rgba(243,239,231,.75)";
+        ctx.fillText(subtitle, fx + fw / 2, h - 262);
+      }
+    }
+    foot("rgba(255,255,255,.75)");
+  } else switch (style) {
     case "cadre": {
       head(pal.soft);
       const iw = fw - m * 2, ih = Math.round(iw * 0.78);
@@ -247,12 +221,12 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
       ctx.textAlign = "center";
       const ts = fitSize(ctx, title, iw, 128, (s) => disp(s));
       ctx.font = disp(ts);
-      const tl = lines(ctx, title, iw);
+      const tl = showT ? lines(ctx, title, iw) : [];
       tl.slice(0, 3).forEach((l, i) => ctx.fillText(l, fx + fw / 2, iy + ih + 150 + i * ts * 1.02));
-      if (film.originalTitle && film.originalTitle !== title) {
+      if (showT && subtitle) {
         ctx.font = disp(40, true);
         ctx.fillStyle = pal.soft;
-        ctx.fillText(film.originalTitle, fx + fw / 2, iy + ih + 150 + Math.min(3, tl.length) * ts * 1.02 + 20);
+        ctx.fillText(subtitle, fx + fw / 2, iy + ih + 150 + Math.min(3, tl.length) * ts * 1.02 + 20);
       }
       foot(pal.soft, INK);
       break;
@@ -275,7 +249,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
       ctx.textAlign = "left";
       const ts = fitSize(ctx, title.split(" ").sort((a, b) => b.length - a.length)[0], fw - m * 2, 150, (s) => disp(s));
       ctx.font = disp(ts);
-      const tl = lines(ctx, title, fw - m * 2).slice(0, 3);
+      const tl = showT ? lines(ctx, title, fw - m * 2).slice(0, 3) : [];
       tl.forEach((l, i) => ctx.fillText(l, fx + m, h - 300 - (tl.length - 1 - i) * ts));
       ctx.font = sans(22, 400);
       ctx.fillStyle = "rgba(255,255,255,.7)";
@@ -287,7 +261,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
       head(pal.soft);
       ctx.fillStyle = pal.ink;
       ctx.textAlign = "left";
-      const words = title.split(" ");
+      const words = showT ? title.split(" ") : [];
       let y = 360;
       for (const w of words.slice(0, 5)) {
         const s = fitSize(ctx, w, fw - m * 2, 330, (z) => disp(z), 60);
@@ -325,7 +299,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
       ctx.fillText(`N° ${num}`, fx + fw - b, b + 64);
       ctx.textAlign = "left";
       ctx.font = disp(Math.min(64, fitSize(ctx, title, fw - b * 2 - 120, 64, (s) => disp(s))));
-      ctx.fillText(title, fx + b, h - b - 64);
+      if (showT) ctx.fillText(title, fx + b, h - b - 64);
       ctx.font = sans(20, 400);
       ctx.fillStyle = "#5f594f";
       ctx.fillText([dir, film.year].filter(Boolean).join("  ·  "), fx + b, h - b - 22);
@@ -338,7 +312,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
       ctx.textAlign = "center";
       const ts = fitSize(ctx, title, fw - m * 2, 116, (s) => disp(s, true));
       ctx.font = disp(ts, true);
-      lines(ctx, title, fw - m * 2)
+      (showT ? lines(ctx, title, fw - m * 2) : [])
         .slice(0, 2)
         .forEach((l, i) => ctx.fillText(l, fx + fw / 2, 420 + i * ts));
       const bh = Math.round(fw * 0.62);
@@ -363,7 +337,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
       ctx.font = sans(ts, 600);
       while (ts > 30 && ctx.measureText(longest).width + longest.length * ts * 0.16 > fw - m * 2) ctx.font = sans((ts -= 2), 600);
       const wrapW = (fw - m * 2) * 0.86;
-      lines(ctx, T, wrapW)
+      (showT ? lines(ctx, T, wrapW) : [])
         .slice(0, 3)
         .forEach((l, i, a) => tracked(ctx, l, fx + fw / 2, h / 2 - ((a.length - 1) * ts * 1.15) / 2 + i * ts * 1.15, ts * 0.16, "center"));
       head("rgba(255,255,255,.8)");
@@ -375,15 +349,15 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
   ctx.restore();
 
   /* ============ TRANCHE (au centre) — le système commun de la collection ============ */
-  drawSpine(ctx, fw, 0, sw, h, { title, dir, num, bg: pal.spine, ink: "#ece8e0", year: film.year });
+  drawSpine(ctx, fw, 0, sw, h, spineOptions(film, style));
 
   /* ============ DOS (à gauche) ============ */
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, fw, h);
   ctx.clip();
-  const backBg = pal.back;
-  const light = style === "cadre" || style === "affiche";
+  const backBg = B.bg ?? pal.back;
+  const light = B.bg ? lum(B.bg) > 0.5 : style === "cadre" || style === "affiche";
   const bInk = light ? INK : "#e9e5dd";
   const bSoft = light ? "#6d665c" : "rgba(233,229,221,.6)";
   ctx.fillStyle = backBg;
@@ -393,18 +367,19 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
   ctx.textAlign = "left";
   ctx.font = disp(fitSize(ctx, title, fw - bm * 2, 82, (s) => disp(s)));
   ctx.fillText(title, bm, 190);
-  if (film.originalTitle && film.originalTitle !== title) {
+  if (subtitle) {
     ctx.font = disp(34, true);
     ctx.fillStyle = bSoft;
-    ctx.fillText(film.originalTitle, bm, 250);
+    ctx.fillText(subtitle, bm, 250);
   }
   // photogramme
   const ph = Math.round((fw - bm * 2) * 0.5);
-  if (still) cover(ctx, still, bm, 300, fw - bm * 2, ph, 0.5, 0.35);
+  if (backImg) ctx.drawImage(backImg, bm, 300, fw - bm * 2, ph);
+  else if (still) cover(ctx, still, bm, 300, fw - bm * 2, ph, 0.5, 0.35);
   // synopsis
   ctx.fillStyle = bInk;
   ctx.font = sans(27, 400);
-  let yy = paragraph(ctx, film.overview ?? "Un film de la collection Dreams.", bm, 300 + ph + 70, fw - bm * 2, 40, 9);
+  let yy = paragraph(ctx, B.text?.trim() || film.overview || "Un film de la collection Dreams.", bm, 300 + ph + 70, fw - bm * 2, 40, B.showCredits === false ? 16 : 9);
   // générique
   yy += 40;
   ctx.fillStyle = light ? "rgba(0,0,0,.18)" : "rgba(255,255,255,.18)";
@@ -421,6 +396,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
     ctx.fillText(v, bm + 260, yy);
     yy += 40;
   };
+  if (B.showCredits !== false) {
   credit("RÉALISATION", dir);
   credit("AVEC", (film.cast ?? []).slice(0, 4).join(", "));
   credit("PAYS", (film.countries ?? []).slice(0, 2).join(", "));
@@ -430,6 +406,7 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
   ctx.font = sans(17, 500);
   tracked(ctx, [film.year, film.runtime ? `${film.runtime} MIN` : null, "COULEUR", "PAL", "ZONE 2", "DOLBY DIGITAL 5.1"].filter(Boolean).join("  ·  "), bm, h - 230, 3);
   barcode(ctx, fw - bm - 230, h - 200, 230, 90, film.id * 9973);
+  }
   star(ctx, bm + 60, h - 150, 120, light ? INK : "silver");
   ctx.fillStyle = bSoft;
   ctx.font = sans(16, 500);
@@ -442,7 +419,9 @@ export async function dreamsJacket(film: CaseFilm, mm: number, style: JacketStyl
 }
 
 // La tranche : fond, étoile argent en tête, numéro, titre vertical, réalisateur ; la même grille pour tous les films
-export function drawSpine(ctx: CanvasRenderingContext2D, x: number, y: number, sw: number, h: number, o: { title: string; dir: string; num: string; bg: string; ink: string; year?: number | null }) {
+type SpineOptions = { title: string; dir: string; num: string; bg: string; ink: string; year?: number | null; showNumber?: boolean };
+const spineOptions = (film: CaseFilm, style: JacketStyle): SpineOptions => ({ ...spineLook({ ...film, design: film.design?.case?.style ? film.design : { ...film.design, case: { ...film.design?.case, style } } }), year: film.year });
+export function drawSpine(ctx: CanvasRenderingContext2D, x: number, y: number, sw: number, h: number, o: SpineOptions) {
   ctx.save();
   ctx.beginPath();
   ctx.rect(x, y, sw, h);
@@ -455,7 +434,7 @@ export function drawSpine(ctx: CanvasRenderingContext2D, x: number, y: number, s
   ctx.fillStyle = o.ink;
   ctx.textAlign = "center";
   ctx.font = disp(Math.max(18, 40 * s));
-  ctx.fillText(o.num, cx, y + 170 * s + 40);
+  if (o.showNumber !== false) ctx.fillText(o.num, cx, y + 170 * s + 40);
   // titre et réalisateur, couchés (de haut en bas, comme sur une tranche française)
   ctx.translate(cx, y + h / 2 + 40);
   ctx.rotate(Math.PI / 2);
@@ -487,14 +466,14 @@ export function drawSpine(ctx: CanvasRenderingContext2D, x: number, y: number, s
 // Une tranche seule (pour les étagères : une texture légère, sans la jaquette entière)
 const spineCache = new Map<string, Promise<THREE.CanvasTexture>>();
 export function spineTexture(film: CaseFilm, mm: number, style: JacketStyle = jacketStyle(film)) {
-  const key = `${film.id}-${mm}-${style}`;
+  const key = `${film.id}-${mm}-${style}-${JSON.stringify(film.design?.case?.spine ?? "")}-${film.design?.case?.front?.title ?? ""}`;
   if (!spineCache.has(key))
     spineCache.set(
       key,
       fontsReady().then(() => {
         const sw = Math.max(40, (mm - 0.5) * PX);
         const [c, ctx] = canvas(sw, JACKET.h);
-        drawSpine(ctx, 0, 0, sw, JACKET.h, { title: film.title, dir: film.director ?? "", num: collectionNumber(film.id), bg: filmPalette(film.color, style).spine, ink: "#ece8e0" });
+        drawSpine(ctx, 0, 0, sw, JACKET.h, spineOptions(film, style));
         return toTexture(c);
       }),
     );

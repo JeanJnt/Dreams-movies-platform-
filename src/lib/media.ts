@@ -120,7 +120,7 @@ export async function setMediaVisibility(id: number, visibility: Visibility) {
 // Enregistre une image (jaquette, affiche…) et renvoie son adresse.
 export async function saveImage(filmId: number, file: File, prefix: "cover" | "poster" | "backdrop" | "disc") {
   const ext = path.extname(file.name).toLowerCase() || ".jpg";
-  if (!MIME[ext]?.startsWith("image/")) throw new Error("Choisis une image (jpg, png, webp…).");
+  if (!MIME[ext]?.startsWith("image/")) throw new Error("Choisissez une image (JPG, PNG ou WebP).");
   if (file.size > 20 * 1024 * 1024) throw new Error("Image trop lourde (20 Mo maximum).");
   const me = await uid();
   const name = `${prefix}-${randomUUID()}${ext}`;

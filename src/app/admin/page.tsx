@@ -70,7 +70,7 @@ export default async function AdminPage() {
               <div className="min-w-0 flex-1">
                 <Link href={`/membre/${m.id}`} className="hover:text-accent">{String(m.name)}</Link>
                 {m.username && <span className="ml-1.5 text-sm text-muted">@{String(m.username)}</span>}
-                {Boolean(m.is_admin) && <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] text-accent">admin</span>}
+                {Boolean(m.is_admin) && <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] text-accent">Administrateur</span>}
                 <p className="truncate text-xs text-muted">{String(m.email)} · {Number(m.films)} films · depuis le {formatLongDate(String(m.created_at).slice(0, 10))}</p>
               </div>
               <MemberActions id={Number(m.id)} isAdmin={Boolean(m.is_admin)} isMe={Number(m.id) === me.id} />

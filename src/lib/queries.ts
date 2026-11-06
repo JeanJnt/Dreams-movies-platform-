@@ -1,4 +1,5 @@
 import { uid, viewedUser } from "./auth";
+import { countryFr } from "./format";
 import { backdropSql, db, posterSql } from "./db";
 import { normalize } from "./titles";
 
@@ -22,6 +23,7 @@ export type Film = {
   runtime: number | null;
   tmdb_id?: number | null;
   lb_uri?: string | null;
+  original_title?: string | null;
 };
 
 export type FilmDetail = Film & {
@@ -43,7 +45,7 @@ const json = <T>(v: unknown, fallback: T): T => (typeof v === "string" ? JSON.pa
 
 // Colonnes et jointures communes ; u est l'identifiant de l'utilisateur (entier issu de la session).
 const filmColumns = (u: number) => `f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
-  r.rating, (l.film_id IS NOT NULL) AS liked, json_extract(f.directors, '$[0]') AS director, f.runtime, f.tmdb_id, f.lb_uri`;
+  r.rating, (l.film_id IS NOT NULL) AS liked, json_extract(f.directors, '$[0]') AS director, f.runtime, f.tmdb_id, f.lb_uri, f.original_title`;
 const filmJoins = (u: number) =>
   `LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u} LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}`;
 
@@ -61,6 +63,7 @@ function toFilm(row: Record<string, unknown>): Film {
     runtime: row.runtime == null ? null : Number(row.runtime),
     tmdb_id: row.tmdb_id == null ? null : Number(row.tmdb_id),
     lb_uri: (row.lb_uri as string) ?? null,
+    original_title: (row.original_title as string) ?? null,
   };
 }
 
@@ -120,7 +123,7 @@ export async function recentDiary(limit = 12, userId?: number): Promise<DiaryEnt
   const u = await viewedUser(userId);
   const { rows } = await db().execute({
     sql: `SELECT f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
-            d.rating, (l.film_id IS NOT NULL) AS liked, d.watched_date, d.rewatch, f.directors, f.runtime
+            d.rating, (l.film_id IS NOT NULL) AS liked, d.watched_date, d.rewatch, f.directors, f.runtime, f.original_title
           FROM diary d JOIN films f ON f.id = d.film_id LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}
           WHERE d.user_id = ${u}
           ORDER BY d.watched_date DESC, d.id DESC LIMIT ?`,
@@ -195,7 +198,7 @@ export async function filmDetail(id: number): Promise<FilmDetail | null> {
     genres: json(r.genres, []),
     directors: [...new Set(json<string[]>(r.directors, []))],
     cast: json(r.cast_list, []),
-    countries: json(r.countries, []),
+    countries: json<string[]>(r.countries, []).map(countryFr),
     watched_date: (r.watched_date as string) ?? null,
     in_watchlist: Boolean(r.in_watchlist),
   };

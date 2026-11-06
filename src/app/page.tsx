@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { ActivityFeed } from "@/components/ActivityFeed";
-import { FilmCard } from "@/components/FilmCard";
 import { PickPoster } from "@/components/PickCard";
 import { SpineRow } from "@/components/dreams/SpineRow";
+import { HomeFavorites } from "@/components/dreams/HomeFavorites";
 import { HomeDiscs } from "@/components/dreams/HomeDiscs";
 import { Stars } from "@/components/Stars";
 import { TitleWords } from "@/components/ui/PageHeader";
@@ -12,9 +12,12 @@ import { Arrow, Section } from "@/components/ui/Section";
 import { ownedFilms } from "@/lib/collection";
 import { formatShortDate } from "@/lib/format";
 import { caseFilms } from "@/lib/case-films";
-import { favoriteFilms, overview, recentDiary } from "@/lib/queries";
+import { designsFor } from "@/lib/designs";
+import { uid } from "@/lib/auth";
+import { favoriteFilms, overview, recentDiary, topFilms } from "@/lib/queries";
 import { picks } from "@/lib/reco";
 import { activity } from "@/lib/social";
+import { originalUnder } from "@/lib/titles";
 import { poster } from "@/lib/tmdb";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +34,7 @@ const stars = (r: number | null) => (r == null ? "Pas noté" : "★".repeat(Math
  *   6. les coups de cœur ; 7. l’activité des amis.
  */
 export default async function Home() {
-  const [stats, recent, favorites, tonight, watchlist, owned, feed] = await Promise.all([
+  const [stats, recent, favorites, tonight, watchlist, owned, feed, top] = await Promise.all([
     overview(),
     recentDiary(16),
     favoriteFilms(16),
@@ -39,6 +42,7 @@ export default async function Home() {
     picks({ mode: "watchlist" }),
     ownedFilms(),
     activity({ limit: 5 }),
+    topFilms(),
   ]);
 
   if (stats.watched === 0) {
@@ -76,7 +80,11 @@ export default async function Home() {
   });
   const tonightPicks = tonight.picks.filter((p) => !p.inWatchlist).slice(0, 14);
   const fmt = (v: number) => v.toLocaleString("fr-FR");
-  const shelf = owned.slice(0, 40).map((o) => ({ id: o.id, title: o.title_fr ?? o.name, director: o.director, runtime: o.runtime, edition: o.edition, caseType: o.caseType, color: o.color, href: `/film/${o.id}` }));
+  // les coups de cœur : « Mes 10 films » s'ils sont choisis, sinon les dix films les mieux notés parmi les aimés
+  const ringIds = (top.length ? top : favorites).slice(0, 10).map((f) => f.id);
+  const ring = await caseFilms(ringIds, "/film");
+  const shelfDesigns = await designsFor(owned.slice(0, 40).map((o) => o.id), await uid());
+  const shelf = owned.slice(0, 40).map((o) => ({ id: o.id, title: o.title_fr ?? o.name, director: o.director, runtime: o.runtime, edition: o.edition, caseType: o.caseType, color: o.color, backdrop: o.backdrop_path ?? null, poster: o.poster_path, design: shelfDesigns.get(o.id), href: `/film/${o.id}` }));
 
   return (
     <div>
@@ -85,7 +93,7 @@ export default async function Home() {
 
       <div className="mt-10 space-y-24 md:mt-16 md:space-y-32">
         {tonightPicks.length > 0 && (
-          <Section title="Ce soir, chez vous" kicker="Choisis d'après vos notes, disponibles sur vos plateformes" href="/conseils" linkLabel="Tous les conseils">
+          <Section title="Ce soir, chez vous" kicker="Sélectionnés d'après vos notes, disponibles sur vos plateformes" href="/conseils" linkLabel="Toutes les recommandations">
             <Rail label="Ce soir, sur vos plateformes">
               {tonightPicks.map((p) => (
                 <PickPoster key={p.key} pick={p} />
@@ -105,6 +113,7 @@ export default async function Home() {
                     <span className="poster aspect-[2/3] w-full">{f.poster_path && <img src={poster(f.poster_path, "w185")!} alt="" loading="lazy" className="size-full object-cover" />}</span>
                     <span className="min-w-0">
                       <span className="block truncate font-display text-[1.35rem] leading-tight transition-colors group-hover:text-white md:text-[1.55rem]">{f.title_fr ?? f.name}</span>
+                      {originalUnder(f.title_fr ?? f.name, f.original_title) && <span className="block truncate text-[13px] text-[var(--text-2)] italic">{originalUnder(f.title_fr ?? f.name, f.original_title)}</span>}
                       <span className="mt-0.5 block truncate text-[13.5px] text-muted">
                         {[f.director, f.year].filter(Boolean).join(", ")}
                         <span className="md:hidden"> · {formatShortDate(f.watched_date)}</span>
@@ -155,15 +164,9 @@ export default async function Home() {
           </Section>
         )}
 
-        {favorites.length > 0 && (
-          <Section title="Coups de cœur" kicker="Les films que vous avez aimés" href="/preferes" linkLabel="Mes 10 films">
-            <Rail label="Coups de cœur">
-              {favorites.map((f, i) => (
-                <div key={`${f.id}-${i}`} className="w-[8.5rem] shrink-0 md:w-44">
-                  <FilmCard film={f} />
-                </div>
-              ))}
-            </Rail>
+        {ring.length > 0 && (
+          <Section title="Coups de cœur" kicker={top.length ? "Mes 10 films, en DVD" : "Vos films les mieux notés, en DVD"} href="/preferes" linkLabel={top.length ? "Changer mes 10 films" : "Choisir mes 10 films"}>
+            <HomeFavorites films={ring} />
           </Section>
         )}
 

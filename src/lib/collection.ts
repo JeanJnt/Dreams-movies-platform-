@@ -6,7 +6,7 @@ export const FORMATS = ["Blu-ray 4K", "Blu-ray", "DVD", "Numérique", "VHS"] as 
 
 // Les types de boîtier, pour que chaque film de ma collection ait le bon.
 export const CASE_TYPES = [
-  { key: "amaray", label: "Boîtier classique" },
+  { key: "amaray", label: "Boîtier standard" },
   { key: "steelbook", label: "Steelbook" },
   { key: "digipack", label: "Digipack (carton)" },
   { key: "coffret", label: "Coffret" },

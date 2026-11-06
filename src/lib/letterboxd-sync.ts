@@ -93,7 +93,7 @@ export async function syncLetterboxd(userId: number): Promise<SyncResult> {
   if (!username) return { ok: false, error: "Aucun compte Letterboxd connecté.", newFilms: 0, newReviews: 0, entries: 0 };
 
   const entries = await fetchFeed(username).catch(() => null);
-  if (!entries) return { ok: false, error: "Flux Letterboxd introuvable (pseudo incorrect, ou profil privé ?).", newFilms: 0, newReviews: 0, entries: 0 };
+  if (!entries) return { ok: false, error: "Profil Letterboxd introuvable : vérifiez le pseudo, ou que le profil est public.", newFilms: 0, newReviews: 0, entries: 0 };
 
   let newFilms = 0, newReviews = 0;
   // Du plus ancien au plus récent, pour que la dernière note l'emporte.
@@ -147,7 +147,7 @@ export async function connectLetterboxd(userId: number, username: string): Promi
   const clean = username.trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?letterboxd\.com\//, "").replace(/\/.*$/, "");
   if (!isValidUsername(clean)) return { ok: false, error: "Pseudo Letterboxd invalide.", newFilms: 0, newReviews: 0, entries: 0 };
   const feed = await fetchFeed(clean).catch(() => null);
-  if (!feed) return { ok: false, error: `Impossible de lire le flux de « ${clean} » : vérifie le pseudo.`, newFilms: 0, newReviews: 0, entries: 0 };
+  if (!feed) return { ok: false, error: `Impossible de lire le profil Letterboxd « ${clean} » : vérifiez le pseudo.`, newFilms: 0, newReviews: 0, entries: 0 };
   await db().execute({ sql: "UPDATE users SET letterboxd_username = ? WHERE id = ?", args: [clean, Number(userId)] });
   return syncLetterboxd(userId);
 }

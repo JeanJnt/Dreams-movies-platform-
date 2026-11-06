@@ -1,4 +1,5 @@
 import { currentUser } from "./auth";
+import { jobLabel } from "./format";
 import { db, ensureSchema, posterSql } from "./db";
 import { titleMatchArgs, titleMatchSql } from "./queries";
 import { filmTitles, normalize, TITLE_LANGS, type TitleLang } from "./titles";
@@ -21,9 +22,8 @@ export type FilmHit = {
 export type PersonHit = { id: number; name: string; photo: string | null; job: string | null; knownFor: string[] };
 
 type TmdbMovie = { id: number; title: string; original_title: string; release_date?: string; poster_path: string | null; overview: string; popularity: number };
-type TmdbPerson = { id: number; name: string; profile_path: string | null; known_for_department?: string; known_for?: { title?: string; name?: string }[] };
+type TmdbPerson = { id: number; name: string; profile_path: string | null; known_for_department?: string; gender?: number; known_for?: { title?: string; name?: string }[] };
 
-const JOBS: Record<string, string> = { Directing: "Réalisation", Acting: "Acteur·rice", Writing: "Scénario", Camera: "Image", Sound: "Musique", Editing: "Montage", Production: "Production" };
 
 const tmdbLanguage = (lang: TitleLang) => {
   const l = TITLE_LANGS.find((x) => x.code === lang);
@@ -45,7 +45,7 @@ export async function searchAll(q: string, { films: filmLimit = 20, people: peop
   await ensureSchema();
   const me = await currentUser();
   const u = me?.id ?? 0;
-  const lang: TitleLang = me?.titleLang ?? "fr";
+  const lang: TitleLang = "fr"; // les titres sont toujours affichés en français d'abord
 
   const [local, movies, people] = await Promise.all([
     db().execute({
@@ -85,9 +85,11 @@ export async function searchAll(q: string, { films: filmLimit = 20, people: peop
   for (const m of others) {
     if (films.length >= filmLimit) break;
     const local = byTmdb.get(m.id);
-    const sub = lang !== "none" && m.title && m.title !== m.original_title ? m.title : null;
+    // la recherche TMDB est faite en français : m.title est le titre français, m.original_title l'original
+    const main = m.title || m.original_title;
+    const sub = m.original_title && m.original_title !== main ? m.original_title : null;
     films.push({
-      key: `t${m.id}`, href: local ? `/film/${local.id}` : `/tmdb/${m.id}`, title: m.original_title || m.title, sub,
+      key: `t${m.id}`, href: local ? `/film/${local.id}` : `/tmdb/${m.id}`, title: main, sub,
       year: m.release_date ? Number(m.release_date.slice(0, 4)) : null, poster: m.poster_path, overview: m.overview || null,
       seen: local?.seen ?? false, mine: Boolean(local),
     });
@@ -96,7 +98,7 @@ export async function searchAll(q: string, { films: filmLimit = 20, people: peop
   return {
     films,
     people: people.slice(0, peopleLimit).map((p) => ({
-      id: p.id, name: p.name, photo: p.profile_path, job: p.known_for_department ? JOBS[p.known_for_department] ?? null : null,
+      id: p.id, name: p.name, photo: p.profile_path, job: jobLabel(p.known_for_department, p.gender),
       knownFor: (p.known_for ?? []).map((k) => k.title ?? k.name ?? "").filter(Boolean).slice(0, 2),
     })),
   };

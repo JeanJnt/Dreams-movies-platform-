@@ -71,7 +71,7 @@ async function saveList(meta: { name: string; description?: string | null; sourc
 // Une liste publique TMDB : on accepte l'adresse complète ou juste son numéro.
 export async function importTmdbList(input: string, nameOverride?: string) {
   const id = input.match(/list\/(\d+)/)?.[1] ?? input.match(/^\d+$/)?.[0];
-  if (!id) throw new Error("Colle l'adresse d'une liste TMDB, par exemple https://www.themoviedb.org/list/12345");
+  if (!id) throw new Error("Collez l'adresse d'une liste TMDB, par exemple https://www.themoviedb.org/list/12345");
   type Page = { name: string; description: string; items: TmdbItem[]; total_pages?: number; page?: number };
   const first = await tmdb<Page>(`/list/${id}`, { language: "en-US", page: "1" });
   const items = [...first.items];

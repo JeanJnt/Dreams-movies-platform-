@@ -34,7 +34,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
           const res = await addMediaAction(filmId, data);
           if (res.error) throw new Error(res.error);
         } else if (!files.length) {
-          throw new Error("Choisis un fichier ou colle un lien YouTube.");
+          throw new Error("Choisissez un fichier ou collez un lien YouTube.");
         }
         setError(null);
         form.current?.reset();
@@ -51,7 +51,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
       <div className="mb-4 flex items-baseline justify-between">
         <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">Galerie</h2>
         <button onClick={() => setAdding(!adding)} className="text-sm text-muted hover:text-accent">
-          {adding ? "Annuler" : "+ Ajouter"}
+          {adding ? "Annuler" : "Ajouter"}
         </button>
       </div>
 
@@ -61,7 +61,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
             Choisir des images ou des vidéos
             <input name="files" type="file" multiple accept="image/*,video/mp4,video/webm,video/quicktime" className="mt-2 block w-full text-xs file:mr-3 file:rounded file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-foreground" />
           </label>
-          <input name="youtube" placeholder="…ou colle un lien YouTube" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
+          <input name="youtube" placeholder="Ou collez un lien YouTube" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
           <div className="flex gap-4 text-sm">
             <label className="flex items-center gap-2"><input type="radio" name="visibility" value="membres" defaultChecked /> Visible des membres</label>
             <label className="flex items-center gap-2"><input type="radio" name="visibility" value="prive" /> Rien que pour moi</label>
@@ -75,7 +75,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
       )}
 
       {media.length === 0 && !adding ? (
-        <p className="text-sm text-muted">Ajoute tes captures préférées, photos de ton Blu-ray, extraits vidéo…</p>
+        <p className="text-sm text-muted">Ajoutez vos captures préférées, des photos de votre édition, des extraits vidéo.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {media.map((m) => (

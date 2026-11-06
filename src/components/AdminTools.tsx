@@ -10,7 +10,7 @@ export function InviteForm() {
     <form action={action} className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <input name="note" placeholder="Pour qui ? (facultatif)" maxLength={80} className="field flex-1" />
-        <button disabled={pending} className="btn btn-primary">+ Créer une invitation</button>
+        <button disabled={pending} className="btn btn-primary">Créer une invitation</button>
       </div>
       {state?.error && <p className="text-sm text-heart">{state.error}</p>}
       {state?.ok && (
@@ -23,7 +23,7 @@ export function InviteForm() {
           >
             {copied ? "Copié ✓" : "Copier"}
           </button>
-          <span className="text-xs text-muted">Valable 2 semaines, une seule fois. Envoie-le avec l&apos;adresse de Dreams.</span>
+          <span className="text-xs text-muted">Valable 2 semaines, une seule fois. Envoyez-le avec l&apos;adresse de Dreams.</span>
         </div>
       )}
     </form>

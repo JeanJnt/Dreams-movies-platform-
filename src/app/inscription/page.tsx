@@ -13,7 +13,7 @@ export default async function SignupPage() {
   return (
     <AuthShell
       title={first ? "Bienvenue !" : "Créer un compte"}
-      subtitle={first ? "Crée le compte administrateur de Dreams." : "Dreams est sur invitation : il te faut le code qu'un membre t'a donné."}
+      subtitle={first ? "Créez le compte administrateur de Dreams." : "Dreams est sur invitation : saisissez le code qu'un membre vous a transmis."}
     >
       <SignupForm first={first} />
     </AuthShell>

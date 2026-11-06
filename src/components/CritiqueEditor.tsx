@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { starsLabel } from "@/lib/format";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { deleteCritiqueAction, saveCritiqueAction, type CritiqueInput } from "@/app/actions";
 import { Markdown } from "./Markdown";
@@ -123,7 +124,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
             <button
               key={v}
               onClick={() => edit(setVisibility)(v)}
-              title={v === "membres" ? "Les autres membres de Dreams peuvent la lire" : "Toi seul peux la lire"}
+              title={v === "membres" ? "Les autres membres de Dreams peuvent la lire" : "Vous seul pouvez la lire"}
               className={`rounded-full px-2.5 py-1 ${visibility === v ? "bg-foreground text-background" : "text-muted"}`}
             >
               {v === "membres" ? "Membres" : "Privée"}
@@ -142,7 +143,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
       <textarea
         value={lede}
         onChange={(e) => edit(setLede)(e.target.value)}
-        placeholder="Chapô : en deux ou trois phrases, ce que tu as pensé du film."
+        placeholder="Chapô : en deux ou trois phrases, ce que vous avez pensé du film."
         rows={2}
         className="field-sizing-content w-full resize-none bg-transparent text-lg leading-relaxed text-foreground/80 outline-none placeholder:text-muted/50"
       />
@@ -169,7 +170,7 @@ export function CritiqueEditor({ filmId, filmTitle, initial, defaultRating }: Pr
             ref={textarea}
             value={body}
             onChange={(e) => edit(setBody)(e.target.value)}
-            placeholder={"Écris ta critique ici…\n\nMise en forme : **gras**, *italique*, ## Intertitre, > Citation"}
+            placeholder={"Votre critique…\n\nMise en forme : **gras**, *italique*, ## Intertitre, > Citation"}
             className="field-sizing-content block min-h-[50vh] w-full resize-none bg-transparent p-5 leading-relaxed outline-none placeholder:text-muted/50"
           />
         ) : (
@@ -203,8 +204,8 @@ function RatingPicker({ value, onChange }: { value: number | null; onChange: (v:
             ★
             <span className="pointer-events-none absolute inset-0 overflow-hidden text-accent" style={{ width: shown >= star ? "100%" : shown >= star - 0.5 ? "50%" : "0%" }}>★</span>
             {/* Chaque étoile a deux moitiés cliquables, pour les demi-notes */}
-            <button aria-label={`${star - 0.5} étoiles`} className="absolute inset-y-0 left-0 w-1/2" onMouseEnter={() => setHover(star - 0.5)} onClick={() => onChange(value === star - 0.5 ? null : star - 0.5)} />
-            <button aria-label={`${star} étoiles`} className="absolute inset-y-0 right-0 w-1/2" onMouseEnter={() => setHover(star)} onClick={() => onChange(value === star ? null : star)} />
+            <button aria-label={starsLabel(star - 0.5).replace(" sur 5", "")} className="absolute inset-y-0 left-0 w-1/2" onMouseEnter={() => setHover(star - 0.5)} onClick={() => onChange(value === star - 0.5 ? null : star - 0.5)} />
+            <button aria-label={starsLabel(star).replace(" sur 5", "")} className="absolute inset-y-0 right-0 w-1/2" onMouseEnter={() => setHover(star)} onClick={() => onChange(value === star ? null : star)} />
           </span>
         ))}
       </div>

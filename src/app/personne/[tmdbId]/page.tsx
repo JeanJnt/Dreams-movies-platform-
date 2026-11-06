@@ -4,7 +4,7 @@ import { Tilt } from "@/components/ui/Tilt";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Stars } from "@/components/Stars";
-import { formatLongDate } from "@/lib/format";
+import { formatLongDate, jobLabel } from "@/lib/format";
 import { personDetail, profileUrl, type PersonFilm } from "@/lib/people";
 import { poster } from "@/lib/tmdb";
 
@@ -46,13 +46,13 @@ export default async function PersonPage({ params }: Props) {
         </Tilt>
         <div className="min-w-0">
           <p className="eyebrow flex items-center gap-3"><span className="h-px w-8 bg-accent" aria-hidden />
-            {p.department === "Directing" ? "Cinéaste" : p.department === "Acting" ? "Acteur·rice" : p.department}
+            {p.department === "Directing" ? "Cinéaste" : jobLabel(p.department, p.gender)}
           </p>
           <h1 className="page-title mt-3 font-display text-[clamp(2.9rem,8.5vw,6.75rem)] leading-[0.92] text-balance">{p.name}</h1>
           <p className="mt-4 text-sm text-muted">
-            {p.birthday && <>Né·e le {formatLongDate(p.birthday)}{!p.deathday && ` (${age(p.birthday)} ans)`}</>}
+            {p.birthday && <>{p.gender === 1 ? "Née le" : p.gender === 2 ? "Né le" : "Naissance :"} {formatLongDate(p.birthday)}{!p.deathday && ` (${age(p.birthday)} ans)`}</>}
             {p.placeOfBirth && <> · {p.placeOfBirth}</>}
-            {p.deathday && p.birthday && <> · mort·e le {formatLongDate(p.deathday)} ({age(p.birthday, p.deathday)} ans)</>}
+            {p.deathday && p.birthday && <> · {p.gender === 1 ? "morte le" : p.gender === 2 ? "mort le" : "décès le"} {formatLongDate(p.deathday)} ({age(p.birthday, p.deathday)} ans)</>}
           </p>
 
           <div className="mt-6 grid max-w-lg grid-cols-3 overflow-hidden card">
