@@ -15,7 +15,7 @@ export const PAGES = [
   { href: "/films", label: "Mes films", hint: "vus, journal, notes" },
   { href: "/watchlist", label: "Watchlist", hint: "à voir" },
   { href: "/conseils", label: "Que regarder ce soir ?", hint: "conseils, recommandations, plateformes" },
-  { href: "/alertes", label: "Au cinéma", hint: "alertes, séances, ressorties" },
+  { href: "/alertes", label: "À l'affiche", hint: "alertes, séances, ressorties" },
   { href: "/critiques", label: "Mes critiques", hint: "écrire, brouillons" },
   { href: "/listes", label: "Listes", hint: "listes perso, références" },
   { href: "/preferes", label: "Mes films préférés", hint: "top 10, coups de cœur" },
@@ -29,7 +29,7 @@ export const PAGES = [
   { href: "/membres", label: "Membres", hint: "amis, profils" },
   { href: "/recherche", label: "Recherche avancée", hint: "chercher" },
   { href: "/compte", label: "Mon compte", hint: "profil, import letterboxd, mot de passe" },
-  { href: "/installer", label: "Installer l'appli", hint: "téléphone, pwa" },
+  { href: "/installer", label: "Installer l'application", hint: "téléphone, ordinateur" },
 ];
 
 const norm = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();

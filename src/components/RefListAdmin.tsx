@@ -27,7 +27,7 @@ export function RefListAdmin({ lists }: { lists: RefList[] }) {
       for (let r = await enrichStepAction(); r.done && r.remaining; r = await enrichStepAction()) {
         setMessage({ ok: true, text: `${res.ok} Fiches des films : ${r.remaining} restantes…` });
       }
-      setMessage({ ok: true, text: `${res.ok} ✓ Fiches complètes.` });
+      setMessage({ ok: true, text: `${res.ok} Fiches complétées.` });
     });
 
   return (
@@ -51,12 +51,12 @@ export function RefListAdmin({ lists }: { lists: RefList[] }) {
         {kind === "letterboxd-csv" && (
           <>
             <input name="csv" type="file" accept=".csv,text/csv" required className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:py-2 file:text-foreground" />
-            <p className="text-xs text-muted">Le fichier .csv d&apos;une liste Letterboxd (par exemple une liste de ton export, dans le dossier « lists »).</p>
+            <p className="text-xs text-muted">Le fichier .csv d&apos;une liste Letterboxd (par exemple une liste de votre export, dans le dossier « lists »).</p>
           </>
         )}
         {kind === "tmdb-top" && <p className="text-sm text-muted">Les 250 films les mieux notés par les membres de TMDB.</p>}
         {kind !== "tmdb-top" && <input name="name" placeholder="Nom de la liste (facultatif)" maxLength={120} className="field w-full" />}
-        <button disabled={pending} className="btn btn-primary disabled:opacity-50">+ Ajouter la liste</button>
+        <button disabled={pending} className="btn btn-primary disabled:opacity-50">Ajouter la liste</button>
       </form>
       {message && <p className={`text-sm ${message.ok ? "text-accent" : "text-heart"}`}>{message.text}</p>}
 

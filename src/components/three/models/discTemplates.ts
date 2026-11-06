@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { FONTS, fontsReady, imageUrl, loadImage, type CaseFilm } from "../cases/art";
+import { drawDiscDesign } from "./discDesign";
 
 /*
  * Dix modèles d'étiquette de disque, imprimés comme sur un vrai disque :
@@ -72,6 +73,14 @@ export async function discLabelTexture(film: CaseFilm, key: DiscTemplate) {
   const c = document.createElement("canvas");
   c.width = c.height = S;
   const ctx = c.getContext("2d")!;
+  // le disque composé par le membre l'emporte sur les modèles
+  if (film.design?.disc) {
+    await drawDiscDesign(ctx, film, film.design.disc);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    return t;
+  }
   const [still, poster] = await Promise.all([loadImage(imageUrl(film.backdrop, "w1280")), loadImage(imageUrl(film.poster, "w780"))]);
   const col = hex(film.color, "#6b2a2a");
   const ink = lum(col) > 0.55 ? "#141210" : "#f4efe6";

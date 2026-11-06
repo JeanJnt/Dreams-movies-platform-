@@ -89,9 +89,9 @@ export function Scanner({ formats, caseTypes }: Props) {
             )}
             {camera !== "on" && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center text-white">
-                <p className="font-display text-2xl">Vise le code-barres du boîtier</p>
+                <p className="font-display text-2xl">Visez le code-barres du boîtier</p>
                 <button onClick={startCamera} className="rounded-full bg-accent px-6 py-2.5 text-on-accent">Activer la caméra</button>
-                {camera === "error" && <p className="text-sm text-white/70">Caméra indisponible. Sur téléphone, l&apos;appli doit être ouverte en HTTPS (une fois en ligne).</p>}
+                {camera === "error" && <p className="text-sm text-white/70">Caméra indisponible. Autorisez l&apos;accès à la caméra pour Dreams, ou saisissez le code-barres à la main.</p>}
               </div>
             )}
           </div>
@@ -102,8 +102,8 @@ export function Scanner({ formats, caseTypes }: Props) {
             }}
             className="mx-auto flex max-w-xl gap-2"
           >
-            <input value={manualEan} onChange={(e) => setManualEan(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="…ou tape les chiffres du code-barres" className="field flex-1" />
-            <button className="rounded-lg border border-border px-4 text-sm">OK</button>
+            <input value={manualEan} onChange={(e) => setManualEan(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Ou saisissez les chiffres du code-barres" className="field flex-1" />
+            <button className="rounded-lg border border-border px-4 text-sm">Valider</button>
           </form>
           <p className="text-center text-sm text-muted">
             Pas de code-barres ?{" "}
@@ -179,7 +179,7 @@ export function Scanner({ formats, caseTypes }: Props) {
           </div>
 
           <button onClick={add} disabled={!chosen || pending} className="btn btn-primary h-12 w-full disabled:opacity-40">
-            {chosen ? `Ajouter « ${chosen.title} » à ma collection` : "Choisis le film"}
+            {chosen ? `Ajouter « ${chosen.title} » à ma collection` : "Choisissez le film"}
           </button>
         </div>
       )}

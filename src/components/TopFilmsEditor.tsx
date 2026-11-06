@@ -63,7 +63,7 @@ export function TopFilmsEditor({ initial }: { initial: Picked[] }) {
         }
         className="btn btn-primary h-12 w-full disabled:opacity-40"
       >
-        {pending ? "Enregistrement…" : saved ? "Enregistré" : `Enregistrer mon top (${picked.length}/10)`}
+        {pending ? "Enregistrement…" : saved ? "Enregistré" : `Enregistrer (${picked.length}/10)`}
       </button>
     </div>
   );

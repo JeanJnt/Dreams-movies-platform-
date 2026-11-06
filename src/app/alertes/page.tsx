@@ -13,7 +13,7 @@ import { normalize } from "@/lib/titles";
 import { backdrop, poster } from "@/lib/tmdb";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "Au cinéma" };
+export const metadata: Metadata = { title: "À l'affiche" };
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
@@ -23,7 +23,7 @@ const KINDS: Record<Alert["kind"], { title: string; badge: string }> = {
   ressortie: { title: "Ressorties", badge: "Ressortie" },
   bientot: { title: "Bientôt au cinéma", badge: "Bientôt" },
 };
-const SOURCE_LABEL: Record<Alert["source"], string> = { watchlist: "Watchlist", coup_de_coeur: "Coup de cœur", prefere: "Film préféré" };
+const SOURCE_LABEL: Record<Alert["source"], string> = { watchlist: "Watchlist", coup_de_coeur: "Coup de cœur", prefere: "Mes 10 films" };
 
 export default async function AlertsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = ((await searchParams).q ?? "").trim().slice(0, 80);
@@ -50,7 +50,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
         <PageHeader
           eyebrow={`Séances à ${me.city}`}
           number={checkedAt ? `mis à jour ${new Date(checkedAt).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}` : undefined}
-          title="Au cinéma"
+          title="À l'affiche"
           actions={
             <Link href="/compte#profil" className="btn btn-sm">
               Changer de ville

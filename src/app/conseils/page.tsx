@@ -5,7 +5,7 @@ import { PickFilters, PlatformPicker } from "@/components/PickControls";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { GENRES, PLATFORMS, getMyPlatforms, picks, type PickFilters as Filters } from "@/lib/reco";
 
-export const metadata: Metadata = { title: "Conseils" };
+export const metadata: Metadata = { title: "Recommandations" };
 export const dynamic = "force-dynamic";
 
 export default async function ConseilsPage({ searchParams }: { searchParams: Promise<Filters> }) {
@@ -16,14 +16,14 @@ export default async function ConseilsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={filters.mode === "watchlist" ? "Découvrir · ta watchlist" : result.fromTitle ? "Découvrir · dans le même esprit" : "Découvrir · pour toi"}
+        eyebrow={filters.mode === "watchlist" ? "Votre watchlist" : result.fromTitle ? "Dans le même esprit" : "Pour vous"}
         title="Que regarder ce soir ?"
         lede={<>
           {filters.mode === "watchlist"
-            ? "Les films de ta watchlist, du plus au moins susceptible de te plaire."
+            ? "Les films de votre watchlist, du plus au moins susceptible de vous plaire."
             : result.fromTitle
               ? <>Des films dans l&apos;esprit de <span className="text-foreground">{result.fromTitle}</span>.</>
-              : "Choisis à partir des films que tu as le mieux notés et de tes coups de cœur."}
+              : "Sélectionnés d'après les films que vous avez le mieux notés et vos coups de cœur."}
         </>}
       />
 
@@ -34,12 +34,12 @@ export default async function ConseilsPage({ searchParams }: { searchParams: Pro
 
       {result.empty === "reco" ? (
         <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted">
-          Les recommandations ne sont pas encore calculées. Lance <code className="text-accent">npm run reco</code> dans le terminal.
+          Vos recommandations sont en préparation. Revenez dans quelques minutes.
         </div>
       ) : result.picks.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted">
-          <p className="font-display text-2xl text-foreground">Rien ce soir…</p>
-          <p className="mt-2">Élargis les filtres ou désactive « Seulement sur mes plateformes ».</p>
+          <p className="font-display text-2xl text-foreground">Aucun film ne correspond</p>
+          <p className="mt-2">Élargissez les filtres ou désactivez « Seulement sur mes plateformes ».</p>
         </div>
       ) : (
         <>

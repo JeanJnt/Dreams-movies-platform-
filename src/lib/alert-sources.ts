@@ -1,10 +1,10 @@
 import { db } from "./db";
 
-// Les films qu'un membre veut surveiller pour les alertes cinéma (réglable sur la page « Au cinéma »).
+// Les films qu'un membre veut surveiller pour les alertes cinéma (réglable sur la page « À l'affiche »).
 export const ALERT_SOURCES = [
   { key: "watchlist", label: "Watchlist", source: "watchlist", table: "watchlist" },
   { key: "likes", label: "Coups de cœur Letterboxd", source: "coup_de_coeur", table: "likes" },
-  { key: "top", label: "Films préférés", source: "prefere", table: "top_films" },
+  { key: "top", label: "Mes 10 films", source: "prefere", table: "top_films" },
 ] as const;
 export type AlertSourceKey = (typeof ALERT_SOURCES)[number]["key"];
 

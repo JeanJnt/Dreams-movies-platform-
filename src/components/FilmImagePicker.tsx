@@ -88,7 +88,7 @@ export function FilmImagePicker({ filmId, kind, current, hasCustom, onClose }: {
               {Array.from({ length: 6 }, (_, i) => <div key={i} className={`animate-pulse bg-surface-2 ${round ? "aspect-square rounded-full" : "aspect-video rounded-lg"}`} />)}
             </div>
           ) : options.length === 0 ? (
-            <p className="text-muted">Aucune image sur TMDB pour ce film. Tu peux envoyer la tienne.</p>
+            <p className="text-muted">Aucune image disponible pour ce film. Vous pouvez envoyer la vôtre.</p>
           ) : (
             <div className={`grid gap-3 ${round ? "grid-cols-3 md:grid-cols-5" : "grid-cols-2 md:grid-cols-3"}`}>
               {options.map((o) => {

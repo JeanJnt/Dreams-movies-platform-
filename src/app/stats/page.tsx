@@ -10,7 +10,7 @@ import { poster } from "@/lib/tmdb";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Tabs } from "@/components/ui/Tabs";
 
-export const metadata: Metadata = { title: "Stats" };
+export const metadata: Metadata = { title: "Statistiques" };
 export const dynamic = "force-dynamic";
 
 export default async function StatsPage({ searchParams }: { searchParams: Promise<{ vue?: string }> }) {
@@ -48,13 +48,13 @@ async function Numbers() {
       {/* Les grands chiffres */}
       <section className="grid grid-cols-2 border-t border-[var(--dm-line)] md:grid-cols-4">
         <Tile value={o.watched.toLocaleString("fr-FR")} label="films vus" />
-        <Tile value={o.hours.toLocaleString("fr-FR")} label={`heures (≈ ${o.days} jours)`} />
-        <Tile value={String(o.thisYear)} label={`films en ${year}`} note={trend != null ? `${trend >= 0 ? "+" : ""}${trend} % vs même date en ${year - 1}` : undefined} />
+        <Tile value={o.hours.toLocaleString("fr-FR")} label={`heures, soit ${o.days} jours`} />
+        <Tile value={String(o.thisYear)} label={`films en ${year}`} note={trend != null ? `${trend >= 0 ? "+" : "−"}${Math.abs(trend)} % par rapport à la même période en ${year - 1}` : undefined} />
         <Tile value={o.avgRating != null ? `${o.avgRating.toFixed(2).replace(".", ",")}★` : "—"} label="note moyenne" />
         <Tile value={String(o.countries)} label="pays explorés" />
         <Tile value={String(o.directors)} label="cinéastes" />
         <Tile value={String(o.rewatches)} label="films revus" />
-        <Tile value={`${favoriteRating.label}★`} label="ta note la plus donnée" />
+        <Tile value={`${favoriteRating.label}★`} label="votre note la plus fréquente" />
       </section>
 
       {years.length > 1 && (
@@ -63,24 +63,24 @@ async function Numbers() {
         </Card>
       )}
 
-      <Card title="Films vus par mois" subtitle="Les 24 derniers mois, d'après ton journal">
+      <Card title="Films vus par mois" subtitle="Les 24 derniers mois, d'après votre journal">
         <Columns data={months} highlight={months.at(-1)?.key} />
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card title="Tes notes" subtitle={`Tu donnes le plus souvent ${favoriteRating.label}★`}>
+        <Card title="Vos notes" subtitle={`Vous donnez le plus souvent ${favoriteRating.label} ★`}>
           <Columns data={ratings} unit="notes" height={150} />
         </Card>
-        <Card title="Par décennie" subtitle={bestDecade ? `Ta décennie préférée : les années ${bestDecade.key} (${bestDecade.avg}★ en moyenne)` : "Année de sortie des films vus"}>
+        <Card title="Par décennie" subtitle={bestDecade ? `Votre décennie préférée : les années ${bestDecade.key} (${(bestDecade.avg ?? 0).toFixed(1).replace(".", ",")} ★ en moyenne)` : "Année de sortie des films vus"}>
           <Columns data={decades} height={150} />
         </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card title="Genres" subtitle="Nombre de films · ta note moyenne">
+        <Card title="Genres" subtitle="Nombre de films et votre note moyenne">
           <Bars data={genres} />
         </Card>
-        <Card title="Pays" subtitle="Nombre de films · ta note moyenne">
+        <Card title="Pays" subtitle="Nombre de films et votre note moyenne">
           <Bars data={countries} />
         </Card>
       </div>
@@ -128,7 +128,7 @@ function People({ title, people, role }: { title: string; people: Awaited<Return
             <Link href={`/personne?nom=${encodeURIComponent(p.name)}&role=${role}`} className="group flex items-center gap-3 text-sm">
               <span className="font-display w-6 text-right text-muted">{i + 1}</span>
               <span className="flex-1 truncate group-hover:text-accent">{p.name}</span>
-              <span className="text-xs text-muted tabular-nums">{p.seen} films{p.avgRating != null && ` · ${p.avgRating.toFixed(1)}★`}</span>
+              <span className="text-xs text-muted tabular-nums">{p.seen} films{p.avgRating != null && ` · ${p.avgRating.toFixed(1).replace(".", ",")} ★`}</span>
             </Link>
           </li>
         ))}

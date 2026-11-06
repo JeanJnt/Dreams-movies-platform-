@@ -12,7 +12,7 @@ export default function ScannerPage() {
       <div>
         <h1 className="page-title font-display text-[clamp(2.9rem,8.5vw,6.75rem)] leading-[0.92] text-balance">Scanner</h1>
         <p className="mt-3 max-w-2xl text-muted">
-          Scanne le code-barres au dos du boîtier : l&apos;appli devine le film, le format, le boîtier et l&apos;éditeur. Tu n&apos;as plus qu&apos;à confirmer.
+          Scannez le code-barres au dos du boîtier : Dreams reconnaît le film, le format, le boîtier et l&apos;éditeur. Il ne reste qu&apos;à confirmer.
         </p>
       </div>
       <Scanner formats={FORMATS} caseTypes={CASE_TYPES} />

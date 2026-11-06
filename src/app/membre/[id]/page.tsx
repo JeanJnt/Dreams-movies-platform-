@@ -8,6 +8,7 @@ import { LetterboxdSyncButton } from "@/components/LetterboxdConnect";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { ownedFilms } from "@/lib/collection";
+import { designsFor } from "@/lib/designs";
 import { db } from "@/lib/db";
 import { formatLongDate } from "@/lib/format";
 import { topPeople } from "@/lib/people";
@@ -43,6 +44,7 @@ export default async function MemberPage({ params }: Props) {
     statsOverview(id), favoriteFilms(12, id), recentDiary(12, id), sharedCritiques({ userId: id, limit: 12 }),
     ownedFilms(undefined, id), topJson("genres", 5, id), topPeople("director", 5, id), activity({ userId: id, limit: 12 }),
   ]);
+  const designs = await designsFor(owned.map((o) => o.id), id);
   const isMe = id === me.id;
   const letterboxd = isMe ? (await db().execute({ sql: "SELECT letterboxd_username FROM users WHERE id = ?", args: [id] })).rows[0]?.letterboxd_username : null;
   const hero = favorites.find((f) => f.backdrop_path);
@@ -99,7 +101,7 @@ export default async function MemberPage({ params }: Props) {
             <p className="text-[14px] text-muted">{owned.length} boîtiers</p>
           </div>
           <div className="no-scrollbar bleed overflow-x-auto">
-            <SpineRow films={owned.map((o) => ({ id: o.id, title: o.title_fr ?? o.name, director: o.director, runtime: o.runtime, edition: o.edition, caseType: o.caseType, color: o.color, href: `/film/${o.id}` }))} height={260} />
+            <SpineRow films={owned.map((o) => ({ id: o.id, title: o.title_fr ?? o.name, director: o.director, runtime: o.runtime, edition: o.edition, caseType: o.caseType, color: o.color, backdrop: o.backdrop_path ?? null, poster: o.poster_path, design: designs.get(o.id), href: `/film/${o.id}` }))} height={260} />
           </div>
         </section>
       )}
@@ -143,7 +145,7 @@ export default async function MemberPage({ params }: Props) {
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-12">
           <section>
-            <h2 className="mb-5 text-[2rem] leading-none md:text-[2.4rem]">Critiques Dreams</h2>
+            <h2 className="mb-5 text-[2rem] leading-none md:text-[2.4rem]">Critiques</h2>
             {critiques.length ? (
               <div className="space-y-3">
                 {critiques.map((c) => (
@@ -160,7 +162,7 @@ export default async function MemberPage({ params }: Props) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted">{isMe ? "Tu n'as pas encore publié de critique pour les membres." : "Pas encore de critique partagée."}</p>
+              <p className="text-sm text-muted">{isMe ? "Vous n'avez pas encore publié de critique." : "Pas encore de critique partagée."}</p>
             )}
           </section>
 

@@ -58,7 +58,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
         number={`${upcoming.length} séance${upcoming.length > 1 ? "s" : ""} à venir`}
         title="Agenda"
         actions={
-          <a href={calendarUrl} className="btn" title="Ajoute toutes tes séances au calendrier de ton téléphone ou de ton ordinateur">
+          <a href={calendarUrl} className="btn" title="Ajoutez toutes vos séances au calendrier de votre téléphone ou de votre ordinateur">
             Exporter vers mon calendrier
           </a>
         }

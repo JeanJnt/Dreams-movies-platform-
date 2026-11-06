@@ -6,6 +6,7 @@ import { Nav } from "@/components/Nav";
 import { PwaSetup } from "@/components/PwaSetup";
 import { NavProgress } from "@/components/motion/NavProgress";
 import { PageTransition } from "@/components/motion/PageTransition";
+import { Splash } from "@/components/loading/Splash";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { unseenAlerts } from "@/lib/alerts";
 import { currentUser } from "@/lib/auth";
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="fr" data-theme={theme} className={`${bodoni.variable} ${bungee.variable} ${jost.variable}`}>
       <body className="antialiased">
+        <Splash />
         <PwaSetup />
         <SmoothScroll />
         <NavProgress />

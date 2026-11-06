@@ -28,7 +28,7 @@ export async function loginAction(_: FormState, form: FormData): Promise<FormSta
   const email = field(form, "email").toLowerCase();
   const password = String(form.get("password") ?? "");
   const key = `${email}|${await clientIp()}`;
-  if (await tooManyAttempts(key)) return { error: "Trop d'essais. Réessaie dans 15 minutes." };
+  if (await tooManyAttempts(key)) return { error: "Trop de tentatives. Réessayez dans 15 minutes." };
 
   const { rows } = await db().execute({ sql: "SELECT id, password_hash FROM users WHERE email = ?", args: [email] });
   // Même réponse que l'email existe ou non : on ne révèle pas qui a un compte.
@@ -47,7 +47,7 @@ export async function signupAction(_: FormState, form: FormData): Promise<FormSt
   const email = field(form, "email").toLowerCase();
   const password = String(form.get("password") ?? "");
   const inviteCode = field(form, "invite", 20);
-  if (!name) return { error: "Indique ton prénom." };
+  if (!name) return { error: "Indiquez votre prénom." };
   const pseudo = checkUsername(field(form, "username", 21));
   if (pseudo.error) return { error: pseudo.error };
   if (!isEmail(email)) return { error: "Adresse email invalide." };
@@ -56,7 +56,7 @@ export async function signupAction(_: FormState, form: FormData): Promise<FormSt
   if (password !== String(form.get("password2") ?? "")) return { error: "Les deux mots de passe ne sont pas identiques." };
 
   const key = `signup|${await clientIp()}`;
-  if (await tooManyAttempts(key)) return { error: "Trop d'essais. Réessaie dans 15 minutes." };
+  if (await tooManyAttempts(key)) return { error: "Trop de tentatives. Réessayez dans 15 minutes." };
   const exists = await db().execute({ sql: "SELECT 1 FROM users WHERE email = ?", args: [email] });
   if (exists.rows[0]) return { error: "Un compte existe déjà avec cet email." };
   if (await usernameTaken(pseudo.username!)) return { error: "Ce pseudo est déjà pris." };
@@ -83,7 +83,7 @@ export async function logoutAction() {
 export async function updateProfileAction(_: FormState, form: FormData): Promise<FormState> {
   const me = await requireUser();
   const name = field(form, "name", 60);
-  if (!name) return { error: "Indique ton prénom." };
+  if (!name) return { error: "Indiquez votre prénom." };
   const pseudo = checkUsername(field(form, "username", 21));
   if (pseudo.error) return { error: pseudo.error };
   if (await usernameTaken(pseudo.username!, me.id)) return { error: "Ce pseudo est déjà pris." };
@@ -110,7 +110,7 @@ export async function changePasswordAction(_: FormState, form: FormData): Promis
   // Par sécurité, on déconnecte les autres appareils, puis on recrée une session pour celui-ci.
   await db().execute({ sql: "DELETE FROM sessions WHERE user_id = ?", args: [me.id] });
   await createSession(me.id);
-  return { ok: "Mot de passe changé. Tes autres appareils ont été déconnectés." };
+  return { ok: "Mot de passe modifié. Vos autres appareils ont été déconnectés." };
 }
 
 export async function logoutEverywhereAction() {
@@ -127,7 +127,7 @@ export async function deleteAccountAction(_: FormState, form: FormData): Promise
   if (me.isAdmin) {
     const admins = await db().execute("SELECT COUNT(*) AS n FROM users WHERE is_admin = 1");
     const members = await db().execute("SELECT COUNT(*) AS n FROM users");
-    if (Number(admins.rows[0].n) === 1 && Number(members.rows[0].n) > 1) return { error: "Tu es le seul administrateur : nomme d'abord un autre administrateur." };
+    if (Number(admins.rows[0].n) === 1 && Number(members.rows[0].n) > 1) return { error: "Vous êtes le seul administrateur : nommez d'abord un autre administrateur." };
   }
   // Tout ce qui appartient au membre disparaît : données, fichiers, sessions, puis le compte lui-même.
   await db().batch(
@@ -149,8 +149,8 @@ export async function deleteAccountAction(_: FormState, form: FormData): Promise
 export async function importLetterboxdAction(form: FormData): Promise<{ summary?: ImportSummary; error?: string }> {
   const me = await requireUser();
   const file = form.get("zip");
-  if (!(file instanceof File) || !file.size) return { error: "Choisis le fichier .zip exporté depuis Letterboxd." };
-  if (!file.name.toLowerCase().endsWith(".zip")) return { error: "Il faut le fichier .zip (Letterboxd → Settings → Import & Export → Export your data)." };
+  if (!(file instanceof File) || !file.size) return { error: "Choisissez le fichier .zip exporté depuis Letterboxd." };
+  if (!file.name.toLowerCase().endsWith(".zip")) return { error: "Choisissez le fichier .zip exporté depuis Letterboxd (Settings → Import & Export → Export your data)." };
   try {
     const summary = await importLetterboxd(me.id, Buffer.from(await file.arrayBuffer()));
     revalidatePath("/", "layout");
@@ -209,7 +209,7 @@ export async function addRefListAction(form: FormData): Promise<{ ok?: string; e
     else if (kind === "tmdb-list") res = await importTmdbList(field(form, "url", 300), name);
     else if (kind === "letterboxd-csv") {
       const file = form.get("csv");
-      if (!(file instanceof File) || !file.size) return { error: "Choisis le fichier CSV de la liste." };
+      if (!(file instanceof File) || !file.size) return { error: "Choisissez le fichier CSV de la liste." };
       res = await importLetterboxdCsv(await file.text(), name);
     } else return { error: "Type de liste inconnu." };
     revalidatePath("/listes");

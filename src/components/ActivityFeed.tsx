@@ -16,24 +16,29 @@ const when = (iso: string) => {
 // Badge qui distingue clairement les deux types de textes.
 export function TextKind({ kind }: { kind: "critique" | "review" }) {
   return kind === "critique" ? (
-    <span className="rounded-full bg-accent px-2.5 py-0.5 text-[12px] font-medium text-on-accent">Critique Dreams</span>
+    <span className="rounded-full bg-accent px-2.5 py-0.5 text-[12px] font-medium text-on-accent">Critique</span>
   ) : (
-    <span className="rounded-full border border-[var(--dm-line-2)] px-2.5 py-0.5 text-[12px] text-muted">Review Letterboxd</span>
+    <span className="rounded-full border border-[var(--dm-line-2)] px-2.5 py-0.5 text-[12px] text-muted">Avis Letterboxd</span>
   );
 }
 
 function Line({ a }: { a: Activity }) {
   const who = <Link href={`/membre/${a.userId}`} className="font-medium hover:text-accent">{a.author}</Link>;
-  const film = <Link href={`/film/${a.filmId}`} className="font-display hover:text-accent">{a.filmTitle}</Link>;
+  const film = (
+    <>
+      <Link href={`/film/${a.filmId}`} className="font-display hover:text-accent">{a.filmTitle}</Link>
+      {a.year && <span className="text-muted"> ({a.year})</span>}
+    </>
+  );
   switch (a.kind) {
     case "vu":
       return <>{who} {a.rewatch ? "a revu" : "a vu"} {film}</>;
     case "critique":
       return <>{who} a publié une critique de {film}</>;
     case "review":
-      return <>{who} a écrit une review de {film}</>;
+      return <>{who} a donné son avis sur {film}</>;
     case "collection":
-      return <>{who} a ajouté {film} à sa collection{a.extra ? ` (${a.extra})` : ""}</>;
+      return <>{who} a ajouté {film} à sa collection{a.extra ? `, en ${a.extra}` : ""}</>;
     case "media":
       return <>{who} a partagé {a.extra === "video" ? "une vidéo" : a.extra === "youtube" ? "une vidéo YouTube" : "une photo"} sur {film}</>;
   }
@@ -53,12 +58,11 @@ export function ActivityFeed({ items, compact = false }: { items: Activity[]; co
           <div className="min-w-0 flex-1 text-sm">
             <p className="leading-snug">
               <Line a={a} />
-              {a.year && <span className="text-muted"> ({a.year})</span>}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
               {a.rating != null && <Stars rating={a.rating} />}
               {a.liked && a.kind === "vu" && <span className="text-heart">♥</span>}
-              {(a.kind === "critique" || a.kind === "review") && <TextKind kind={a.kind} />}
+              {a.kind === "review" && <TextKind kind="review" />}
               <span>{when(a.date)}</span>
             </div>
             {!compact && a.kind === "critique" && a.refId && (

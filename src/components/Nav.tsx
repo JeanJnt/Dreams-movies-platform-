@@ -22,6 +22,7 @@ export const ICONS = {
   back: "M15 18l-6-6 6-6",
   close: "M6 6l12 12M18 6 6 18",
   bookmark: "M7 4h10v16l-5-3.5L7 20z",
+  ticket: "M3 8a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.5a1.5 1.5 0 0 0 0 3V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2.5a1.5 1.5 0 0 0 0-3zM15 7v2M15 11v2M15 15v2",
   chevron: "M6 9l6 6 6-6",
   films: "M6 4h11a1 1 0 0 1 1 1v15H7a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1z",
   star: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z",
@@ -54,62 +55,51 @@ export type NavSection = { key: string; label: string; href: string; icon: strin
 export const SECTIONS: NavSection[] = [
   { key: "accueil", label: "Accueil", href: "/", icon: ICONS.home, match: [], pages: [] },
   {
-    key: "decouvrir",
-    label: "Découvrir",
-    href: "/conseils",
-    icon: ICONS.compass,
-    match: ["/conseils", "/alertes", "/recherche", "/personnes", "/personne"],
+    key: "recherche",
+    label: "Recherche",
+    href: "/recherche",
+    icon: ICONS.search,
+    match: ["/recherche", "/personnes", "/personne"],
     pages: [
-      { href: "/conseils", label: "Ce soir", hint: "Choisis d'après vos goûts, sur vos plateformes" },
-      { href: "/alertes", label: "Au cinéma", hint: "Les films à l'affiche près de chez vous" },
       { href: "/recherche", label: "Recherche", hint: "Films, séries et personnes, toutes langues" },
       { href: "/personnes", label: "Cinéastes et acteurs", hint: "Celles et ceux que vous suivez le plus" },
     ],
   },
   {
-    key: "journal",
-    label: "Journal",
+    key: "films",
+    label: "Films",
     href: "/films",
     icon: ICONS.journal,
-    match: ["/films", "/critiques", "/listes", "/preferes", "/film/"],
+    match: ["/films", "/film/", "/collection", "/conseils", "/watchlist", "/listes", "/critiques", "/preferes"],
     pages: [
-      { href: "/films", label: "Films vus", hint: "Votre journal, film par film" },
-      { href: "/critiques", label: "Critiques", hint: "Vos textes, publiés et en cours" },
+      { href: "/films", label: "Journal", hint: "Vos séances, film par film" },
+      { href: "/collection", label: "Collection", hint: "Vos DVD et Blu-ray, en défilé ou en liste" },
+      { href: "/conseils", label: "Recommandations", hint: "D'après vos goûts, sur vos plateformes" },
+      { href: "/watchlist", label: "Watchlist", hint: "Les films à voir" },
       { href: "/listes", label: "Listes", hint: "Vos listes, celles de vos amis, les références" },
-      { href: "/preferes", label: "Mes 10 films", hint: "Le classement affiché sur votre profil" },
+      { href: "/critiques", label: "Critiques", hint: "Vos textes, publiés et en cours" },
+      { href: "/preferes", label: "Mes 10 films", hint: "Vos coups de cœur, en DVD sur l'accueil" },
     ],
   },
-  { key: "watchlist", label: "Watchlist", href: "/watchlist", icon: ICONS.bookmark, match: ["/watchlist"], pages: [] },
-  {
-    key: "collection",
-    label: "Collection",
-    href: "/collection",
-    icon: ICONS.disc,
-    match: ["/collection"],
-    pages: [
-      { href: "/collection", label: "Mes DVD", hint: "Vos boîtiers en défilé, ou en liste" },
-      { href: "/collection/modeles", label: "Les modèles", hint: "Toutes les jaquettes, disques et boîtiers" },
-      { href: "/collection/ajouter", label: "Ajouter un film", hint: "Chercher le film et choisir l'édition" },
-      { href: "/collection/scanner", label: "Scanner un code-barres", hint: "Avec l'appareil photo du téléphone" },
-    ],
-  },
+  { key: "agenda", label: "Agenda", href: "/agenda", icon: ICONS.calendar, match: ["/agenda"], pages: [] },
+  { key: "affiche", label: "À l'affiche", href: "/alertes", icon: ICONS.ticket, match: ["/alertes"], pages: [] },
   {
     key: "amis",
     label: "Amis",
     href: "/activite",
     icon: ICONS.people,
-    match: ["/activite", "/membres", "/membre", "/agenda", "/partage"],
+    match: ["/activite", "/membres", "/membre", "/partage"],
     pages: [
       { href: "/activite", label: "Activité", hint: "Ce que vos amis regardent et écrivent" },
       { href: "/membres", label: "Amis", hint: "Leurs profils, leurs films" },
-      { href: "/agenda", label: "Agenda", hint: "Les séances prévues, au cinéma et à la maison" },
     ],
   },
 ];
-// Téléphone : quatre rubriques + « Moi » (profil, watchlist, statistiques, compte, amis)
-const MOBILE = ["accueil", "decouvrir", "journal", "collection"];
-const ROOTS = ["/", "/conseils", "/films", "/collection", "/moi"];
-const ME_PATHS = ["/moi", "/watchlist", "/stats", "/compte", "/activite", "/membres", "/membre", "/agenda", "/installer"];
+// Téléphone : exactement cinq onglets ; le compte est en haut à droite, les amis dans le menu du compte
+const MOBILE = ["accueil", "recherche", "films", "agenda", "affiche"];
+// Ordinateur : la recherche a son champ dans la barre, elle n'occupe pas d'onglet
+const DESKTOP = ["accueil", "films", "agenda", "affiche", "amis"];
+const ROOTS = ["/", "/recherche", "/films", "/agenda", "/alertes"];
 
 export function activeSection(path: string) {
   if (path === "/") return SECTIONS[0];
@@ -151,7 +141,7 @@ function Bell({ alerts, className = "" }: { alerts: number; className?: string }
     <Link
       href="/alertes"
       className={`relative flex items-center justify-center rounded-full transition-colors hover:bg-white/[0.06] ${className}`}
-      aria-label={`Au cinéma${alerts ? ` : ${alerts} nouvelle${alerts > 1 ? "s" : ""} alerte${alerts > 1 ? "s" : ""}` : ""}`}
+      aria-label={`À l'affiche${alerts ? ` : ${alerts} nouvelle${alerts > 1 ? "s" : ""} alerte${alerts > 1 ? "s" : ""}` : ""}`}
     >
       <Icon d={ICONS.bell} />
       {alerts > 0 && (
@@ -212,9 +202,11 @@ function AccountMenu({ user }: { user: NavUser }) {
   );
   const links = [
     { href: `/membre/${user.id}`, label: "Mon profil" },
+    { href: "/activite", label: "Activité des amis" },
+    { href: "/membres", label: "Amis" },
     { href: "/stats", label: "Statistiques" },
     { href: "/compte", label: "Compte et import" },
-    { href: "/installer", label: "Installer l'appli" },
+    { href: "/installer", label: "Installer l'application" },
     ...(user.isAdmin ? [{ href: "/admin", label: "Administration" }] : []),
   ];
   return (
@@ -222,7 +214,7 @@ function AccountMenu({ user }: { user: NavUser }) {
       <button onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open} aria-label="Mon compte" className="avatar size-10 cursor-pointer text-[15px] transition-transform active:scale-95">
         {user.name.slice(0, 1).toUpperCase()}
       </button>
-      <div ref={panel} role="menu" className="invisible absolute top-[calc(100%+10px)] right-0 z-50 w-[19rem] origin-top-right opacity-0">
+      <div ref={panel} role="menu" className="invisible absolute top-[calc(100%+10px)] right-0 z-50 w-[min(19rem,calc(100vw-2rem))] origin-top-right opacity-0">
         <div className="card p-1.5 shadow-[0_30px_80px_-30px_#000]">
           <div className="px-3 pt-2.5 pb-3">
             <p className="text-[13px] text-muted">Connecté</p>
@@ -303,7 +295,6 @@ export function Nav({ alerts, user }: { alerts: number; user: NavUser }) {
   const closeMenu = () => {
     leave.current = setTimeout(() => setHover(null), 140);
   };
-  const meActive = ME_PATHS.some((p) => path.startsWith(p));
 
   return (
     <>
@@ -316,10 +307,10 @@ export function Nav({ alerts, user }: { alerts: number; user: NavUser }) {
             <Logo />
           </Link>
           <div ref={bar} className="relative flex items-center" onMouseLeave={closeMenu}>
-            {SECTIONS.map((s) => {
+            {SECTIONS.filter((s) => DESKTOP.includes(s.key)).map((s) => {
               const on = current?.key === s.key;
               return (
-                <div key={s.key} className={`relative ${s.key === "watchlist" ? "max-xl:hidden" : ""}`} onMouseEnter={() => openMenu(s.key)} onFocus={() => s.pages.length && openMenu(s.key)}>
+                <div key={s.key} className="relative" onMouseEnter={() => openMenu(s.key)} onFocus={() => s.pages.length && openMenu(s.key)}>
                   <Link
                     href={s.href}
                     data-section={s.key}
@@ -364,39 +355,28 @@ export function Nav({ alerts, user }: { alerts: number; user: NavUser }) {
             Retour
           </button>
         )}
-        <div className="flex items-center">
-          <button onClick={openPalette} className="flex size-11 items-center justify-center" aria-label="Rechercher">
-            <Icon d={ICONS.search} />
-          </button>
-          <Bell alerts={alerts} className="size-11" />
-        </div>
+        <AccountMenu user={user} />
       </header>
 
       {/* Téléphone : la barre d'onglets, posée en bas comme une pièce de métal */}
       <nav className="tabbar fixed inset-x-3 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-5 rounded-[26px] p-1.5 md:hidden" aria-label="Navigation principale">
         {MOBILE.map((k) => {
           const s = SECTIONS.find((x) => x.key === k)!;
-          const on = current?.key === k && !meActive;
+          const on = current?.key === k;
           return (
             <Link
               key={k}
               href={s.href}
               aria-current={on ? "page" : undefined}
-              className={`flex min-h-[3.4rem] flex-col items-center justify-center gap-1 rounded-[20px] text-[10.5px] tracking-[0.02em] transition-colors duration-150 ${on ? "bg-white/[0.08] text-foreground" : "text-muted"}`}
+              aria-label={k === "affiche" && alerts ? `${s.label}, ${alerts} nouvelle${alerts > 1 ? "s" : ""} alerte${alerts > 1 ? "s" : ""}` : undefined}
+              className={`relative flex min-h-[3.4rem] flex-col items-center justify-center gap-1 rounded-[20px] text-[10.5px] tracking-[0.02em] transition-colors duration-150 ${on ? "tab-on" : "text-muted"}`}
             >
               <Icon d={s.icon} className="size-[21px]" />
               {s.label}
+              {k === "affiche" && alerts > 0 && <span className="absolute top-1.5 right-[22%] size-2 rounded-full bg-accent ring-2 ring-black" aria-hidden />}
             </Link>
           );
         })}
-        <Link
-          href="/moi"
-          aria-current={meActive ? "page" : undefined}
-          className={`flex min-h-[3.4rem] flex-col items-center justify-center gap-1 rounded-[20px] text-[10.5px] transition-colors duration-150 ${meActive ? "bg-white/[0.08] text-foreground" : "text-muted"}`}
-        >
-          <span className="avatar size-[22px] text-[11px]">{user.name.slice(0, 1).toUpperCase()}</span>
-          Moi
-        </Link>
       </nav>
     </>
   );

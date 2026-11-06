@@ -99,7 +99,7 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
                   {Array.from({ length: 12 }, (_, i) => <div key={i} className="aspect-[2/3] animate-pulse rounded-lg bg-surface-2" />)}
                 </div>
               ) : options.length === 0 ? (
-                <p className="text-muted">Aucune autre affiche sur TMDB pour ce film. Tu peux envoyer la tienne.</p>
+                <p className="text-muted">Aucune autre affiche disponible pour ce film. Vous pouvez envoyer la vôtre.</p>
               ) : (
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
                   {options.map((o) => {

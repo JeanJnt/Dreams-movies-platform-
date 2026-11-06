@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { formatRuntime } from "@/lib/format";
 import type { Pick } from "@/lib/reco";
+import { originalUnder } from "@/lib/titles";
 import { poster } from "@/lib/tmdb";
 
 export function PickCard({ pick: p }: { pick: Pick }) {
@@ -12,6 +13,7 @@ export function PickCard({ pick: p }: { pick: Pick }) {
       </div>
       <div className="flex min-w-0 flex-1 flex-col py-0.5">
         <h3 className="font-display text-[1.4rem] leading-[1.05] transition-colors group-hover:text-accent">{p.title}</h3>
+        {originalUnder(p.title, p.originalTitle) && <p className="mt-0.5 text-[13px] text-muted italic">{originalUnder(p.title, p.originalTitle)}</p>}
         <p className="mt-1.5 text-[13px] text-muted">{[p.year, p.directors[0], formatRuntime(p.runtime)].filter(Boolean).join(" · ")}</p>
         {p.genres.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1">
@@ -22,7 +24,7 @@ export function PickCard({ pick: p }: { pick: Pick }) {
         )}
         {p.reasons.length > 0 && (
           <p className="mt-2.5 line-clamp-2 text-xs leading-relaxed text-muted">
-            Parce que tu as aimé <span className="text-foreground">{p.reasons.join(", ")}</span>
+            Parce que vous avez aimé <span className="text-foreground">{p.reasons.join(", ")}</span>
           </p>
         )}
         <div className="mt-auto flex items-center gap-1.5 pt-3">
@@ -49,6 +51,7 @@ export function PickPoster({ pick: p }: { pick: Pick }) {
         </div>
       </div>
       <p className="mt-2.5 line-clamp-2 text-[14.5px] leading-snug font-medium">{p.title}</p>
+      {originalUnder(p.title, p.originalTitle) && <p className="line-clamp-1 text-[12.5px] text-muted italic">{originalUnder(p.title, p.originalTitle)}</p>}
       <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{[p.directors[0], p.year].filter(Boolean).join(" · ")}</p>
     </Link>
   );

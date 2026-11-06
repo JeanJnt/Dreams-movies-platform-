@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { DiscStylePicker } from "@/components/DiscStylePicker";
+import { DesignButton } from "@/components/design/DesignButton";
 import { BackdropButton } from "@/components/FilmImagePicker";
 import { discStyles } from "@/lib/disc-style";
 import { filmImages } from "@/lib/film-images";
@@ -14,6 +14,16 @@ import { PosterPicker } from "@/components/PosterPicker";
 import { Soundtrack } from "@/components/Soundtrack";
 import { Stars } from "@/components/Stars";
 import { TextKind } from "@/components/ActivityFeed";
+
+// Le rôle d'un acteur, tel que TMDB le donne (en anglais) : mentions techniques traduites ou retirées
+const roleFr = (r: string | null | undefined) =>
+  (r ?? "")
+    .replace(/s*((uncredited|archive footage|credit only))/gi, "")
+    .replace(/(voice)/gi, "(voix)")
+    .replace(/(performer)/gi, "(interprète)")
+    .replace(/Himself/g, "Lui-même")
+    .replace(/Herself/g, "Elle-même")
+    .trim();
 import { VideoCard } from "@/components/VideoCard";
 import { FilmStageClient } from "@/components/dreams/FilmStageClient";
 import { caseSize } from "@/lib/case-thickness";
@@ -45,8 +55,8 @@ const CHAPTERS = [
   { id: "galerie", label: "Galerie" },
   { id: "videos", label: "Analyses" },
   { id: "presse", label: "Presse" },
-  { id: "reviews", label: "Reviews" },
-  { id: "membres", label: "Les membres" },
+  { id: "reviews", label: "Avis Letterboxd" },
+  { id: "membres", label: "Mes amis" },
   { id: "casting", label: "Casting" },
 ];
 
@@ -89,13 +99,13 @@ export default async function FilmPage({ params }: Props) {
 
   return (
     <article style={{ "--film": cf?.color ?? "var(--accent)" } as React.CSSProperties}>
-      {/* ——— L'en-tête : l'image du film plein cadre, le titre et le générique à gauche, le boîtier en 3D à droite ——— */}
+      {/* ——— L'en-tête : le boîtier en 3D, en grand, en haut à gauche ; le titre et le générique à sa droite (au-dessous sur téléphone) ——— */}
       <header className="relative">
         <div className="full-bleed pointer-events-none absolute inset-x-0 top-[-4.5rem] bottom-0 overflow-hidden" aria-hidden>
-          <div className="absolute inset-0 bg-[radial-gradient(48%_55%_at_74%_48%,color-mix(in_srgb,var(--film)_30%,transparent),transparent_72%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(48%_55%_at_28%_46%,color-mix(in_srgb,var(--film)_30%,transparent),transparent_72%)]" />
         </div>
-        <div className="relative grid min-h-[min(90svh,860px)] grid-cols-1 items-center gap-4 pt-6 pb-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-10 lg:pt-10">
-          <div className="relative z-10 min-w-0">
+        <div className="relative grid grid-cols-1 items-center gap-2 pt-2 pb-8 lg:min-h-[min(88svh,840px)] lg:grid-cols-[minmax(0,11fr)_minmax(0,10fr)] lg:gap-12 lg:pt-6">
+          <div className="relative z-10 min-w-0 max-lg:mt-4 lg:col-start-2 lg:row-start-1">
             <p className="flex flex-wrap items-center gap-x-2.5 text-[14px] text-muted">
               {meta.map((m, i) => (
                 <span key={i} className="flex items-center gap-2.5">
@@ -104,10 +114,15 @@ export default async function FilmPage({ params }: Props) {
                 </span>
               ))}
             </p>
-            <h1 data-split className="mt-4 text-[clamp(3rem,7.4vw,7.6rem)] leading-[0.92] break-words">
+            <h1 data-split className="mt-3 text-[clamp(2.6rem,6vw,6.4rem)] leading-[0.92] break-words">
               {titles.main}
             </h1>
-            {titles.sub && <p className="serif mt-3 text-[1.4rem] text-[var(--text-2)] md:text-[1.8rem]">{titles.sub}</p>}
+            {titles.sub && (
+              <p className="mt-3 text-[1.15rem] text-[var(--text-2)] italic md:text-[1.4rem]">
+                <span className="sr-only">Titre original : </span>
+                {titles.sub}
+              </p>
+            )}
 
             {/* Le générique, comme le bloc de crédits d'une affiche */}
             <dl className="credits mt-8 max-w-xl">
@@ -176,24 +191,27 @@ export default async function FilmPage({ params }: Props) {
               <Link href={`/agenda?film=${id}`} className="btn">
                 Planifier une séance
               </Link>
-              {/* L'affiche et le disque : on les touche pour changer leur habillage */}
-              <div className="ml-1 flex items-center gap-3">
-                <div className="w-11 shrink-0">
+            </div>
+            {/* L'habillage : le boîtier et le disque dans l'atelier ; l'affiche (vignettes, listes) à part */}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {cf && (
+                <Suspense fallback={null}>
+                  <DesignButton film={{ ...cf, edition: owned?.edition ?? null, caseType: owned?.caseType ?? null, mediaType: film.media_type }} className="btn btn-sm" />
+                </Suspense>
+              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 shrink-0">
                   <PosterPicker filmId={id} current={film.poster_path} hasCustom={Boolean(posters.custom)}>
                     <Poster film={film} size="w185" />
                   </PosterPicker>
                 </div>
-                <div className="aspect-square w-12">
-                  {/* la clé repart de la maquette enregistrée quand un choix d'image la change */}
-                  <DiscStylePicker key={discStyle?.variant ?? "auto"} filmId={id} disc={{ ...discBase, ...discStyle }} customImage={images.disc} />
-                </div>
-                <span className="hidden max-w-[9rem] text-[12.5px] leading-snug text-muted sm:block">Affiche et disque : touchez pour changer</span>
+                <span className="text-[12.5px] leading-snug text-muted">Affiche</span>
               </div>
             </div>
           </div>
-          <div className="relative -mx-[var(--gutter)] lg:mx-0">
+          <div className="relative -mx-[var(--gutter)] max-lg:order-first lg:col-start-1 lg:row-start-1 lg:mx-0">
             {cf ? (
-              <FilmStageClient film={{ ...cf, edition: owned?.edition ?? null, caseType: owned?.caseType ?? null, mediaType: film.media_type }} className="h-[min(74svh,700px)] w-full" />
+              <FilmStageClient film={{ ...cf, edition: owned?.edition ?? null, caseType: owned?.caseType ?? null, mediaType: film.media_type }} className="h-[min(62svh,560px)] w-full lg:h-[min(82svh,780px)]" />
             ) : (
               <div className="mx-auto w-56">
                 <Poster film={film} size="w500" />
@@ -230,7 +248,7 @@ export default async function FilmPage({ params }: Props) {
       <div className="mt-10 grid grid-cols-1 gap-12 md:mt-14 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-16">
         <div className="min-w-0 space-y-16 md:space-y-20">
           <section id="critique" className="reveal scroll-mt-32">
-            <H2 aside={<TextKind kind="critique" />}>Ma critique</H2>
+            <H2>Ma critique</H2>
             {critique ? (
               <Link
                 href={critique.status === "published" ? `/critiques/${critique.id}` : `/film/${id}/critique`}
@@ -250,7 +268,7 @@ export default async function FilmPage({ params }: Props) {
             ) : (
               <Link href={`/film/${id}/critique`} className="card card-hover group flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
                 <span className="font-display text-3xl transition-colors group-hover:text-accent">Écrire ma critique</span>
-                <span className="text-sm text-muted">Titre, chapeau, intertitres, citations — enregistrée au fil de l&apos;écriture.</span>
+                <span className="text-sm text-muted">Titre, chapô, intertitres et citations. Enregistrement automatique pendant l&apos;écriture.</span>
               </Link>
             )}
           </section>
@@ -267,7 +285,7 @@ export default async function FilmPage({ params }: Props) {
 
           <section id="presse" className="reveal scroll-mt-32">
             <H2>Lire la presse</H2>
-            <p className="-mt-2 mb-5 text-sm text-muted">Les critiques de ce film chez les meilleures revues.</p>
+            <p className="-mt-2 mb-5 text-sm text-muted">Ce film dans les revues de référence.</p>
             <div className="no-scrollbar swipe-row bleed flex gap-3 overflow-x-auto sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
               {ARTICLE_SOURCES.map((s) => (
                 <a key={s.domain} href={articleUrl(s, film)} target="_blank" rel="noreferrer" className="card card-hover group !rounded-xl px-4 py-3.5">
@@ -281,7 +299,7 @@ export default async function FilmPage({ params }: Props) {
           </section>
 
           <section id="reviews" className="reveal scroll-mt-32">
-            <H2 aside={<TextKind kind="review" />}>Mes reviews</H2>
+            <H2>Mes avis Letterboxd</H2>
             {reviews.length ? (
               <div className="space-y-4">
                 {reviews.map((r, i) => (
@@ -296,7 +314,7 @@ export default async function FilmPage({ params }: Props) {
                 ))}
               </div>
             ) : (
-              <p className="text-muted">Aucune review Letterboxd pour ce film.</p>
+              <p className="text-muted">Aucun avis Letterboxd pour ce film.</p>
             )}
           </section>
 
@@ -313,7 +331,7 @@ export default async function FilmPage({ params }: Props) {
                 {film.cast.map((c) => (
                   <li key={c.name + c.character}>
                     <Link href={`/personne?nom=${encodeURIComponent(c.name)}&role=actor`} className="link-draw hover:text-accent">{c.name}</Link>
-                    {c.character && <span className="mt-0.5 block text-xs text-muted italic">{c.character}</span>}
+                    {roleFr(c.character) && <span className="mt-0.5 block text-xs text-muted italic">{roleFr(c.character)}</span>}
                   </li>
                 ))}
               </ul>
@@ -346,7 +364,7 @@ export default async function FilmPage({ params }: Props) {
                 )}
               </>
             ) : (
-              <p className="font-display text-2xl">{film.in_watchlist ? "Dans ta watchlist" : "Pas encore vu"}</p>
+              <p className="font-display text-2xl">{film.in_watchlist ? "Dans votre watchlist" : "Pas encore vu"}</p>
             )}
           </div>
 
@@ -374,7 +392,7 @@ export default async function FilmPage({ params }: Props) {
             </a>
             <details className="group mt-3 text-sm">
               <summary className="cursor-pointer list-none text-muted transition-colors hover:text-foreground">
-                <span className="mr-1 inline-block transition-transform group-open:rotate-90">›</span> Gratuit et légal
+                <span className="mr-1 inline-block transition-transform group-open:rotate-90">›</span> Gratuitement, en toute légalité
               </summary>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 pl-3">
                 {LEGAL_FREE.map((s) => (
@@ -406,7 +424,7 @@ export default async function FilmPage({ params }: Props) {
             <ActionLink href={`/agenda?film=${id}`}>Planifier une séance</ActionLink>
             {film.tmdb_id && <ActionLink href={`/conseils?from=${id}&partout=1`}>Films dans le même esprit</ActionLink>}
             <ActionLink href={letterboxdUrl(film)} external>
-              Letterboxd <span className="text-muted">· note moyenne, avis</span>
+              Letterboxd <span className="text-muted">· notes et avis</span>
             </ActionLink>
             {film.tmdb_id && (
               <ActionLink href={`https://www.themoviedb.org/movie/${film.tmdb_id}`} external>
@@ -470,7 +488,7 @@ async function Videos({ film }: { film: FilmDetail }) {
         <div className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted">
           {videos === null
             ? "Vidéos indisponibles (clé YouTube manquante ou quota du jour atteint)."
-            : "Aucune analyse de ces sources pour ce film. Tu peux chercher directement :"}
+            : "Aucune analyse de ces sources pour ce film. Rechercher directement :"}
           <div className="mt-4 flex flex-wrap gap-1.5">
             {[
               ["Blow Up (Arte)", `blow up arte ${title}`],
@@ -516,7 +534,7 @@ async function Members({ filmId }: { filmId: number }) {
           </span>
         )}
       >
-        Les membres
+        Mes amis
       </H2>
       {c.critiques.length > 0 && (
         <div className="mb-5 space-y-3">

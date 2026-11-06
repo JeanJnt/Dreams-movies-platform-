@@ -7,6 +7,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { Stars } from "@/components/Stars";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { allGenres, recentDiary, watchedFilms, type DiaryEntry, type FilmFilters } from "@/lib/queries";
+import { originalUnder } from "@/lib/titles";
 import { poster } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Journal" };
@@ -78,6 +79,7 @@ export default async function FilmsPage({ searchParams }: { searchParams: Promis
                         <span className="poster aspect-[2/3] w-full">{d.poster_path && <img src={poster(d.poster_path, "w185")!} alt="" loading="lazy" className="size-full object-cover" />}</span>
                         <span className="min-w-0">
                           <span className="block truncate font-display text-[1.3rem] leading-tight md:text-[1.5rem]">{d.title_fr ?? d.name}</span>
+                          {originalUnder(d.title_fr ?? d.name, d.original_title) && <span className="block truncate text-[13px] text-[var(--text-2)] italic">{originalUnder(d.title_fr ?? d.name, d.original_title)}</span>}
                           <span className="mt-0.5 block truncate text-[13.5px] text-muted">
                             {[d.director, d.year].filter(Boolean).join(", ")}
                             {d.rewatch && <span className="ml-2 rounded-full px-2 py-0.5 text-[11.5px] ring-1 ring-[var(--line-2)]">revu</span>}

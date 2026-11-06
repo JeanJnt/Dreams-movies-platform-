@@ -52,7 +52,7 @@ export function PushToggle() {
   if (state === "loading") return null;
   if (state === "unsupported") return <p className="text-xs text-muted">Les notifications ne sont pas disponibles dans ce navigateur.</p>;
   if (state === "ios-install") return <p className="text-xs text-muted">Sur iPhone, installe d&apos;abord Dreams sur l&apos;écran d&apos;accueil (Partager → « Sur l&apos;écran d&apos;accueil ») pour recevoir les notifications.</p>;
-  if (state === "denied") return <p className="text-xs text-muted">Notifications bloquées : autorise-les pour Dreams dans les réglages de ton appareil.</p>;
+  if (state === "denied") return <p className="text-xs text-muted">Notifications bloquées : autorisez-les pour Dreams dans les réglages de votre appareil.</p>;
   return (
     <button onClick={toggle} disabled={busy} className={`rounded-full px-4 py-2 text-sm ${state === "on" ? "border border-border text-muted" : "bg-accent text-on-accent"}`}>
       {state === "on" ? "Notifications activées · désactiver" : "Activer les notifications"}

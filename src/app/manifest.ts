@@ -9,7 +9,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     id: "/",
     name: "Dreams Movies — journal de cinéma",
     short_name: "Dreams",
-    description: "Films vus, critiques, conseils, collection, agenda et statistiques.",
+    description: "Films vus, critiques, recommandations, collection, agenda et statistiques.",
     start_url: "/",
     scope: "/",
     display: "standalone",
@@ -29,10 +29,10 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     ],
     // Raccourcis : appui long sur l'icône (Android) ou clic droit (Windows / Mac)
     shortcuts: [
-      { name: "Que regarder ce soir ?", short_name: "Conseils", url: "/conseils", icons: [{ src: `/icon-192${r}.png`, sizes: "192x192" }] },
+      { name: "Que regarder ce soir ?", short_name: "Recommandations", url: "/conseils", icons: [{ src: `/icon-192${r}.png`, sizes: "192x192" }] },
       { name: "Scanner un DVD", short_name: "Scanner", url: "/collection/scanner", icons: [{ src: `/icon-192${r}.png`, sizes: "192x192" }] },
       { name: "Mon agenda", short_name: "Agenda", url: "/agenda", icons: [{ src: `/icon-192${r}.png`, sizes: "192x192" }] },
-      { name: "Au cinéma", short_name: "Cinéma", url: "/alertes", icons: [{ src: `/icon-192${r}.png`, sizes: "192x192" }] },
+      { name: "À l'affiche", short_name: "À l'affiche", url: "/alertes", icons: [{ src: `/icon-192${r}.png`, sizes: "192x192" }] },
     ],
   };
 }

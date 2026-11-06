@@ -17,6 +17,7 @@ import { imageOptions, isImageKind, setFilmImage, setUploadedFilmImage, uploadFi
 import { posterOptions, setCustomPoster, setUploadedPoster, uploadPoster } from "@/lib/posters";
 import { searchMyFilms } from "@/lib/queries";
 import { setDiscStyle } from "@/lib/disc-style";
+import { designState, discardImages, resetDesign, revertDesign, saveDesign } from "@/lib/designs";
 import { ALERT_SOURCES } from "@/lib/alert-sources";
 import { deleteUserList, saveUserList, setListShare } from "@/lib/user-lists";
 import { PLATFORMS, setMyPlatforms } from "@/lib/reco";
@@ -58,7 +59,7 @@ export async function setOwnedAction(filmId: number, item: { format: string; cas
 // Photo de ma jaquette, prise avec le téléphone ou envoyée depuis l ordinateur.
 export async function uploadCoverAction(filmId: number, formData: FormData): Promise<{ url?: string; error?: string }> {
   const file = formData.get("cover");
-  if (!(file instanceof File) || !file.size) return { error: "Choisis une image." };
+  if (!(file instanceof File) || !file.size) return { error: "Choisissez une image." };
   try {
     return { url: await saveImage(filmId, file, "cover") };
   } catch (e) {
@@ -91,7 +92,7 @@ export async function addScannedAction(tmdbId: number, item: { format: string; c
 
 export async function saveEventAction(e: { id?: number; filmId: number | null; title: string; startsAt: string; place: string | null; withWhom: string | null; note: string | null; link?: string | null; guestIds?: number[] }) {
   await requireUser();
-  if (!e.title.trim() || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(e.startsAt)) throw new Error("Titre et date obligatoires");
+  if (!e.title.trim() || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(e.startsAt)) throw new Error("Indiquez un titre et une date.");
   const id = await saveEvent(e);
   revalidatePath("/agenda");
   revalidatePath("/");
@@ -125,7 +126,7 @@ export async function addMediaAction(filmId: number, formData: FormData): Promis
     const visibility = formData.get("visibility") === "prive" ? "prive" : "membres";
     if (link) await addYoutube(filmId, link, caption, visibility);
     for (const file of files) await addFile(filmId, file, caption, visibility);
-    if (!link && !files.length) return { error: "Choisis un fichier ou colle un lien YouTube." };
+    if (!link && !files.length) return { error: "Choisissez un fichier ou collez un lien YouTube." };
   } catch (e) {
     return { error: (e as Error).message };
   }
@@ -158,7 +159,7 @@ export async function setPosterAction(filmId: number, posterPath: string | null)
 
 export async function uploadPosterAction(filmId: number, formData: FormData): Promise<{ error?: string }> {
   const file = formData.get("poster");
-  if (!(file instanceof File) || !file.size) return { error: "Choisis une image." };
+  if (!(file instanceof File) || !file.size) return { error: "Choisissez une image." };
   try {
     await uploadPoster(filmId, file);
   } catch (e) {
@@ -183,7 +184,7 @@ export async function setFilmImageAction(filmId: number, kind: string, path: str
 export async function uploadFilmImageAction(filmId: number, kind: string, formData: FormData): Promise<{ error?: string }> {
   await requireUser();
   const file = formData.get("image");
-  if (!isImageKind(kind) || !(file instanceof File) || !file.size) return { error: "Choisis une image." };
+  if (!isImageKind(kind) || !(file instanceof File) || !file.size) return { error: "Choisissez une image." };
   try {
     await uploadFilmImage(filmId, kind, file);
   } catch (e) {
@@ -268,7 +269,7 @@ export async function addManyOwnedAction(keys: string[], format: string, caseTyp
 export async function saveUserListAction(input: { id?: number; name: string; description: string; visibility: string; keys: string[] }) {
   await requireUser();
   const name = input.name.trim().slice(0, 120);
-  if (!name) return { error: "Donne un nom à ta liste." };
+  if (!name) return { error: "Donnez un nom à votre liste." };
   const filmIds = await resolveFilmKeys(input.keys.slice(0, 500));
   const id = await saveUserList({ id: input.id, name, description: input.description.trim().slice(0, 2000) || null, visibility: input.visibility, filmIds });
   revalidatePath("/listes");
@@ -320,4 +321,50 @@ export async function setDiscStyleAction(filmId: number, variant: string | null)
   await requireUser();
   await setDiscStyle(filmId, variant);
   revalidatePath("/", "layout");
+}
+
+// --- Boîtier et disque personnalisés ---
+
+export async function designStateAction(filmId: number) {
+  await requireUser();
+  return designState(filmId);
+}
+
+export async function saveDesignAction(filmId: number, design: unknown) {
+  await requireUser();
+  await saveDesign(filmId, design);
+  revalidatePath("/", "layout"); // le boîtier et le disque apparaissent sur l'accueil, la collection, la fiche
+  return designState(filmId);
+}
+
+export async function revertDesignAction(filmId: number) {
+  await requireUser();
+  await revertDesign(filmId);
+  revalidatePath("/", "layout");
+  return designState(filmId);
+}
+
+export async function resetDesignAction(filmId: number, part: "case" | "disc" | "all") {
+  await requireUser();
+  await resetDesign(filmId, part === "case" || part === "disc" ? part : "all");
+  revalidatePath("/", "layout");
+  return designState(filmId);
+}
+
+// Une image recadrée dans l'éditeur (envoi classique, en local ; en ligne, elle part directement vers le stockage)
+export async function uploadDesignImageAction(filmId: number, prefix: "cover" | "backdrop" | "disc", formData: FormData): Promise<{ url?: string; error?: string }> {
+  await requireUser();
+  const file = formData.get("image");
+  if (!(file instanceof File) || !file.size) return { error: "Choisissez une image." };
+  if (!["cover", "backdrop", "disc"].includes(prefix)) return { error: "Image invalide" };
+  try {
+    return { url: await saveImage(filmId, file, prefix) };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
+export async function discardDesignImagesAction(filmId: number, urls: string[]) {
+  await requireUser();
+  await discardImages(filmId, Array.isArray(urls) ? urls.filter((u) => typeof u === "string") : []);
 }

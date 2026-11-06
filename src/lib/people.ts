@@ -79,6 +79,7 @@ export async function personDetail(tmdbId: number) {
     place_of_birth: string | null;
     profile_path: string | null;
     known_for_department: string;
+    gender?: number;
     movie_credits: { cast: Credit[]; crew: Credit[] };
     images?: { profiles: { file_path: string }[] };
   };
@@ -137,6 +138,7 @@ export async function personDetail(tmdbId: number) {
     placeOfBirth: fr.place_of_birth,
     profilePath: fr.profile_path,
     department: fr.known_for_department,
+    gender: fr.gender ?? 0,
     photos: (fr.images?.profiles ?? []).slice(0, 6).map((p) => p.file_path),
     directed,
     acted,

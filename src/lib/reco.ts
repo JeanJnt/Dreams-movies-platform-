@@ -79,6 +79,7 @@ export type Pick = {
   tmdbId: number | null;
   href: string;
   title: string;
+  originalTitle?: string | null;
   year: number | null;
   posterPath: string | null;
   runtime: number | null;
@@ -119,7 +120,7 @@ export async function picks(f: PickFilters, forUser?: number): Promise<{ picks: 
 
   if (f.mode === "watchlist") {
     const { rows } = await db().execute(
-      `SELECT f.id, f.tmdb_id, COALESCE(f.title_fr, f.name) AS title, f.year, ${posterSql(u)} AS poster_path, f.runtime, f.genres, f.directors,
+      `SELECT f.id, f.tmdb_id, COALESCE(f.title_fr, f.name) AS title, COALESCE(f.original_title, f.name) AS original_title, f.year, ${posterSql(u)} AS poster_path, f.runtime, f.genres, f.directors,
          p.flatrate, rc.score
        FROM watchlist w JOIN films f ON f.id = w.film_id
        LEFT JOIN providers p ON p.tmdb_id = f.tmdb_id LEFT JOIN reco rc ON rc.tmdb_id = f.tmdb_id AND rc.user_id = ${u}
@@ -128,7 +129,7 @@ export async function picks(f: PickFilters, forUser?: number): Promise<{ picks: 
     const all = rows.map((r) => {
       const genres = parse<string[]>(r.genres, []), directors = parse<string[]>(r.directors, []);
       return {
-        key: `f${r.id}`, tmdbId: r.tmdb_id == null ? null : Number(r.tmdb_id), href: `/film/${r.id}`, title: String(r.title), year: r.year == null ? null : Number(r.year),
+        key: `f${r.id}`, tmdbId: r.tmdb_id == null ? null : Number(r.tmdb_id), href: `/film/${r.id}`, title: String(r.title), originalTitle: (r.original_title as string) ?? null, year: r.year == null ? null : Number(r.year),
         posterPath: (r.poster_path as string) ?? null, runtime: r.runtime == null ? null : Number(r.runtime),
         genres, directors, platforms: parse<ProviderLite[]>(r.flatrate, []), reasons: [],
         // Bonus si le film est aussi recommandé à partir de mes favoris.
@@ -149,7 +150,7 @@ export async function picks(f: PickFilters, forUser?: number): Promise<{ picks: 
       recos.results.filter((r) => !seen.has(r.id)).slice(0, 20).map((r) => movieLite(r.id)),
     );
     const all = details.map((m) => ({
-      key: `t${m.id}`, tmdbId: m.id, href: `/tmdb/${m.id}`, title: m.title, year: m.year, posterPath: m.posterPath, runtime: m.runtime,
+      key: `t${m.id}`, tmdbId: m.id, href: `/tmdb/${m.id}`, title: m.title, originalTitle: m.originalTitle, year: m.year, posterPath: m.posterPath, runtime: m.runtime,
       genres: m.genres, directors: m.directors, platforms: m.flatrate, reasons: [String(film.rows[0].title)],
       match: match(taste, m.genres, m.directors, 5), inWatchlist: watchlistIds.has(m.id),
     }));
@@ -177,7 +178,7 @@ export async function picks(f: PickFilters, forUser?: number): Promise<{ picks: 
   const all = ranked.map(({ r, rank }) => {
     const genres = parse<string[]>(r.genres, []), directors = parse<string[]>(r.directors, []);
     return {
-      key: `t${r.tmdb_id}`, tmdbId: Number(r.tmdb_id), href: `/tmdb/${r.tmdb_id}`, title: String(r.title), year: r.year == null ? null : Number(r.year),
+      key: `t${r.tmdb_id}`, tmdbId: Number(r.tmdb_id), href: `/tmdb/${r.tmdb_id}`, title: String(r.title), originalTitle: (r.original_title as string) ?? null, year: r.year == null ? null : Number(r.year),
       posterPath: (r.poster_path as string) ?? null, runtime: r.runtime == null ? null : Number(r.runtime),
       genres, directors, platforms: parse<ProviderLite[]>(r.flatrate, []), reasons: parse<string[]>(r.reasons, []),
       match: match(taste, genres, directors, (rank / maxRank) * 15),
@@ -206,16 +207,16 @@ async function seenTmdbIds(u: number) {
   return new Set(rows.map((r) => Number(r.tmdb_id)));
 }
 
-type Lite = { id: number; title: string; year: number | null; posterPath: string | null; runtime: number | null; genres: string[]; directors: string[]; flatrate: ProviderLite[] };
+type Lite = { id: number; title: string; originalTitle: string | null; year: number | null; posterPath: string | null; runtime: number | null; genres: string[]; directors: string[]; flatrate: ProviderLite[] };
 
 async function movieLite(id: number): Promise<Lite> {
   const d = await tmdb<{
-    title: string; release_date?: string; poster_path: string | null; runtime: number | null; genres: { name: string }[];
+    title: string; original_title?: string; release_date?: string; poster_path: string | null; runtime: number | null; genres: { name: string }[];
     credits: { crew: { name: string; job: string }[] };
     "watch/providers"?: { results?: { FR?: { flatrate?: { provider_name: string; logo_path: string }[] } } };
   }>(`/movie/${id}`, { append_to_response: "credits,watch/providers" }, 3, { next: { revalidate: 86400 } });
   return {
-    id, title: d.title, year: d.release_date ? Number(d.release_date.slice(0, 4)) : null, posterPath: d.poster_path,
+    id, title: d.title, originalTitle: d.original_title ?? null, year: d.release_date ? Number(d.release_date.slice(0, 4)) : null, posterPath: d.poster_path,
     runtime: d.runtime || null, genres: d.genres.map((g) => g.name),
     directors: [...new Set(d.credits.crew.filter((c) => c.job === "Director").map((c) => c.name))],
     flatrate: (d["watch/providers"]?.results?.FR?.flatrate ?? []).map((p) => ({ name: p.provider_name, logo: p.logo_path })),

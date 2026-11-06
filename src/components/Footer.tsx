@@ -1,46 +1,47 @@
 import Link from "next/link";
 import { BrandIcon } from "./Logo";
 
+// Le plan du site, dans les mots de la navigation
 const COLUMNS = [
   {
-    title: "Journal",
+    title: "Films",
     links: [
-      ["/films", "Films vus"],
-      ["/watchlist", "Watchlist"],
-      ["/critiques", "Critiques"],
-      ["/listes", "Listes"],
-      ["/preferes", "Préférés"],
-    ],
-  },
-  {
-    title: "Découvrir",
-    links: [
-      ["/conseils", "Que regarder"],
-      ["/alertes", "Au cinéma"],
-      ["/personnes", "Cinéastes & acteurs"],
-      ["/recherche", "Recherche"],
-    ],
-  },
-  {
-    title: "Chez moi",
-    links: [
+      ["/films", "Journal"],
       ["/collection", "Collection"],
+      ["/conseils", "Recommandations"],
+      ["/watchlist", "Watchlist"],
+      ["/listes", "Listes"],
+      ["/critiques", "Critiques"],
+      ["/preferes", "Mes 10 films"],
+    ],
+  },
+  {
+    title: "Explorer",
+    links: [
+      ["/recherche", "Recherche"],
+      ["/personnes", "Cinéastes et acteurs"],
+      ["/alertes", "À l'affiche"],
       ["/agenda", "Agenda"],
-      ["/stats", "Statistiques"],
-      ["/compte", "Mon compte"],
     ],
   },
   {
     title: "Amis",
     links: [
       ["/activite", "Activité"],
-      ["/membres", "Membres"],
-      ["/installer", "Installer l'appli"],
+      ["/membres", "Amis"],
+    ],
+  },
+  {
+    title: "Compte",
+    links: [
+      ["/stats", "Statistiques"],
+      ["/compte", "Réglages"],
+      ["/installer", "Installer l'application"],
     ],
   },
 ] as const;
 
-// Le pied de page : le plan du site en quatre colonnes, calme ; le 夢 et le nom en signature.
+// Le pied de page : le plan du site en quatre colonnes ; le logo et le nom en signature.
 export function Footer() {
   return (
     <footer className="relative mt-28 hidden border-t border-[var(--line)] md:block">
@@ -49,7 +50,7 @@ export function Footer() {
           <BrandIcon size={56} />
           <p className="mt-5 font-display text-[2.6rem] leading-none">Dreams</p>
           <p className="wide mt-2 text-muted">Movies</p>
-          <p className="mt-5 max-w-[24ch] text-[14px] text-muted">Le journal de cinéma entre amis : films vus, critiques, collection, séances.</p>
+          <p className="mt-5 max-w-[24ch] text-[14px] text-muted">Le journal de cinéma entre amis : films vus, critiques, collection et séances.</p>
         </div>
         {COLUMNS.map((c) => (
           <nav key={c.title} aria-label={c.title}>

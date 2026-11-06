@@ -1,4 +1,5 @@
 import { viewedUser } from "./auth";
+import { countryFr } from "./format";
 import { db, posterSql } from "./db";
 
 // Statistiques d'un membre : moi par défaut, ou un autre membre sur sa page de profil (lecture seule).
@@ -71,7 +72,7 @@ export async function byDecade(userId?: number) {
      FROM watched w JOIN films f ON f.id = w.film_id LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u}
      WHERE w.user_id = ${u} AND f.year IS NOT NULL GROUP BY decade ORDER BY decade`,
   );
-  return rows.map((r) => ({ key: String(r.decade), label: `${String(r.decade).slice(2)}s`, value: num(r.n), avg: r.avg == null ? null : Number(r.avg) }));
+  return rows.map((r) => ({ key: String(r.decade), label: String(r.decade), value: num(r.n), avg: r.avg == null ? null : Number(r.avg) }));
 }
 
 // Classement sur une colonne JSON (genres, pays…).
@@ -86,7 +87,7 @@ export async function topJson(column: "genres" | "countries", limit = 10, userId
           GROUP BY name ORDER BY n DESC LIMIT ?`,
     args: [limit],
   });
-  return rows.map((r) => ({ key: String(r.name), label: String(r.name), value: num(r.n), avg: r.avg == null ? null : Number(r.avg) }));
+  return rows.map((r) => ({ key: String(r.name), label: column === "countries" ? countryFr(String(r.name)) : String(r.name), value: num(r.n), avg: r.avg == null ? null : Number(r.avg) }));
 }
 
 export async function records(userId?: number) {

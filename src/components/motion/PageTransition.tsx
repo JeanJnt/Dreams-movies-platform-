@@ -56,7 +56,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         let t: ReturnType<typeof setTimeout>;
         const attempt = () => {
           const pending = Array.from(el.querySelectorAll("[data-reveal], [data-split]")).some((n) => !hydratedNode(n));
-          if (pending && tries++ < 25) t = setTimeout(attempt, 160);
+          if (pending && tries++ < 75) t = setTimeout(attempt, 160);
           else run();
         };
         const onLoad = () => (t = setTimeout(attempt, first ? 60 : 0));

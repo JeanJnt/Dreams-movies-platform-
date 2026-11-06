@@ -19,7 +19,7 @@ type SyncReport = { ok: boolean; error?: string; newFilms: number; newReviews: n
 
 const syncMessage = (r: SyncReport) =>
   r.ok
-    ? { ok: true, text: `✓ ${r.newFilms ? `${r.newFilms} nouveau${r.newFilms > 1 ? "x" : ""} film${r.newFilms > 1 ? "s" : ""}` : "Aucun nouveau film"}${r.newReviews ? ` et ${r.newReviews} review${r.newReviews > 1 ? "s" : ""}` : ""} depuis Letterboxd.` }
+    ? { ok: true, text: `${r.newFilms ? `${r.newFilms} nouveau${r.newFilms > 1 ? "x" : ""} film${r.newFilms > 1 ? "s" : ""}` : "Aucun nouveau film"}${r.newReviews ? ` et ${r.newReviews} avis` : ""} depuis Letterboxd.` }
     : { ok: false, text: r.error ?? "Synchronisation impossible." };
 
 // Le bouton seul, pour le profil : récupère tout de suite ce qui est nouveau sur Letterboxd.
@@ -56,7 +56,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
       <div>
         <h2 className="font-display text-[1.7rem] leading-[1.1] md:text-[2.2rem]">{highlight ? "Dernière étape : connecte ton Letterboxd" : "Synchronisation Letterboxd"}</h2>
         <p className="mt-2 text-sm text-muted">
-          Chaque matin, Dreams récupère tes <b>nouveaux films</b> et tes <b>reviews</b> depuis ton profil Letterboxd. Plus besoin de réimporter à chaque fois.
+          Chaque matin, Dreams récupère vos <b>nouveaux films</b> et vos <b>avis</b> depuis votre profil Letterboxd, sans réimport.
           Ton profil Letterboxd doit être public.
         </p>
       </div>
@@ -77,7 +77,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
             </button>
             <button
               disabled={pending}
-              onClick={() => confirm("Arrêter la synchronisation automatique ? Tes films déjà importés restent.") && start(async () => { await disconnectLetterboxdAction(); router.refresh(); })}
+              onClick={() => confirm("Arrêter la synchronisation automatique ? Les films déjà importés sont conservés.") && start(async () => { await disconnectLetterboxdAction(); router.refresh(); })}
               className="rounded-full border border-border px-4 py-2 text-sm hover:border-accent"
             >
               Déconnecter
@@ -93,7 +93,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
           className="flex flex-wrap items-center gap-2"
         >
           <span className="text-sm text-muted">letterboxd.com/</span>
-          <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ton-pseudo" required className="field w-44" autoCapitalize="none" autoCorrect="off" />
+          <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="votre-pseudo" required className="field w-44" autoCapitalize="none" autoCorrect="off" />
           <button disabled={pending} className="btn btn-primary disabled:opacity-50">
             {pending ? "Connexion…" : "Connecter"}
           </button>
@@ -102,7 +102,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
 
       {message && <p className={`text-sm ${message.ok ? "text-accent" : "text-heart"}`}>{message.text}</p>}
       <p className="text-xs text-muted">
-        Le flux Letterboxd ne contient que ton journal (les films vus avec une date). Pour la watchlist et les listes, réimporte ton export .zip de temps en temps.
+        La synchronisation ne couvre que le journal (les films vus avec une date). Pour la watchlist et les listes, réimportez votre export .zip de temps en temps.
       </p>
     </section>
   );

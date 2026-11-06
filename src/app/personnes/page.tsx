@@ -13,7 +13,7 @@ export default async function PeoplePage() {
 
   return (
     <div className="space-y-14">
-      <PageHeader eyebrow="Journal · personnes" title="Cinéastes & acteurs" lede="Les personnes que tu as le plus suivies, d’après tes films vus.">
+      <PageHeader eyebrow="Journal" title="Cinéastes et acteurs" lede="Celles et ceux que vous avez le plus suivis, d’après vos films vus.">
         <LibraryTabs />
       </PageHeader>
       <Ranking title="Mes cinéastes" people={directors} role="director" />
@@ -43,7 +43,7 @@ function Ranking({ title, people, role }: { title: string; people: Awaited<Retur
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-3 pt-10 text-white">
                   <p className="font-display text-lg leading-tight">{p.name}</p>
                   <p className="text-xs text-white/75">
-                    {p.seen} films{p.avgRating != null && ` · ${p.avgRating}★`}
+                    {p.seen} film{p.seen > 1 ? "s" : ""}{p.avgRating != null && ` · ${p.avgRating.toFixed(1).replace(".", ",")} ★`}
                   </p>
                 </div>
               </div>

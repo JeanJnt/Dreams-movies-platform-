@@ -68,7 +68,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </nav>
 
         <div className="min-w-0 divide-y divide-[var(--line)] border-y border-[var(--line)]">
-          <Setting id="import" title="Letterboxd" text="Une fois votre profil connecté, la synchronisation récupère chaque jour vos nouveaux films ; l'import d'un export Letterboxd complète le reste (critiques, listes).">
+          <Setting id="import" title="Letterboxd" text="Connectez votre profil pour récupérer chaque jour vos nouveaux films. L'import d'un export Letterboxd ajoute le reste : watchlist, listes et avis.">
             {/* Une fois connecté, la synchronisation passe en premier : c'est elle qu'on vient chercher ici. */}
             {info.letterboxd_username ? <LetterboxdConnect connected={info.letterboxd_username as string} syncedAt={(info.letterboxd_synced_at as string) ?? null} /> : null}
             <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
@@ -76,19 +76,19 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             {!onboarding && !info.letterboxd_username && <LetterboxdConnect connected={null} />}
           </Setting>
 
-          <Setting id="profil" title="Profil et préférences" text={me.username ? "Ce que les autres membres voient de vous, et vos préférences d'affichage." : "Choisissez votre pseudo : c'est lui que les autres membres verront."}>
+          <Setting id="profil" title="Profil et préférences" text={me.username ? "Ce que vos amis voient de vous, et votre ville pour les séances." : "Choisissez votre pseudo : c'est lui que vos amis verront."}>
             <ProfileForm user={me} />
             <div className="flex flex-wrap gap-2 pt-2">
               <Link href="/preferes" className="btn btn-sm">
-                Mes 10 films préférés
+                Mes 10 films
               </Link>
               <Link href={`/membre/${me.id}`} className="btn btn-sm">
-                Voir mon profil comme les autres
+                Voir mon profil public
               </Link>
             </div>
           </Setting>
 
-          <Setting id="theme" title="Thème" text="Noir et blanc, avec l'argent du logo ; ou noir et rouge vif. Seule la couleur des actions et des repères change.">
+          <Setting id="theme" title="Thème" text="Deux ambiances pour Dreams : noir et blanc, ou noir et rouge.">
             <ThemeChoice />
           </Setting>
 
@@ -105,7 +105,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
           <Setting id="donnees" title="Mes données" text="Vos données vous appartiennent : récupérez-les ou effacez tout, à tout moment.">
             <a href="/compte/export" className="btn">
-              Exporter toutes mes données (JSON)
+              Exporter toutes mes données
             </a>
             <DeleteAccountForm />
           </Setting>
