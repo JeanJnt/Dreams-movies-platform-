@@ -109,11 +109,7 @@ export function DiscCarousel({ discs, label }: { discs: Disc[]; label?: string }
 
       {/* Infos du disque sélectionné */}
       <div className="relative mx-auto -mt-1 max-w-xl text-center">
-        <p className="text-[11px] tracking-[0.35em] text-muted uppercase tabular-nums">
-          {String(active + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
-          {current.badge && <> · <span className="text-accent">{current.badge}</span></>}
-        </p>
-        <Link href={current.href} className="font-display mt-2 block text-4xl leading-none transition hover:text-accent md:text-6xl">
+        <Link href={current.href} className="font-display block text-4xl leading-none transition hover:text-accent md:text-6xl">
           {current.title}
         </Link>
         <p className="mt-3 flex items-center justify-center gap-2 text-sm text-muted">

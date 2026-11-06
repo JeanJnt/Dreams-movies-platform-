@@ -199,7 +199,7 @@ export function DiscIndex({ films }: { films: IndexFilm[] }) {
       <div className="pointer-events-none relative z-10 flex min-h-[min(92svh,860px)] flex-col justify-end px-[var(--gutter)] pt-[46svh] pb-10 md:justify-center md:px-0 md:pt-16 md:pb-16">
         <div ref={info} key={f.id} className="pointer-events-auto max-w-[34rem]" aria-live="polite">
           <p data-line className="text-[14px] text-muted">
-            {f.date ? `Vu le ${f.date}` : "Récemment vu"} · {current + 1} sur {films.length}
+            {f.date ? `Vu le ${f.date}` : "Récemment vu"}
           </p>
           <h1 data-title className="mt-3 text-[clamp(2.8rem,6.4vw,6.2rem)] leading-[0.95]">
             {f.title}

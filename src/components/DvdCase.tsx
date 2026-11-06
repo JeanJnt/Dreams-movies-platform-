@@ -86,8 +86,8 @@ export function DvdCase({ film, compact = false }: { film: CaseFilm; compact?: b
         <>
           <p className="mt-2 line-clamp-1 text-sm group-hover:text-accent">{film.title}</p>
           <p className="text-xs text-muted">
-            {[film.year, film.format, steel ? "Steelbook" : digi ? "Digipack" : box ? "Coffret" : null].filter(Boolean).join(" · ")}
-            {film.seen === false && <span className="ml-1 text-accent">· pas vu</span>}
+            {film.year}
+            {film.seen === false && <span className="ml-1 text-accent">· pas encore vu</span>}
           </p>
         </>
       )}

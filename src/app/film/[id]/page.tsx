@@ -26,7 +26,6 @@ const roleFr = (r: string | null | undefined) =>
     .trim();
 import { VideoCard } from "@/components/VideoCard";
 import { FilmStageClient } from "@/components/dreams/FilmStageClient";
-import { caseSize } from "@/lib/case-thickness";
 import { caseFilms } from "@/lib/case-films";
 import { ChapterNav } from "@/components/ui/ChapterNav";
 import { Arrow } from "@/components/ui/Section";
@@ -87,7 +86,6 @@ export default async function FilmPage({ params }: Props) {
     currentUser(),
   ]);
   const [cf] = await caseFilms([id], "/film");
-  const size = caseSize({ runtime: film.runtime, mediaType: film.media_type, edition: owned?.edition, caseType: owned?.caseType });
   const title = film.title_fr ?? film.name;
   // En grand le titre original, en petit sa traduction dans la langue choisie par le membre.
   const titles = filmTitles(film, me?.titleLang ?? "fr");
@@ -217,9 +215,6 @@ export default async function FilmPage({ params }: Props) {
                 <Poster film={film} size="w500" />
               </div>
             )}
-            <p className="pointer-events-none mt-2 text-center text-[13px] text-muted">
-              {owned ? `Mon exemplaire : ${owned.format}${owned.edition ? `, ${owned.edition}` : ""}` : "La Collection Dreams"} · boîtier {size.name.toLowerCase()} {size.mm} mm, {size.discs} disque{size.discs > 1 ? "s" : ""}
-            </p>
           </div>
         </div>
       </header>

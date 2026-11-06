@@ -168,20 +168,16 @@ export function CaseParade({ rows, start = 0 }: { rows: ParadeRow[]; start?: num
             </Suspense>
           </Canvas>
         )}
-        {gl === false && <p className="absolute inset-0 grid place-items-center text-muted">La 3D n&apos;est pas disponible sur cet appareil : utilisez la vue Boîtiers.</p>}
-        <p className="pointer-events-none absolute top-4 left-5 hidden text-[13px] text-muted sm:block">Faites défiler à la molette, au doigt ou avec les flèches</p>
+        {gl === false && <p className="absolute inset-0 grid place-items-center text-muted">Cette vue n&apos;est pas disponible sur cet appareil.</p>}
       </div>
 
       {/* le boîtier du moment, et la commande du défilé */}
       {cur && size && (
         <div className="mt-6 grid items-end gap-6 md:grid-cols-[minmax(0,1fr)_auto]">
           <div key={cur.film.id} className="dm-rise min-w-0" aria-live="polite">
-            <p className="text-[14px] text-muted tabular">
-              N° {String(cur.film.id).padStart(4, "0")} · {current + 1} sur {rows.length}
-            </p>
-            <h2 className="mt-2 truncate text-[clamp(2rem,4vw,3.2rem)] leading-none">{cur.film.title}</h2>
+            <h2 className="truncate text-[clamp(2rem,4vw,3.2rem)] leading-none">{cur.film.title}</h2>
             <p className="mt-2 text-[15px] text-[var(--text-2)]">
-              {[cur.director, cur.film.year, cur.editionName && cur.editionName !== cur.label ? `${cur.label}, ${cur.editionName}` : cur.label].filter(Boolean).join(" · ")} · boîtier {size.name.toLowerCase()} {size.mm} mm, {size.discs} disque{size.discs > 1 ? "s" : ""}
+              {[cur.director, cur.film.year].filter(Boolean).join(", ")}
             </p>
           </div>
           <div className="flex items-center gap-2">

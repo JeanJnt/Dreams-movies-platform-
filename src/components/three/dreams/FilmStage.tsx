@@ -5,7 +5,6 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { Suspense, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { caseSize } from "@/lib/case-thickness";
 import { CaseObject, useCaseAnim, type CaseFilmInfo } from "./CaseObject";
 
 /*
@@ -37,12 +36,11 @@ export function FilmStage({ film, className = "", focus, controls = true }: { fi
   const anim = useCaseAnim();
   const yaw = useRef({ v: VIEWS.face, vel: 0, target: VIEWS.face as number | null });
   const openRef = useRef(0);
-  const [view, setView] = useState<View | null>("face");
+  const [, setView] = useState<View | null>("face");
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(true);
   const [gl, setGl] = useState<boolean | null>(null);
   const tl = useRef<gsap.core.Timeline | null>(null);
-  const size = caseSize({ runtime: film.runtime, mediaType: film.mediaType, edition: film.edition, caseType: film.caseType });
 
   useEffect(() => {
     try {
@@ -89,26 +87,32 @@ export function FilmStage({ film, className = "", focus, controls = true }: { fi
   };
 
   // glisser pour tourner (inertie)
-  const drag = useRef<{ x: number; t: number } | null>(null);
+  const drag = useRef<{ x: number; t: number; moved: number } | null>(null);
   const onDown = (e: React.PointerEvent) => {
-    drag.current = { x: e.clientX, t: performance.now() };
+    drag.current = { x: e.clientX, t: performance.now(), moved: 0 };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
   const onMove = (e: React.PointerEvent) => {
     if (!drag.current) return;
     const now = performance.now(), dx = e.clientX - drag.current.x;
     if (Math.abs(dx) < 1) return;
+    drag.current.moved += Math.abs(dx);
     yaw.current.target = null;
     yaw.current.v += dx * 0.012;
     yaw.current.vel = (dx * 0.012) / (Math.max(8, now - drag.current.t) / 1000);
-    drag.current = { x: e.clientX, t: now };
+    drag.current = { x: e.clientX, t: now, moved: drag.current.moved };
     setView(null);
   };
-  const onUp = () => (drag.current = null);
+  // un simple toucher (sans glisser) ouvre le boîtier et sort le disque ; un autre le range
+  const onUp = () => {
+    const d = drag.current;
+    drag.current = null;
+    if (d && d.moved < 6 && controls) toggle();
+  };
 
   return (
     <div ref={wrap} className={`relative ${className}`}>
-      <div className="absolute inset-0 cursor-grab touch-pan-y active:cursor-grabbing" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} role="img" aria-label={`Boîtier DVD ${size.name.toLowerCase()} de ${film.title}, ${size.discs} disque${size.discs > 1 ? "s" : ""}. Glisser pour le tourner.`}>
+      <div className="absolute inset-0 cursor-pointer touch-pan-y active:cursor-grabbing" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} role="img" aria-label={`Boîtier de ${film.title}. Glissez pour le tourner, touchez pour l'ouvrir.`}>
         {gl && (
           <Canvas
             shadows
@@ -136,20 +140,6 @@ export function FilmStage({ film, className = "", focus, controls = true }: { fi
           <img src={`/api/img?s=w500&p=${encodeURIComponent(film.poster)}`} alt="" className="poster absolute top-1/2 left-1/2 w-[52%] -translate-x-1/2 -translate-y-1/2" />
         )}
       </div>
-      {gl && controls && (
-        <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-2">
-          <div className="flex rounded-full p-1 ring-1 ring-[var(--line-2)] backdrop-blur-xl" role="group" aria-label="Vue du boîtier">
-            {(Object.keys(VIEWS) as View[]).map((v) => (
-              <button key={v} onClick={() => choose(v)} aria-pressed={view === v} className={`min-h-9 rounded-full px-4 text-[13px] capitalize transition-colors ${view === v ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}>
-                {v}
-              </button>
-            ))}
-          </div>
-          <button onClick={() => toggle()} aria-pressed={open} className="btn btn-sm">
-            {open ? "Ranger le disque" : "Ouvrir le boîtier"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
