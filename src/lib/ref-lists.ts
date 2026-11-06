@@ -1,6 +1,6 @@
 import { parse } from "csv-parse/sync";
 import { uid } from "./auth";
-import { db, ensureSchema, posterSql } from "./db";
+import { backdropSql, db, ensureSchema, posterSql } from "./db";
 import { tmdb } from "./tmdb";
 
 /*
@@ -149,7 +149,7 @@ export async function refListDetail(slug: string) {
   const meta = await db().execute({ sql: "SELECT id, name, description, source_url FROM ref_lists WHERE slug = ?", args: [slug] });
   if (!meta.rows[0]) return null;
   const { rows } = await db().execute({
-    sql: `SELECT f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, f.backdrop_path, f.tmdb_id, f.lb_uri, f.runtime,
+    sql: `SELECT f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path, f.tmdb_id, f.lb_uri, f.runtime,
             json_extract(f.directors, '$[0]') AS director, r.rating, (l.film_id IS NOT NULL) AS liked, (w.film_id IS NOT NULL) AS seen, i.rank
           FROM ref_list_items i JOIN films f ON f.id = i.film_id
           LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u} LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}

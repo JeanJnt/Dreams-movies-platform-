@@ -4,9 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityFeed, TextKind } from "@/components/ActivityFeed";
 import { SpineRow } from "@/components/dreams/SpineRow";
+import { LetterboxdSyncButton } from "@/components/LetterboxdConnect";
 import { Stars } from "@/components/Stars";
 import { requireUser } from "@/lib/auth";
 import { ownedFilms } from "@/lib/collection";
+import { db } from "@/lib/db";
 import { formatLongDate } from "@/lib/format";
 import { topPeople } from "@/lib/people";
 import { favoriteFilms, recentDiary } from "@/lib/queries";
@@ -15,6 +17,9 @@ import { statsOverview, topJson } from "@/lib/stats";
 import { backdrop, poster } from "@/lib/tmdb";
 
 type Props = { params: Promise<{ id: string }> };
+
+// La synchronisation Letterboxd lancée depuis le profil peut prendre un moment.
+export const maxDuration = 60;
 
 async function memberId(params: Props["params"]) {
   const id = Number((await params).id);
@@ -39,6 +44,7 @@ export default async function MemberPage({ params }: Props) {
     ownedFilms(undefined, id), topJson("genres", 5, id), topPeople("director", 5, id), activity({ userId: id, limit: 12 }),
   ]);
   const isMe = id === me.id;
+  const letterboxd = isMe ? (await db().execute({ sql: "SELECT letterboxd_username FROM users WHERE id = ?", args: [id] })).rows[0]?.letterboxd_username : null;
   const hero = favorites.find((f) => f.backdrop_path);
 
   return (
@@ -61,9 +67,12 @@ export default async function MemberPage({ params }: Props) {
               </p>
             </div>
             {isMe && (
-              <Link href="/compte" className="btn">
-                Modifier mon compte
-              </Link>
+              <div className="flex flex-wrap items-start gap-2">
+                {letterboxd ? <LetterboxdSyncButton /> : null}
+                <Link href="/compte" className="btn">
+                  Modifier mon compte
+                </Link>
+              </div>
             )}
           </div>
         </div>

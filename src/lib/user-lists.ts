@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { uid } from "./auth";
-import { db, ensureSchema, posterSql } from "./db";
+import { backdropSql, db, ensureSchema, posterSql } from "./db";
 
 // Les listes créées dans Dreams (à côté des listes importées de Letterboxd et des listes de référence).
 // Visibilité : 'membres' (tous les membres la voient) ou 'prive'. Un lien secret permet de la montrer à n'importe qui.
@@ -56,7 +56,7 @@ export async function userListDetail(where: { id: number } | { token: string }) 
   if (!rows[0]) return null;
   const list = toList(rows[0]);
   const films = await db().execute({
-    sql: `SELECT f.id, f.name, f.title_fr, f.year, ${posterSql(viewer)} AS poster_path, f.backdrop_path, f.tmdb_id, f.lb_uri, f.runtime,
+    sql: `SELECT f.id, f.name, f.title_fr, f.year, ${posterSql(viewer)} AS poster_path, ${backdropSql(viewer)} AS backdrop_path, f.tmdb_id, f.lb_uri, f.runtime,
             json_extract(f.directors, '$[0]') AS director, i.position
           FROM user_list_items i JOIN films f ON f.id = i.film_id WHERE i.list_id = ? ORDER BY i.position`,
     args: [list.id],

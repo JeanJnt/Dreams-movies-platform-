@@ -1,5 +1,5 @@
 import { uid, viewedUser } from "./auth";
-import { db, ensureSchema, posterSql } from "./db";
+import { backdropSql, db, ensureSchema, posterSql } from "./db";
 import type { Film } from "./queries";
 
 export const FORMATS = ["Blu-ray 4K", "Blu-ray", "DVD", "Numérique", "VHS"] as const;
@@ -53,7 +53,7 @@ export async function ownedFilms(format?: string, userId?: number): Promise<Owne
   await schema();
   const u = await viewedUser(userId);
   const { rows } = await db().execute({
-    sql: `SELECT f.id AS fid, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, f.backdrop_path,
+    sql: `SELECT f.id AS fid, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
             r.rating, (l.film_id IS NOT NULL) AS liked, o.format, o.case_type, o.edition, o.cover, o.ean,
             (w.film_id IS NOT NULL) AS seen, json_extract(f.directors, '$[0]') AS director, f.runtime, f.disc_color
           FROM owned o JOIN films f ON f.id = o.film_id

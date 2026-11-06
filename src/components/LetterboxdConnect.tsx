@@ -15,6 +15,33 @@ const ago = (iso: string) => {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
 };
 
+type SyncReport = { ok: boolean; error?: string; newFilms: number; newReviews: number };
+
+const syncMessage = (r: SyncReport) =>
+  r.ok
+    ? { ok: true, text: `✓ ${r.newFilms ? `${r.newFilms} nouveau${r.newFilms > 1 ? "x" : ""} film${r.newFilms > 1 ? "s" : ""}` : "Aucun nouveau film"}${r.newReviews ? ` et ${r.newReviews} review${r.newReviews > 1 ? "s" : ""}` : ""} depuis Letterboxd.` }
+    : { ok: false, text: r.error ?? "Synchronisation impossible." };
+
+// Le bouton seul, pour le profil : récupère tout de suite ce qui est nouveau sur Letterboxd.
+export function LetterboxdSyncButton() {
+  const router = useRouter();
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, start] = useTransition();
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        disabled={pending}
+        onClick={() => start(async () => { setMessage(syncMessage(await syncLetterboxdAction())); router.refresh(); })}
+        className="btn"
+      >
+        {pending ? "Synchronisation…" : "Synchroniser Letterboxd"}
+      </button>
+      {message && <p className={`text-xs ${message.ok ? "text-accent" : "text-heart"}`}>{message.text}</p>}
+    </div>
+  );
+}
+
 // Connexion au flux Letterboxd : ensuite, les nouveaux films et reviews arrivent tout seuls chaque matin.
 export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }: Props) {
   const router = useRouter();
@@ -22,12 +49,7 @@ export function LetterboxdConnect({ connected, suggested, syncedAt, highlight }:
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
 
-  const report = (r: { ok: boolean; error?: string; newFilms: number; newReviews: number }) =>
-    setMessage(
-      r.ok
-        ? { ok: true, text: `✓ ${r.newFilms ? `${r.newFilms} nouveau${r.newFilms > 1 ? "x" : ""} film${r.newFilms > 1 ? "s" : ""}` : "Aucun nouveau film"}${r.newReviews ? ` et ${r.newReviews} review${r.newReviews > 1 ? "s" : ""}` : ""} depuis Letterboxd.` }
-        : { ok: false, text: r.error ?? "Synchronisation impossible." },
-    );
+  const report = (r: SyncReport) => setMessage(syncMessage(r));
 
   return (
     <section className={`space-y-4 rounded-3xl border p-5 md:p-6 ${highlight ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>

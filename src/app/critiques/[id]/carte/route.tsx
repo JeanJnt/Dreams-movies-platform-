@@ -1,11 +1,18 @@
 /* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
 import { ImageResponse } from "next/og";
 import { cookies } from "next/headers";
+import sharp from "sharp";
+import { plainParagraphs } from "@/lib/critique-card";
 import { getCritique } from "@/lib/critiques";
 import { BRAND_PATH, BRAND_VIEWBOX } from "@/lib/brand-path";
+import { mediaBytes } from "@/lib/media";
 import { backdrop, poster } from "@/lib/tmdb";
 
-// Carte de partage d'une critique (format portrait 1080 × 1350, idéal pour Instagram), aux couleurs du thème.
+// Carte de partage d'une critique, aux couleurs du thème : une seule image de 1080 px de large, avec tout le texte.
+// Sa hauteur suit le texte, avec au moins le format portrait 1080 × 1350 pour une critique courte.
+// Plus l'image est haute, plus elle est longue à générer : une critique très longue peut prendre plusieurs dizaines de secondes.
+export const maxDuration = 60;
+
 const PALETTES: Record<string, { bg: string; fg: string; accent: string; muted: string; font: string; italic: boolean }> = {
   yume: { bg: "#101c55", fg: "#fbf3d9", accent: "#f2c230", muted: "#a9b5e0", font: "Fraunces", italic: true },
   totoro: { bg: "#e6f1ec", fg: "#1f3a2c", accent: "#3f7d4e", muted: "#5e7b6b", font: "Kaisei Decol", italic: false },
@@ -20,7 +27,9 @@ const PALETTES: Record<string, { bg: string; fg: string; accent: string; muted: 
 async function loadFont(family: string, text: string, italic: boolean) {
   const weight = family === "Fraunces" ? "900" : family === "Bodoni Moda" || family === "Kaisei Decol" ? "700" : "400";
   const axis = italic ? `ital,wght@1,${weight}` : `wght@${weight}`;
-  const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:${axis}&text=${encodeURIComponent(text)}`)).text();
+  // Chaque lettre une seule fois : le texte entier d'une critique ne tiendrait pas dans l'adresse.
+  const letters = encodeURIComponent([...new Set(text)].join(""));
+  const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:${axis}&text=${letters}`)).text();
   const url = css.match(/src: url\((.+?)\) format/)?.[1];
   if (!url) throw new Error(`Police introuvable : ${family}`);
   return (await fetch(url)).arrayBuffer();
@@ -48,6 +57,15 @@ function Stars({ rating, color }: { rating: number | null; color: string }) {
   );
 }
 
+// Une image envoyée par le membre n'a pas d'adresse publique : on l'intègre directement à la carte.
+async function inlineImage(url: string | null) {
+  if (!url?.startsWith("/media/")) return url;
+  const data = await mediaBytes(url);
+  if (!data) return null;
+  const jpeg = await sharp(data).rotate().resize({ width: 1280, withoutEnlargement: true }).jpeg({ quality: 85 }).toBuffer();
+  return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
+}
+
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const c = await getCritique(Number((await params).id));
   if (!c) return new Response("Critique introuvable", { status: 404 });
@@ -56,18 +74,16 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   const filmTitle = c.filmTitleFr ?? c.filmName;
   const headline = c.title || filmTitle;
-  // Extrait : le chapô, sinon le début du texte (sans la mise en forme Markdown).
-  const plain = (c.lede || c.body).replace(/[#>*_`-]/g, "").replace(/\s+/g, " ").trim();
-  const excerpt = plain.length > 260 ? `${plain.slice(0, 257).replace(/\s\S*$/, "")}…` : plain;
-  const fontData = await loadFont(p.font, `${headline}${filmTitle}Dreams`, p.italic).catch(() => null);
-  // Police du texte courant : Inter, pour l'extrait et les petites mentions.
-  const sansData = await loadFont("Inter", `${excerpt}${filmTitle} · ${c.year ?? ""}${c.directors.join(", ")}JOURNAL DE CINÉMA`, false).catch(() => null);
-  const bg = backdrop(c.backdropPath);
-  const cover = poster(c.posterPath, "w500");
+  const paragraphs = [...(c.lede.trim() ? [c.lede.replace(/\s+/g, " ").trim()] : []), ...plainParagraphs(c.body)];
 
-  return new ImageResponse(
+  const fontData = await loadFont(p.font, `${headline}${filmTitle}Dreams`, p.italic).catch(() => null);
+  // Police du texte courant : Inter, pour le texte et les petites mentions.
+  const sansData = await loadFont("Inter", `${paragraphs.join("")}${filmTitle} · ${c.year ?? ""}${c.directors.join(", ")}JOURNAL DE CINÉMA`, false).catch(() => null);
+  const [bg, cover] = await Promise.all([inlineImage(backdrop(c.backdropPath)), inlineImage(poster(c.posterPath, "w500"))]);
+
+  const image = new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: p.bg, color: p.fg, fontFamily: "Display" }}>
+      <div style={{ width: 1080, minHeight: 1350, display: "flex", flexDirection: "column", background: p.bg, color: p.fg, fontFamily: "Display" }}>
         {/* Bandeau image du film */}
         <div style={{ position: "relative", display: "flex", height: 560 }}>
           {bg && <img src={bg} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
@@ -85,9 +101,11 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", padding: "56px 72px 0", flex: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 34, padding: "56px 72px 0", flexGrow: 1 }}>
           <div style={{ fontSize: headline.length > 40 ? 64 : 84, lineHeight: 1.02, fontStyle: p.italic ? "italic" : "normal" }}>{headline}</div>
-          <div style={{ fontSize: 34, lineHeight: 1.45, marginTop: 34, color: p.fg, opacity: 0.85, fontFamily: "Sans" }}>{excerpt}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 22, fontSize: 34, lineHeight: 1.45, color: p.fg, opacity: 0.85, fontFamily: "Sans" }}>
+            {paragraphs.map((t, i) => <div key={i} style={{ display: "flex" }}>{t}</div>)}
+          </div>
         </div>
 
         {/* Signature */}
@@ -107,11 +125,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     ),
     {
       width: 1080,
-      height: 1350,
+      height: undefined, // sans hauteur imposée, le rendu la calcule d'après le contenu
       fonts: [
         ...(fontData ? [{ name: "Display", data: fontData, style: (p.italic ? "italic" : "normal") as "italic" | "normal" }] : []),
         ...(sansData ? [{ name: "Sans", data: sansData, style: "normal" as const }] : []),
       ],
     },
   );
+  // La carte change avec le texte, le fond et le thème : pas de cache (par défaut, le navigateur la garderait un an).
+  image.headers.set("Cache-Control", "private, no-store");
+  return image;
 }

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DiscStylePicker } from "@/components/DiscStylePicker";
+import { BackdropButton } from "@/components/FilmImagePicker";
 import { discStyles } from "@/lib/disc-style";
+import { filmImages } from "@/lib/film-images";
 import { Poster } from "@/components/FilmCard";
 import { MediaGallery } from "@/components/MediaGallery";
 import { OwnButton } from "@/components/OwnButton";
@@ -62,7 +64,7 @@ export default async function FilmPage({ params }: Props) {
   const id = Number((await params).id);
   const film = await filmDetail(id);
   if (!film) notFound();
-  const [reviews, diary, lists, providers, critique, owned, media, posters, me] = await Promise.all([
+  const [reviews, diary, lists, providers, critique, owned, media, posters, images, me] = await Promise.all([
     filmReviews(id),
     filmDiary(id),
     filmLists(id),
@@ -71,6 +73,7 @@ export default async function FilmPage({ params }: Props) {
     ownedItem(id),
     filmMedia(id),
     currentPoster(id),
+    filmImages(id),
     currentUser(),
   ]);
   const [cf] = await caseFilms([id], "/film");
@@ -181,7 +184,8 @@ export default async function FilmPage({ params }: Props) {
                   </PosterPicker>
                 </div>
                 <div className="aspect-square w-12">
-                  <DiscStylePicker filmId={id} disc={{ ...discBase, ...discStyle }} />
+                  {/* la clé repart de la maquette enregistrée quand un choix d'image la change */}
+                  <DiscStylePicker key={discStyle?.variant ?? "auto"} filmId={id} disc={{ ...discBase, ...discStyle }} customImage={images.disc} />
                 </div>
                 <span className="hidden max-w-[9rem] text-[12.5px] leading-snug text-muted sm:block">Affiche et disque : touchez pour changer</span>
               </div>
@@ -207,11 +211,12 @@ export default async function FilmPage({ params }: Props) {
         <section id="synopsis" className="full-bleed relative scroll-mt-32" aria-label="Synopsis">
           <div className="relative mx-auto max-w-[1680px]">
             {bg && <img src={bg} alt="" className="aspect-[2.39/1] max-h-[78svh] min-h-[22rem] w-full object-cover" />}
+            <BackdropButton filmId={id} current={film.backdrop_path} hasCustom={Boolean(images.backdrop)} />
             <div className="absolute inset-0 bg-[linear-gradient(0deg,#000_0%,rgb(0_0_0/0.55)_38%,transparent_70%),linear-gradient(90deg,rgb(0_0_0/0.6),transparent_55%)]" />
             {film.overview && (
               <div className="absolute inset-x-0 bottom-0 px-[var(--gutter)] pb-10 md:pb-14">
                 <p className="wide text-muted">Synopsis</p>
-                <p className="mt-4 max-w-[46ch] font-display text-[clamp(1.35rem,2.4vw,2.2rem)] leading-[1.22]">{film.overview}</p>
+                <p className="mt-4 max-w-[52ch] text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.5] font-medium">{film.overview}</p>
               </div>
             )}
           </div>
@@ -350,7 +355,7 @@ export default async function FilmPage({ params }: Props) {
             initial={owned}
             formats={FORMATS}
             caseTypes={CASE_TYPES}
-            film={{ id, href: `/film/${id}`, title, year: film.year, director: film.directors[0] ?? null, runtime: film.runtime, image: backdrop(film.backdrop_path), poster: poster(film.poster_path, "w500") }}
+            film={{ id, href: `/film/${id}`, title, year: film.year, director: film.directors[0] ?? null, runtime: film.runtime, image: backdrop(film.backdrop_path), poster: poster(film.poster_path, "w500"), ...discStyle }}
           />
 
           <div className="card p-6">

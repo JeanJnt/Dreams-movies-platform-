@@ -1,5 +1,5 @@
 import { uid } from "./auth";
-import { db, ensureSchema, posterSql } from "./db";
+import { backdropSql, db, ensureSchema, posterSql } from "./db";
 
 export type Critique = {
   id: number;
@@ -55,7 +55,7 @@ function withFilm(r: Record<string, unknown>): CritiqueWithFilm {
 }
 
 // Toujours filtré par utilisateur : on ne lit jamais la critique de quelqu'un d'autre.
-const withFilmSql = (u: number) => `SELECT c.*, f.name, f.title_fr, f.year, ${posterSql(u)} AS poster_path, f.backdrop_path, f.directors
+const withFilmSql = (u: number) => `SELECT c.*, f.name, f.title_fr, f.year, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path, f.directors
   FROM critiques c JOIN films f ON f.id = c.film_id WHERE c.user_id = ${u}`;
 
 export async function critiqueForFilm(filmId: number) {

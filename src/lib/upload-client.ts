@@ -8,7 +8,7 @@ import { uploadTargetAction } from "@/app/actions";
  * - En ligne : directement du navigateur vers Vercel Blob (pas de limite de 4,5 Mo), puis renvoie son adresse.
  * - En local : renvoie null, et l'appelant utilise l'envoi classique (formulaire vers le serveur).
  */
-export async function sendFile(file: File, filmId: number, prefix: "media" | "cover" | "poster", onProgress?: (pct: number) => void) {
+export async function sendFile(file: File, filmId: number, prefix: "media" | "cover" | "poster" | "backdrop" | "disc", onProgress?: (pct: number) => void) {
   const target = await uploadTargetAction(filmId, file.name, prefix);
   if (target.mode === "local") return null;
   await upload(target.pathname, file, {

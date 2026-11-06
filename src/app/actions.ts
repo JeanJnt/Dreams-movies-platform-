@@ -13,6 +13,7 @@ import { deleteCritique, saveCritique } from "@/lib/critiques";
 import { randomUUID } from "node:crypto";
 import { addFile, addYoutube, deleteMedia, MIME, registerUploaded, saveImage, setMediaVisibility } from "@/lib/media";
 import { mediaPath, blobEnabled } from "@/lib/storage";
+import { imageOptions, isImageKind, setFilmImage, setUploadedFilmImage, uploadFilmImage } from "@/lib/film-images";
 import { posterOptions, setCustomPoster, setUploadedPoster, uploadPoster } from "@/lib/posters";
 import { searchMyFilms } from "@/lib/queries";
 import { setDiscStyle } from "@/lib/disc-style";
@@ -167,6 +168,38 @@ export async function uploadPosterAction(filmId: number, formData: FormData): Pr
   return {};
 }
 
+export async function imageOptionsAction(filmId: number) {
+  await requireUser();
+  return imageOptions(filmId);
+}
+
+export async function setFilmImageAction(filmId: number, kind: string, path: string | null) {
+  await requireUser();
+  if (!isImageKind(kind)) throw new Error("Image invalide");
+  await setFilmImage(filmId, kind, path);
+  revalidatePath("/", "layout"); // l'image apparaît sur beaucoup de pages
+}
+
+export async function uploadFilmImageAction(filmId: number, kind: string, formData: FormData): Promise<{ error?: string }> {
+  await requireUser();
+  const file = formData.get("image");
+  if (!isImageKind(kind) || !(file instanceof File) || !file.size) return { error: "Choisis une image." };
+  try {
+    await uploadFilmImage(filmId, kind, file);
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setUploadedFilmImageAction(filmId: number, kind: string, url: string) {
+  await requireUser();
+  if (!isImageKind(kind)) throw new Error("Image invalide");
+  await setUploadedFilmImage(filmId, kind, url);
+  revalidatePath("/", "layout");
+}
+
 export async function deleteCritiqueAction(id: number, filmId: number) {
   await requireUser();
   await deleteCritique(id);
@@ -177,7 +210,7 @@ export async function deleteCritiqueAction(id: number, filmId: number) {
 
 // --- Envoi de fichiers (en ligne : directement du navigateur vers Vercel Blob) ---
 
-export async function uploadTargetAction(filmId: number, fileName: string, prefix: "media" | "cover" | "poster") {
+export async function uploadTargetAction(filmId: number, fileName: string, prefix: "media" | "cover" | "poster" | "backdrop" | "disc") {
   const me = await requireUser();
   const ext = (fileName.match(/\.\w+$/)?.[0] ?? ".jpg").toLowerCase();
   const name = `${prefix === "media" ? "" : `${prefix}-`}${randomUUID()}${ext}`;

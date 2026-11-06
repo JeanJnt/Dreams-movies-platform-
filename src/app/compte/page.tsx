@@ -30,7 +30,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const calendar = `webcal://${host}/agenda/ics?token=${info.calendar_token}`;
 
   const sections = [
-    { id: "import", label: "Import Letterboxd" },
+    { id: "import", label: "Letterboxd" },
     { id: "profil", label: "Profil" },
     { id: "theme", label: "Thème" },
     { id: "agenda", label: "Agenda" },
@@ -68,10 +68,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </nav>
 
         <div className="min-w-0 divide-y divide-[var(--line)] border-y border-[var(--line)]">
-          <Setting id="import" title="Import Letterboxd" text="Vos films, notes, critiques et listes arrivent depuis l'export Letterboxd ; la synchronisation garde ensuite le journal à jour.">
+          <Setting id="import" title="Letterboxd" text="Une fois votre profil connecté, la synchronisation récupère chaque jour vos nouveaux films ; l'import d'un export Letterboxd complète le reste (critiques, listes).">
+            {/* Une fois connecté, la synchronisation passe en premier : c'est elle qu'on vient chercher ici. */}
+            {info.letterboxd_username ? <LetterboxdConnect connected={info.letterboxd_username as string} syncedAt={(info.letterboxd_synced_at as string) ?? null} /> : null}
             <ImportPanel welcome={onboarding} letterboxdConnected={Boolean(info.letterboxd_username)} />
             {/* Pendant l'accueil d'un nouveau membre, la connexion Letterboxd apparaît à la fin de l'import. */}
-            {(!onboarding || info.letterboxd_username) && <LetterboxdConnect connected={(info.letterboxd_username as string) ?? null} syncedAt={(info.letterboxd_synced_at as string) ?? null} />}
+            {!onboarding && !info.letterboxd_username && <LetterboxdConnect connected={null} />}
           </Setting>
 
           <Setting id="profil" title="Profil et préférences" text={me.username ? "Ce que les autres membres voient de vous, et vos préférences d'affichage." : "Choisissez votre pseudo : c'est lui que les autres membres verront."}>

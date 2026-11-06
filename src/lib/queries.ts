@@ -1,5 +1,5 @@
 import { uid, viewedUser } from "./auth";
-import { db, posterSql } from "./db";
+import { backdropSql, db, posterSql } from "./db";
 import { normalize } from "./titles";
 
 // Recherche dans tous les titres d'un film (original, français, anglais, traductions), sans tenir compte des accents.
@@ -42,7 +42,7 @@ export type FilmDetail = Film & {
 const json = <T>(v: unknown, fallback: T): T => (typeof v === "string" ? JSON.parse(v) : fallback);
 
 // Colonnes et jointures communes ; u est l'identifiant de l'utilisateur (entier issu de la session).
-const filmColumns = (u: number) => `f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, f.backdrop_path,
+const filmColumns = (u: number) => `f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
   r.rating, (l.film_id IS NOT NULL) AS liked, json_extract(f.directors, '$[0]') AS director, f.runtime, f.tmdb_id, f.lb_uri`;
 const filmJoins = (u: number) =>
   `LEFT JOIN ratings r ON r.film_id = f.id AND r.user_id = ${u} LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}`;
@@ -119,7 +119,7 @@ export type DiaryEntry = Film & { watched_date: string; rewatch: boolean };
 export async function recentDiary(limit = 12, userId?: number): Promise<DiaryEntry[]> {
   const u = await viewedUser(userId);
   const { rows } = await db().execute({
-    sql: `SELECT f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, f.backdrop_path,
+    sql: `SELECT f.id, f.name, f.year, f.title_fr, ${posterSql(u)} AS poster_path, ${backdropSql(u)} AS backdrop_path,
             d.rating, (l.film_id IS NOT NULL) AS liked, d.watched_date, d.rewatch, f.directors, f.runtime
           FROM diary d JOIN films f ON f.id = d.film_id LEFT JOIN likes l ON l.film_id = f.id AND l.user_id = ${u}
           WHERE d.user_id = ${u}
@@ -173,7 +173,7 @@ export async function overview() {
 export async function filmDetail(id: number): Promise<FilmDetail | null> {
   const u = await uid();
   const { rows } = await db().execute({
-    sql: `SELECT f.*, ${posterSql(u)} AS user_poster, r.rating, (l.film_id IS NOT NULL) AS liked, w.date AS watched_date,
+    sql: `SELECT f.*, ${posterSql(u)} AS user_poster, ${backdropSql(u)} AS user_backdrop, r.rating, (l.film_id IS NOT NULL) AS liked, w.date AS watched_date,
             (wl.film_id IS NOT NULL) AS in_watchlist
           FROM films f ${filmJoins(u)}
           LEFT JOIN watched w ON w.film_id = f.id AND w.user_id = ${u}
@@ -184,7 +184,7 @@ export async function filmDetail(id: number): Promise<FilmDetail | null> {
   const r = rows[0];
   if (!r) return null;
   return {
-    ...toFilm({ ...r, poster_path: r.user_poster }),
+    ...toFilm({ ...r, poster_path: r.user_poster, backdrop_path: r.user_backdrop }),
     lb_uri: (r.lb_uri as string) ?? null,
     tmdb_id: r.tmdb_id == null ? null : Number(r.tmdb_id),
     original_title: (r.original_title as string) ?? null,

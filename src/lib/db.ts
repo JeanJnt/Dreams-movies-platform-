@@ -217,6 +217,13 @@ const PER_USER: { name: string; create: string; columns: string[]; indexes?: str
     create: `CREATE TABLE IF NOT EXISTS user_posters (user_id INTEGER NOT NULL, film_id INTEGER NOT NULL, poster TEXT NOT NULL, PRIMARY KEY (user_id, film_id))`,
     columns: ["film_id", "poster"],
   },
+  {
+    // Images choisies par chacun pour un film : le fond de la fiche (backdrop) et l'image du disque (disc).
+    // color : sa couleur dominante, pour accorder l'étiquette du disque.
+    name: "film_images",
+    create: `CREATE TABLE IF NOT EXISTS film_images (user_id INTEGER NOT NULL, film_id INTEGER NOT NULL, kind TEXT NOT NULL, image TEXT NOT NULL, color TEXT, PRIMARY KEY (user_id, film_id, kind))`,
+    columns: ["film_id", "kind", "image", "color"],
+  },
 ];
 
 // Toutes les tables d'un utilisateur (pour l'export, la suppression du compte et la reprise des données).
@@ -315,3 +322,7 @@ export function ensureSchema() {
 // uid est toujours un entier issu de la session (jamais une saisie), on peut l'insérer tel quel.
 export const posterSql = (uid: number) =>
   `COALESCE((SELECT up.poster FROM user_posters up WHERE up.user_id = ${Number(uid)} AND up.film_id = f.id), f.poster_path)`;
+
+// Pareil pour l'image de fond. owner : l'id du membre, ou « c.user_id » pour le fond choisi par l'auteur d'une critique.
+export const backdropSql = (owner: number | "c.user_id") =>
+  `COALESCE((SELECT fi.image FROM film_images fi WHERE fi.user_id = ${owner} AND fi.film_id = f.id AND fi.kind = 'backdrop'), f.backdrop_path)`;

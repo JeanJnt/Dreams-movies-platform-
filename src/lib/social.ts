@@ -1,5 +1,5 @@
 import { requireUser, uid } from "./auth";
-import { db } from "./db";
+import { backdropSql, db } from "./db";
 
 /*
  * Le côté « Letterboxd entre amis » : profils, fil d'activité, avis des membres sur un film.
@@ -55,7 +55,7 @@ export async function sharedCritiques(opts: { userId?: number; filmId?: number; 
   if (opts.filmId) { where.push("c.film_id = ?"); args.push(opts.filmId); }
   if (opts.excludeMine) where.push(`c.user_id <> ${me}`);
   const { rows } = await db().execute({
-    sql: `SELECT c.*, COALESCE(u.username, u.name) AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, f.backdrop_path,
+    sql: `SELECT c.*, COALESCE(u.username, u.name) AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, ${backdropSql("c.user_id")} AS backdrop_path,
             COALESCE((SELECT up.poster FROM user_posters up WHERE up.user_id = c.user_id AND up.film_id = f.id), f.poster_path) AS poster
           FROM critiques c JOIN users u ON u.id = c.user_id JOIN films f ON f.id = c.film_id
           WHERE ${where.join(" AND ")} ORDER BY c.updated_at DESC LIMIT ${opts.limit ?? 50}`,
@@ -68,7 +68,7 @@ export async function sharedCritiques(opts: { userId?: number; filmId?: number; 
 export async function readableCritique(id: number) {
   const me = await uid();
   const { rows } = await db().execute({
-    sql: `SELECT c.*, COALESCE(u.username, u.name) AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, f.backdrop_path, f.directors,
+    sql: `SELECT c.*, COALESCE(u.username, u.name) AS author, COALESCE(f.title_fr, f.name) AS film_title, f.year, ${backdropSql("c.user_id")} AS backdrop_path, f.directors,
             COALESCE((SELECT up.poster FROM user_posters up WHERE up.user_id = c.user_id AND up.film_id = f.id), f.poster_path) AS poster
           FROM critiques c JOIN users u ON u.id = c.user_id JOIN films f ON f.id = c.film_id
           WHERE c.id = ? AND (c.user_id = ? OR (c.status = 'published' AND c.visibility = 'membres'))`,
