@@ -156,15 +156,15 @@ export function CaseParade({ rows, start = 0 }: { rows: ParadeRow[]; start?: num
     >
       <div ref={stage} className="relative h-[min(72svh,680px)] min-h-[440px] touch-pan-y overflow-hidden rounded-[var(--r-panel)] bg-[radial-gradient(70%_60%_at_50%_45%,#16161a,#000_75%)] shadow-[0_0_0_1px_var(--line)]">
         {gl && (
-          <Canvas shadows frameloop={visible ? "always" : "never"} dpr={[1, 1.6]} camera={{ fov: 26, position: [0, 0.35, 7.2] }} gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.02 }}>
+          <Canvas frameloop={visible ? "always" : "never"} dpr={[1, 1.5]} camera={{ fov: 26, position: [0, 0.35, 7.2] }} gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.02 }}>
             <Suspense fallback={null}>
               <Environment files="/hdri/studio_small_09_1k.hdr" environmentIntensity={0.85} />
-              <directionalLight position={[-3, 4, 4]} intensity={1.4} castShadow shadow-mapSize={[1024, 1024]} />
+              <directionalLight position={[-3, 4, 4]} intensity={1.4} />
               {rows.map((r, i) =>
                 Math.abs(i - current) <= WINDOW ? <ParadeCase key={`${r.film.id}-${i}`} row={r} index={i} pos={pos} isCurrent={i === current} onPick={(j) => (j === current ? null : go(j))} /> : null,
               )}
               <CamFit />
-              <ContactShadows position={[0, -1.0, 0]} opacity={0.6} scale={16} blur={2.4} far={2.2} resolution={512} color="#000" />
+              <ContactShadows position={[0, -1.0, 0]} opacity={0.6} scale={16} blur={2.4} far={2.2} resolution={256} color="#000" />
             </Suspense>
           </Canvas>
         )}

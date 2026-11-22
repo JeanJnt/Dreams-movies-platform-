@@ -58,7 +58,7 @@ export function PageHeader({
       )}
       <div className="mt-10 flex flex-wrap items-end justify-between gap-x-10 gap-y-6 md:mt-16">
         <div className="min-w-0 max-w-5xl">
-          <h1 data-split className={`page-title ${size === "xl" ? "text-[clamp(3.2rem,8vw,7.8rem)]" : "text-[clamp(2.6rem,6vw,5.2rem)]"} leading-[0.94]`}>
+          <h1 data-split className={`page-title ${size === "xl" ? "text-[clamp(3.2rem,8vw,7.8rem)]" : "text-[clamp(2.6rem,6vw,5.2rem)]"} leading-[0.94] max-md:text-[clamp(1.9rem,9vw,3.2rem)]`}>
             {title}
           </h1>
           {(eyebrow || number) && (

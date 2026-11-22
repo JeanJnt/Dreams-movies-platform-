@@ -115,22 +115,21 @@ export function FilmStage({ film, className = "", focus, controls = true }: { fi
       <div className="absolute inset-0 cursor-pointer touch-pan-y active:cursor-grabbing" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} role="img" aria-label={`Boîtier de ${film.title}. Glissez pour le tourner, touchez pour l'ouvrir.`}>
         {gl && (
           <Canvas
-            shadows
             frameloop={visible ? "always" : "never"}
-            dpr={[1, 1.8]}
+            dpr={[1, 1.5]}
             camera={{ fov: 24, position: [0, 0.05, 4.6], near: 0.1, far: 50 }}
             gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.02 }}
           >
             <Suspense fallback={null}>
               <Environment files="/hdri/studio_small_09_1k.hdr" environmentIntensity={0.9} />
-              <directionalLight position={[-2.5, 4, 3.5]} intensity={1.6} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0004} />
+              <directionalLight position={[-2.5, 4, 3.5]} intensity={1.6} />
               <directionalLight position={[3, 1, -2]} intensity={0.6} color="#c9d4ff" />
               <Turntable yaw={yaw} open={openRef}>
                 <group scale={10}>
                   <CaseObject film={film} anim={anim} />
                 </group>
               </Turntable>
-              <ContactShadows position={[0, -1.02, 0]} opacity={0.55} scale={7} blur={2.6} far={2} resolution={512} color="#000" />
+              <ContactShadows position={[0, -1.02, 0]} opacity={0.55} scale={7} blur={2.6} far={2} resolution={256} color="#000" />
             </Suspense>
             <Rig open={openRef} />
           </Canvas>

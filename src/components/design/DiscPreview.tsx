@@ -17,7 +17,7 @@ export default function DiscPreview({
 }) {
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
       camera={{ fov: 22, position: [0, 0, 4.4] }}
       gl={{
         antialias: true,

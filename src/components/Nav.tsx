@@ -95,10 +95,11 @@ export const SECTIONS: NavSection[] = [
     ],
   },
 ];
-// Téléphone : exactement cinq onglets ; le compte est en haut à droite, les amis dans le menu du compte
-const MOBILE = ["accueil", "recherche", "films", "agenda", "affiche"];
+// Téléphone : quatre rubriques et le profil, en bas ; « À l'affiche » est la cloche en haut à droite
+const MOBILE = ["accueil", "recherche", "films", "agenda"];
 // Ordinateur : la recherche a son champ dans la barre, elle n'occupe pas d'onglet
 const DESKTOP = ["accueil", "films", "agenda", "affiche", "amis"];
+const PROFILE = ["/stats", "/compte", "/installer", "/admin", "/membres", "/activite"];
 const ROOTS = ["/", "/recherche", "/films", "/agenda", "/alertes"];
 
 export function activeSection(path: string) {
@@ -176,7 +177,8 @@ function SectionMenu({ section, open }: { section: NavSection; open: boolean }) 
   );
 }
 
-function AccountMenu({ user }: { user: NavUser }) {
+// Le menu du compte : en haut à droite sur ordinateur, dernier onglet de la barre du bas sur téléphone
+function AccountMenu({ user, tab = false, active = false }: { user: NavUser; tab?: boolean; active?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
@@ -195,7 +197,7 @@ function AccountMenu({ user }: { user: NavUser }) {
   useGSAP(
     () => {
       if (!panel.current) return;
-      if (open) gsap.fromTo(panel.current, { autoAlpha: 0, y: -6, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.18, ease: "power3.out" });
+      if (open) gsap.fromTo(panel.current, { autoAlpha: 0, y: tab ? 6 : -6, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.18, ease: "power3.out" });
       else gsap.to(panel.current, { autoAlpha: 0, duration: 0.12 });
     },
     { dependencies: [open] },
@@ -211,10 +213,27 @@ function AccountMenu({ user }: { user: NavUser }) {
   ];
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open} aria-label="Mon compte" className="avatar size-10 cursor-pointer text-[15px] transition-transform active:scale-95">
-        {user.name.slice(0, 1).toUpperCase()}
-      </button>
-      <div ref={panel} role="menu" className="invisible absolute top-[calc(100%+10px)] right-0 z-50 w-[min(19rem,calc(100vw-2rem))] origin-top-right opacity-0">
+      {tab ? (
+        <button
+          onClick={() => setOpen(!open)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-current={active ? "page" : undefined}
+          className={`relative flex min-h-[3.4rem] w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[20px] text-[10.5px] tracking-[0.02em] transition-colors duration-150 ${active || open ? "tab-on" : "text-muted"}`}
+        >
+          <span className="avatar size-[22px] text-[11px]">{user.name.slice(0, 1).toUpperCase()}</span>
+          Profil
+        </button>
+      ) : (
+        <button onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open} aria-label="Mon compte" className="avatar size-10 cursor-pointer text-[15px] transition-transform active:scale-95">
+          {user.name.slice(0, 1).toUpperCase()}
+        </button>
+      )}
+      <div
+        ref={panel}
+        role="menu"
+        className={`invisible absolute right-0 z-50 w-[min(19rem,calc(100vw-2rem))] opacity-0 ${tab ? "bottom-[calc(100%+14px)] origin-bottom-right" : "top-[calc(100%+10px)] origin-top-right"}`}
+      >
         <div className="card p-1.5 shadow-[0_30px_80px_-30px_#000]">
           <div className="px-3 pt-2.5 pb-3">
             <p className="text-[13px] text-muted">Connecté</p>
@@ -355,7 +374,7 @@ export function Nav({ alerts, user }: { alerts: number; user: NavUser }) {
             Retour
           </button>
         )}
-        <AccountMenu user={user} />
+        <Bell alerts={alerts} className="size-11" />
       </header>
 
       {/* Téléphone : la barre d'onglets, posée en bas comme une pièce de métal */}
@@ -368,15 +387,14 @@ export function Nav({ alerts, user }: { alerts: number; user: NavUser }) {
               key={k}
               href={s.href}
               aria-current={on ? "page" : undefined}
-              aria-label={k === "affiche" && alerts ? `${s.label}, ${alerts} nouvelle${alerts > 1 ? "s" : ""} alerte${alerts > 1 ? "s" : ""}` : undefined}
               className={`relative flex min-h-[3.4rem] flex-col items-center justify-center gap-1 rounded-[20px] text-[10.5px] tracking-[0.02em] transition-colors duration-150 ${on ? "tab-on" : "text-muted"}`}
             >
               <Icon d={s.icon} className="size-[21px]" />
               {s.label}
-              {k === "affiche" && alerts > 0 && <span className="absolute top-1.5 right-[22%] size-2 rounded-full bg-accent ring-2 ring-black" aria-hidden />}
             </Link>
           );
         })}
+        <AccountMenu user={user} tab active={PROFILE.some((p) => path.startsWith(p)) || path === `/membre/${user.id}`} />
       </nav>
     </>
   );

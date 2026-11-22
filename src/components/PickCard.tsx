@@ -50,8 +50,9 @@ export function PickPoster({ pick: p }: { pick: Pick }) {
           ))}
         </div>
       </div>
-      <p className="mt-2.5 line-clamp-2 text-[14.5px] leading-snug font-medium">{p.title}</p>
-      {originalUnder(p.title, p.originalTitle) && <p className="line-clamp-1 text-[12.5px] text-muted italic">{originalUnder(p.title, p.originalTitle)}</p>}
+      {/* hauteurs fixes (titre sur deux lignes, titre original sur une) : les lignes restent alignées d'une carte à l'autre */}
+      <p className="mt-2.5 line-clamp-2 min-h-[2.75em] text-[14.5px] leading-snug font-medium">{p.title}</p>
+      <p className="line-clamp-1 min-h-[1.5em] text-[12.5px] text-muted italic">{originalUnder(p.title, p.originalTitle) || " "}</p>
       <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">{[p.directors[0], p.year].filter(Boolean).join(" · ")}</p>
     </Link>
   );

@@ -197,14 +197,12 @@ export default async function FilmPage({ params }: Props) {
                   <DesignButton film={{ ...cf, edition: owned?.edition ?? null, caseType: owned?.caseType ?? null, mediaType: film.media_type }} className="btn btn-sm" />
                 </Suspense>
               )}
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 shrink-0">
-                  <PosterPicker filmId={id} current={film.poster_path} hasCustom={Boolean(posters.custom)}>
-                    <Poster film={film} size="w185" />
-                  </PosterPicker>
-                </div>
-                <span className="text-[12.5px] leading-snug text-muted">Affiche</span>
-              </div>
+              <PosterPicker filmId={id} current={film.poster_path} hasCustom={Boolean(posters.custom)}>
+                <span className="w-4 shrink-0 overflow-hidden rounded-[2px]">
+                  <Poster film={film} size="w185" className="!rounded-[2px] !shadow-none" />
+                </span>
+                Changer l&apos;affiche
+              </PosterPicker>
             </div>
           </div>
           <div className="relative -mx-[var(--gutter)] max-lg:order-first lg:col-start-1 lg:row-start-1 lg:mx-0">
