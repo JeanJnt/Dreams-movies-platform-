@@ -108,6 +108,11 @@ export function FavoritesRing({ films }: { films: CaseFilmInfo[] }) {
   const router = useRouter();
   const wrap = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  // la scène est créée une fois, à la première apparition, puis mise en pause hors de l'écran (au lieu d'être détruite et recréée)
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    if (visible) setSeen(true);
+  }, [visible]);
   const [front, setFront] = useState(0);
   const [paused, setPaused] = useState(false);
   const [gl, setGl] = useState<boolean | null>(null);
@@ -196,10 +201,10 @@ export function FavoritesRing({ films }: { films: CaseFilmInfo[] }) {
         role="group"
         aria-label="Mes 10 films en DVD, en cercle. Glissez pour faire tourner, touchez un boîtier pour ouvrir sa fiche."
       >
-        {gl && visible && (
+        {gl && seen && (
           <Canvas
-            shadows
-            dpr={[1, 1.7]}
+            frameloop={visible ? "always" : "never"}
+            dpr={[1, 1.5]}
             camera={{ fov: 30, position: [0, 1.9, 9.6], near: 0.1, far: 60 }}
             gl={{
               antialias: true,
@@ -216,8 +221,6 @@ export function FavoritesRing({ films }: { films: CaseFilmInfo[] }) {
               <directionalLight
                 position={[-3, 6, 5]}
                 intensity={1.5}
-                castShadow
-                shadow-mapSize={[1024, 1024]}
               />
               <spotLight
                 position={[0, 7, 6]}
@@ -246,7 +249,7 @@ export function FavoritesRing({ films }: { films: CaseFilmInfo[] }) {
                 scale={radius * 3.2}
                 blur={2.4}
                 far={2.2}
-                resolution={512}
+                resolution={256}
                 color="#000"
               />
             </Suspense>

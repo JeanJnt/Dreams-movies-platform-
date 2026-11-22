@@ -7,11 +7,12 @@ export type PosterOption = { path: string; lang: string | null; votes: number; w
 
 // Toutes les affiches connues de TMDB pour un film : françaises, anglaises, japonaises, sans texte…
 export async function posterOptions(filmId: number): Promise<PosterOption[]> {
-  const { rows } = await db().execute({ sql: "SELECT tmdb_id FROM films WHERE id = ?", args: [filmId] });
-  const tmdbId = rows[0]?.tmdb_id;
+  const { rows } = await db().execute({ sql: "SELECT tmdb_id, tmdb_tv_id, media_type FROM films WHERE id = ?", args: [filmId] });
+  const tv = rows[0]?.media_type === "tv";
+  const tmdbId = tv ? rows[0]?.tmdb_tv_id : rows[0]?.tmdb_id;
   if (!tmdbId) return [];
   const res = await tmdb<{ posters: { file_path: string; iso_639_1: string | null; vote_count: number; vote_average: number; width: number }[] }>(
-    `/movie/${tmdbId}/images`,
+    `/${tv ? "tv" : "movie"}/${tmdbId}/images`,
     { include_image_language: "fr,en,ja,null" },
     3,
     { next: { revalidate: 60 * 60 * 24 } },

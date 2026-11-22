@@ -9,6 +9,8 @@ import { DiscStacks } from "@/components/dreams/DiscStacks";
 import { poster } from "@/lib/tmdb";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Tabs } from "@/components/ui/Tabs";
+import { WorldMap } from "@/components/WorldMap";
+import { worldMap } from "@/lib/world-map";
 
 export const metadata: Metadata = { title: "Statistiques" };
 export const dynamic = "force-dynamic";
@@ -34,10 +36,12 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
 }
 
 async function Numbers() {
-  const [o, months, ratings, decades, genres, countries, directors, actors, rec, years] = await Promise.all([
-    statsOverview(), perMonth(24), ratingDistribution(), byDecade(), topJson("genres", 10), topJson("countries", 10),
+  const [o, months, ratings, decades, genres, allCountries, directors, actors, rec, years] = await Promise.all([
+    statsOverview(), perMonth(24), ratingDistribution(), byDecade(), topJson("genres", 10), topJson("countries", 300),
     topPeople("director", 8), topPeople("actor", 8), records(), perYear(),
   ]);
+  const countries = allCountries.slice(0, 10);
+  const map = worldMap(allCountries);
   const trend = o.lastYear ? Math.round(((o.thisYear - o.lastYear) / o.lastYear) * 100) : null;
   const year = new Date().getFullYear();
   const favoriteRating = ratings.reduce((a, b) => (b.value > a.value ? b : a));
@@ -60,6 +64,12 @@ async function Numbers() {
       {years.length > 1 && (
         <Card title="Vos années de cinéma" subtitle="Chaque pile : les films vus dans l'année">
           <DiscStacks data={years} />
+        </Card>
+      )}
+
+      {allCountries.length > 0 && (
+        <Card title="Le monde en films" subtitle={`${allCountries.length} pays d'origine parmi vos films vus. Touchez un pays pour le détail.`}>
+          <WorldMap map={map} />
         </Card>
       )}
 

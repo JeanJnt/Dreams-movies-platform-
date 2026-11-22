@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { posterOptionsAction, setPosterAction, setUploadedPosterAction, uploadPosterAction } from "@/app/actions";
 import { sendFile } from "@/lib/upload-client";
 import type { PosterOption } from "@/lib/posters";
@@ -10,7 +11,7 @@ const LANGS: Record<string, string> = { fr: "FR", en: "EN", ja: "JA" };
 const tmdbImg = (p: string, size = "w342") => `https://image.tmdb.org/t/p/${size}${p}`;
 
 // Bouton « Changer l'affiche » posé sur l'affiche de la fiche film, et sa fenêtre de choix.
-export function PosterPicker({ filmId, current, hasCustom, children }: { filmId: number; current: string | null; hasCustom: boolean; children: React.ReactNode }) {
+export function PosterPicker({ filmId, current, hasCustom, children, className = "btn btn-sm" }: { filmId: number; current: string | null; hasCustom: boolean; children: React.ReactNode; className?: string }) {
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<PosterOption[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,18 +48,14 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
 
   return (
     <>
-      <div className="group/poster relative">
+      {/* Chaque membre choisit sa propre affiche : elle ne change que pour lui */}
+      <button type="button" onClick={openPicker} className={className}>
         {children}
-        <button
-          onClick={openPicker}
-          className="absolute inset-x-2 bottom-2 rounded-lg bg-black/75 py-1.5 text-xs text-white opacity-0 backdrop-blur transition group-hover/poster:opacity-100 focus:opacity-100 max-md:opacity-100"
-        >
-          Changer l&apos;affiche
-        </button>
-      </div>
+      </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 md:items-center" onClick={() => setOpen(false)}>
+      {/* rendu sur <body> : la page animée crée un contexte d'empilement qui la placerait sous la barre de navigation */}
+      {open && createPortal(
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/80 md:items-center" onClick={() => setOpen(false)}>
           <div
             className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-border bg-surface md:rounded-3xl"
             onClick={(e) => e.stopPropagation()}
@@ -123,7 +120,8 @@ export function PosterPicker({ filmId, current, hasCustom, children }: { filmId:
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

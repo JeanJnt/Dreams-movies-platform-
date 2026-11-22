@@ -181,7 +181,7 @@ export function DiscIndex({ films }: { films: IndexFilm[] }) {
       {/* la scène */}
       <div className="absolute inset-0 touch-pan-y" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         {gl && (
-          <Canvas frameloop={visible ? "always" : "never"} dpr={[1, 1.75]} camera={{ fov: 30, position: [0, 0, 5.4] }} gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}>
+          <Canvas frameloop={visible ? "always" : "never"} dpr={[1, 1.5]} camera={{ fov: 30, position: [0, 0, 5.4] }} gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}>
             <Suspense fallback={null}>
               <Environment files="/hdri/studio_small_09_1k.hdr" environmentIntensity={0.85} />
               <Light />

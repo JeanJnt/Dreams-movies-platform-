@@ -158,6 +158,7 @@ export async function setPosterAction(filmId: number, posterPath: string | null)
 }
 
 export async function uploadPosterAction(filmId: number, formData: FormData): Promise<{ error?: string }> {
+  await requireUser();
   const file = formData.get("poster");
   if (!(file instanceof File) || !file.size) return { error: "Choisissez une image." };
   try {

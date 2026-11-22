@@ -112,7 +112,7 @@ function PersonFilmCard({ film: f, showRole }: { film: PersonFilm; showRole: boo
         {f.year}
         {f.myRating != null && <Stars rating={f.myRating} className="ml-auto" />}
       </p>
-      {showRole && f.role && <p className="line-clamp-1 text-[11px] text-muted italic">{f.role}</p>}
+      {showRole && <p className="line-clamp-1 min-h-[1.5em] text-[11px] text-muted italic">{f.role || " "}</p>}
     </Link>
   );
 }
