@@ -291,6 +291,7 @@ const ADDED_COLUMNS: [table: string, column: string, definition: string][] = [
   ["users", "alerts_checked_at", "TEXT"], // dernière mise à jour des alertes cinéma (affichée sur la page)
   // Films à surveiller pour les alertes : watchlist, likes (coups de cœur Letterboxd), top (mes films préférés)
   ["users", "alert_sources", "TEXT NOT NULL DEFAULT 'watchlist,likes,top'"],
+  ["users", "music_platform", "TEXT NOT NULL DEFAULT 'deezer'"], // plateforme de musique pour les bandes originales (lib/music.ts)
   ["alerts", "notified", "INTEGER NOT NULL DEFAULT 0"], // notification envoyée sur le téléphone
   ["events", "link", "TEXT"], // lien de la séance (réservation, page de la salle…)
   ["films", "disc_color", "TEXT"], // couleur dominante de l'image du film (pour accorder l'étiquette du disque)

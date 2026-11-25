@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { IconChoicePicker, ThemeChoice } from "@/components/ThemeChoice";
+import { MusicChoice } from "@/components/MusicChoice";
 
 export const metadata: Metadata = { title: "Mon compte" };
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     { id: "profil", label: "Profil" },
     { id: "theme", label: "Thème" },
     { id: "icone", label: "Icône" },
+    { id: "musique", label: "Musique" },
     { id: "agenda", label: "Agenda" },
     { id: "securite", label: "Sécurité" },
     { id: "donnees", label: "Mes données" },
@@ -97,6 +99,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             text="Dans l'onglet, sur l'écran d'accueil et dans le Dock. Sur iPhone, rajoutez Dreams à l'écran d'accueil pour la changer."
           >
             <IconChoicePicker />
+          </Setting>
+
+          <Setting id="musique" title="Musique" text="Deezer ou Spotify : les bandes originales des fiches film s'ouvrent sur votre plateforme.">
+            <MusicChoice initial={me.musicPlatform} />
           </Setting>
 
           <Setting id="agenda" title="Agenda dans mon téléphone" text="Vos séances dans le calendrier de votre téléphone. Ce lien est personnel : ne le partagez pas.">
