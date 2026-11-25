@@ -259,7 +259,13 @@ async function migrateToAccounts() {
     );
   }
   // Les affiches personnalisées étaient rangées dans le catalogue partagé : elles deviennent celles du premier compte.
-  if (existing.has("films") && (await columns("films")).includes("custom_poster")) {
+  // La colonne reste (vidée) après la migration : on ne recommence que s'il reste une affiche à déplacer,
+  // sinon toute la table des films serait réécrite à chaque démarrage.
+  if (
+    existing.has("films") &&
+    (await columns("films")).includes("custom_poster") &&
+    (await db().execute("SELECT 1 FROM films WHERE custom_poster IS NOT NULL LIMIT 1")).rows.length
+  ) {
     statements.push(
       PER_USER.find((t) => t.name === "user_posters")!.create,
       `INSERT OR IGNORE INTO user_posters (user_id, film_id, poster) SELECT 0, id, custom_poster FROM films WHERE custom_poster IS NOT NULL`,
@@ -305,18 +311,36 @@ let ready: Promise<void> | undefined;
 // On ignore donc les erreurs « déjà fait », et on ne garde jamais un échec en mémoire (on réessaiera au prochain appel).
 const alreadyDone = (e: unknown) => /duplicate column|already exists/i.test(String((e as Error)?.message ?? e));
 
+// Ne garde que les instructions qui changent quelque chose : une table ou un index déjà là n'est pas recréé, une table
+// déjà supprimée n'est pas re-supprimée. Une base à jour démarre ainsi sans aucune écriture (elle peut même être en lecture seule).
+async function pending(statements: string[]) {
+  const { rows } = await db().execute("SELECT name FROM sqlite_master WHERE type IN ('table', 'index')");
+  const present = new Set(rows.map((r) => String(r.name)));
+  return statements.filter((sql) => {
+    const create = sql.match(/CREATE\s+(?:UNIQUE\s+)?(?:TABLE|INDEX)\s+IF\s+NOT\s+EXISTS\s+(\w+)/i);
+    if (create) return !present.has(create[1]);
+    const drop = sql.match(/DROP\s+TABLE\s+IF\s+EXISTS\s+(\w+)/i);
+    if (drop) return present.has(drop[1]);
+    return true;
+  });
+}
+const writeAll = async (statements: string[]) => {
+  const todo = await pending(statements);
+  if (todo.length) await db().batch(todo, "write");
+};
+
 export function ensureSchema() {
   ready ??= (async () => {
-    await db().batch(SHARED, "write");
+    await writeAll(SHARED);
     await migrateToAccounts();
-    await db().batch([...PER_USER.map((t) => t.create), ...PER_USER.flatMap((t) => t.indexes ?? [])], "write");
+    await writeAll([...PER_USER.map((t) => t.create), ...PER_USER.flatMap((t) => t.indexes ?? [])]);
     for (const [table, column, definition] of ADDED_COLUMNS) {
       if ((await columns(table)).includes(column)) continue;
       await db().execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`).catch((e) => {
         if (!alreadyDone(e)) throw e;
       });
     }
-    await db().batch(ADDED_INDEXES, "write");
+    await writeAll(ADDED_INDEXES);
   })().catch((e) => {
     ready = undefined;
     throw e;
