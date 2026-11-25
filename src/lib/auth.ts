@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db, ensureSchema, USER_TABLES } from "./db";
 import { isTitleLang, type TitleLang } from "./titles";
+import { isMusicPlatform, type MusicPlatform } from "./music";
 
 /*
  * Sécurité des comptes
@@ -27,9 +28,10 @@ export type User = {
   titleLang: TitleLang; // langue des titres traduits affichés sous le titre original
   city: string; // ville pour les séances de cinéma
   country: string; // pays (code ISO) pour les sorties en salle
+  musicPlatform: MusicPlatform; // plateforme de musique pour les bandes originales
 };
 
-const USER_COLUMNS = "u.id, u.email, u.name, u.username, u.is_admin, u.title_lang, u.city, u.country";
+const USER_COLUMNS = "u.id, u.email, u.name, u.username, u.is_admin, u.title_lang, u.city, u.country, u.music_platform";
 const toUser = (r: Record<string, unknown>): User => ({
   id: Number(r.id),
   email: String(r.email),
@@ -39,6 +41,7 @@ const toUser = (r: Record<string, unknown>): User => ({
   titleLang: isTitleLang(String(r.title_lang ?? "fr")) ? (String(r.title_lang ?? "fr") as TitleLang) : "fr",
   city: String(r.city ?? "Paris"),
   country: String(r.country ?? "FR"),
+  musicPlatform: isMusicPlatform(String(r.music_platform ?? "")) ? (String(r.music_platform) as MusicPlatform) : "deezer",
 });
 
 // Nom affiché aux autres membres : le pseudo s'il existe, sinon le prénom.

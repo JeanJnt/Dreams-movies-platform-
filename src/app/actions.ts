@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deleteEvent, saveEvent } from "@/lib/agenda";
 import { requireUser } from "@/lib/auth";
+import { isMusicPlatform } from "@/lib/music";
 import { db } from "@/lib/db";
 import { lookupBarcode, searchFilms } from "@/lib/barcode";
 import { CASE_TYPES, FORMATS, setOwned, type CaseType } from "@/lib/collection";
@@ -313,6 +314,15 @@ export async function setAlertSourcesAction(keys: string[]) {
   const valid = ALERT_SOURCES.filter((s) => keys.includes(s.key)).map((s) => s.key);
   await db().execute({ sql: "UPDATE users SET alert_sources = ? WHERE id = ?", args: [valid.join(","), me.id] });
   revalidatePath("/alertes");
+  revalidatePath("/", "layout");
+}
+
+// --- Plateforme de musique (bandes originales des fiches film) ---
+
+export async function setMusicPlatformAction(platform: string) {
+  const me = await requireUser();
+  if (!isMusicPlatform(platform)) return;
+  await db().execute({ sql: "UPDATE users SET music_platform = ? WHERE id = ?", args: [platform, me.id] });
   revalidatePath("/", "layout");
 }
 
