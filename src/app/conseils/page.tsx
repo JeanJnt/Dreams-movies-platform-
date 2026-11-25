@@ -16,15 +16,7 @@ export default async function ConseilsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={filters.mode === "watchlist" ? "Votre watchlist" : result.fromTitle ? "Dans le même esprit" : "Pour vous"}
         title="Que regarder ce soir ?"
-        lede={<>
-          {filters.mode === "watchlist"
-            ? "Les films de votre watchlist, du plus au moins susceptible de vous plaire."
-            : result.fromTitle
-              ? <>Des films dans l&apos;esprit de <span className="text-foreground">{result.fromTitle}</span>.</>
-              : "Sélectionnés d'après les films que vous avez le mieux notés et vos coups de cœur."}
-        </>}
       />
 
       <PlatformPicker all={PLATFORMS.map(({ key, name }) => ({ key, name }))} mine={mine} />

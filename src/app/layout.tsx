@@ -10,6 +10,7 @@ import { Splash } from "@/components/loading/Splash";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { unseenAlerts } from "@/lib/alerts";
 import { currentUser } from "@/lib/auth";
+import { appIconSuffix, iconChoiceFrom, themeAttr, themeFrom } from "@/lib/themes";
 import "./globals.css";
 
 /*
@@ -22,9 +23,10 @@ const bodoni = Bodoni_Moda({ variable: "--font-bodoni", subsets: ["latin"], styl
 const bungee = Bungee({ variable: "--font-bungee", subsets: ["latin"], weight: "400", display: "swap" });
 const jost = Jost({ variable: "--font-jost", subsets: ["latin"], display: "swap" });
 
-// L'icône suit le thème : étoile argent (noir et blanc) ou rouge (noir et rouge), dans l'onglet comme sur l'écran d'accueil
+// L'icône (étoile argent, rouge ou lilas) suit le thème, sauf si une autre est choisie dans les réglages : dans l'onglet comme sur l'écran d'accueil
 export async function generateMetadata(): Promise<Metadata> {
-  const r = (await cookies()).get("dm-theme")?.value === "rouge" ? "-rouge" : "";
+  const jar = await cookies();
+  const r = appIconSuffix(themeFrom(jar.get("dm-theme")?.value), iconChoiceFrom(jar.get("dm-icon")?.value));
   return {
     title: { default: "Dreams Movies", template: "%s · Dreams Movies" },
     description: "Le journal de cinéma entre amis : films vus, critiques, collection de DVD, séances et statistiques.",
@@ -46,8 +48,8 @@ export const viewport: Viewport = { themeColor: "#000000", viewportFit: "cover",
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const user = await currentUser();
   const alerts = user ? await unseenAlerts() : 0;
-  // le thème choisi (noir et blanc par défaut, ou noir et rouge), posé dès le rendu serveur
-  const theme = (await cookies()).get("dm-theme")?.value === "rouge" ? "rouge" : undefined;
+  // le thème choisi (noir et blanc par défaut), posé dès le rendu serveur
+  const theme = themeAttr(themeFrom((await cookies()).get("dm-theme")?.value));
   return (
     <html lang="fr" data-theme={theme} className={`${bodoni.variable} ${bungee.variable} ${jost.variable}`}>
       <body className="antialiased">

@@ -68,14 +68,14 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
 
   if (!editing) {
     return (
-      <div className="card p-5">
+      <div className="card p-6">
         {saved ? (
           <div className="flex gap-4">
             <div className="w-24 shrink-0">
               <DvdCase film={{ ...film, format: saved.format, caseType: saved.caseType, cover: saved.cover ?? film.poster }} compact />
             </div>
             <div className="min-w-0">
-              <p className="font-display text-lg">Dans ma collection</p>
+              <p className="text-lg">Dans ma collection</p>
               <p className="mt-1 text-sm text-muted">
                 {saved.format} · {caseTypes.find((c) => c.key === saved.caseType)?.label}
               </p>
@@ -87,7 +87,7 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
           </div>
         ) : (
           <button onClick={() => setEditing(true)} className="flex w-full items-center justify-between text-left">
-            <span className="font-display text-lg">Je possède ce film</span>
+            <span className="text-lg">Je possède ce film</span>
             <span className="text-sm text-accent">+ Ajouter</span>
           </button>
         )}
@@ -96,9 +96,9 @@ export function OwnButton({ filmId, initial, formats, caseTypes, film }: Props) 
   }
 
   return (
-    <div className={`space-y-4 rounded-2xl border border-accent/40 bg-surface p-5 ${pending ? "opacity-70" : ""}`}>
+    <div className={`space-y-4 rounded-2xl border border-accent/40 bg-surface p-6 ${pending ? "opacity-70" : ""}`}>
       <div className="flex items-center justify-between">
-        <p className="font-display text-lg">Mon exemplaire</p>
+        <p className="text-lg">Mon exemplaire</p>
         <button onClick={() => setEditing(false)} className="text-xs text-muted hover:text-foreground">Annuler</button>
       </div>
 

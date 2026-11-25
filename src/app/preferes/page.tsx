@@ -11,7 +11,7 @@ export default async function TopFilmsPage() {
   const top = await topFilms();
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <PageHeader size="lg" eyebrow="Films" title="Mes 10 films" lede="Dix films, dans l’ordre. Ils remplacent vos coups de cœur Letterboxd et s’affichent en DVD sur l’accueil." />
+      <PageHeader size="lg" title="Mes 10 films" />
       <TopFilmsEditor initial={top.map((f) => ({ key: `f${f.id}`, title: f.title_fr ?? f.name, year: f.year, poster: f.poster_path }))} />
     </div>
   );

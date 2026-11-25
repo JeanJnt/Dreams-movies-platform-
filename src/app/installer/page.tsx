@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Installer l'application" };
 export default function InstallPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-10">
-      <PageHeader eyebrow="Application" title="Installer Dreams" lede="Sur ordinateur, iPhone et Android : Dreams s’ouvre en plein écran, comme une application." />
+      <PageHeader title="Installer Dreams" />
       <InstallGuide />
     </div>
   );

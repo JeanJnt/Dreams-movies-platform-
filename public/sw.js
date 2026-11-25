@@ -1,5 +1,5 @@
 // Service worker de Dreams : l'appli se lance même sans réseau (dernières pages vues + page hors ligne).
-const VERSION = "dreams-v3";
+const VERSION = "dreams-v4";
 const OFFLINE = "/hors-ligne";
 const PRECACHE = [OFFLINE, "/icon-192.png", "/icon-512.png", "/manifest.webmanifest"];
 
@@ -62,7 +62,8 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: "/icon-192.png",
-      badge: "/icon-192.png",
+      // Android n'affiche que la silhouette de la petite icône (barre d'état) : une étoile blanche sur fond transparent
+      badge: "/badge-96.png",
       tag: data.tag,
       // Rappel de séance : reste affiché jusqu'à ce qu'on le ferme
       requireInteraction: Boolean(data.persistent),

@@ -21,28 +21,22 @@ export function TitleWords({ text, offset = 0 }: { text: string; offset?: number
 /*
  * L'en-tête des pages de rubrique :
  *   en haut, les onglets de la rubrique (où l'on est, ce qu'il y a à côté) ;
- *   puis le titre en Bodoni (composé ligne par ligne par GSAP), la mention de contexte et le compteur en gris,
- *   le chapeau, et les actions à droite (une seule action principale, en blanc).
+ *   puis le titre (composé ligne par ligne par GSAP) et les actions à droite (une seule action principale, en blanc).
+ *   Pas de mention ni de compteur en gris sous le titre : la page se présente d’elle-même.
  */
 export function PageHeader({
-  eyebrow,
   title,
-  lede,
   actions,
   children,
   size = "xl",
   back,
-  number,
   tabs = true,
 }: {
-  eyebrow?: ReactNode;
   title: string;
-  lede?: ReactNode;
   actions?: ReactNode;
   children?: ReactNode;
   size?: "xl" | "lg";
   back?: { href: string; label: string };
-  number?: ReactNode;
   tabs?: boolean;
 }) {
   return (
@@ -61,14 +55,6 @@ export function PageHeader({
           <h1 data-split className={`page-title ${size === "xl" ? "text-[clamp(3.2rem,8vw,7.8rem)]" : "text-[clamp(2.6rem,6vw,5.2rem)]"} leading-[0.94] max-md:text-[clamp(1.9rem,9vw,3.2rem)]`}>
             {title}
           </h1>
-          {(eyebrow || number) && (
-            <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] text-muted">
-              {eyebrow && <span>{eyebrow}</span>}
-              {eyebrow && number && <span aria-hidden className="h-3 w-px bg-current opacity-40" />}
-              {number && <span className="tabular">{number}</span>}
-            </p>
-          )}
-          {lede && <div className="mt-5 max-w-2xl text-[17px] leading-relaxed text-[var(--text-2)]">{lede}</div>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>

@@ -25,7 +25,7 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <PageHeader back={{ href: "/compte", label: "Mon compte" }} eyebrow={<><span className="tabular">{members.rows.length}</span> / 10 membres</>} title="Administration" />
+      <PageHeader back={{ href: "/compte", label: "Mon compte" }} title="Administration" />
 
       <section className="space-y-4 card rounded-3xl p-5 md:p-6">
         <h2 className="text-2xl">Inviter quelqu&apos;un</h2>

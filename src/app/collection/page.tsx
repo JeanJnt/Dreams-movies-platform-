@@ -26,7 +26,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   const { format, vue = "defile" } = await searchParams;
   const [owned, counts] = await Promise.all([ownedFilms(format), ownedCounts()]);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
-  const unseen = owned.filter((f) => !f.seen).length;
 
   const raw: CaseFilm[] = owned.map((f) => ({
     id: f.id,
@@ -65,8 +64,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow={total > 0 ? `${total} film${total > 1 ? "s" : ""}` : undefined}
-        number={total > 0 && unseen ? `${unseen} pas encore vus` : undefined}
         title="Ma collection"
         actions={
           <>

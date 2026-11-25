@@ -56,7 +56,7 @@ function ListTile({ href, posters, name, meta, progress }: { href: string; poste
   );
 }
 
-function Shelf({ id, title, kicker, action, children }: { id: string; title: string; kicker?: string; action?: React.ReactNode; children: React.ReactNode }) {
+function Shelf({ id, title, action, children }: { id: string; title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section aria-labelledby={id} data-reveal>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-t border-[var(--line)] pt-6">
@@ -64,7 +64,6 @@ function Shelf({ id, title, kicker, action, children }: { id: string; title: str
           <h2 id={id} className="text-[2rem] leading-none md:text-[2.6rem]">
             {title}
           </h2>
-          {kicker && <p className="mt-2 text-[14.5px] text-muted">{kicker}</p>}
         </div>
         {action}
       </div>
@@ -82,9 +81,9 @@ export default async function ListsPage() {
 
   return (
     <div className="space-y-20">
-      <PageHeader eyebrow="Journal" number={`${mine.mine.length + lists.length} listes`} title="Listes" actions={<Link href="/listes/perso/nouvelle" className="btn btn-primary">Nouvelle liste</Link>} />
+      <PageHeader title="Listes" actions={<Link href="/listes/perso/nouvelle" className="btn btn-primary">Nouvelle liste</Link>} />
 
-      <Shelf id="miennes" title="Mes listes" kicker="Créées dans Dreams, à partager ou à garder pour soi">
+      <Shelf id="miennes" title="Mes listes">
         {mine.mine.length ? (
           <div className={grid}>{userTiles(mine.mine)}</div>
         ) : (
@@ -99,7 +98,7 @@ export default async function ListsPage() {
       </Shelf>
 
       {mine.others.length > 0 && (
-        <Shelf id="membres" title="Listes des membres" kicker="Ce que vos amis ont rassemblé">
+        <Shelf id="membres" title="Listes des membres">
           <div className={grid}>{userTiles(mine.others, true)}</div>
         </Shelf>
       )}
@@ -107,7 +106,6 @@ export default async function ListsPage() {
       <Shelf
         id="references"
         title="Listes de référence"
-        kicker="Les grands classements, et où vous en êtes"
         action={
           me?.isAdmin ? (
             <Link href="/admin" className="btn btn-sm">
@@ -129,7 +127,7 @@ export default async function ListsPage() {
       </Shelf>
 
       {lists.length > 0 && (
-        <Shelf id="letterboxd" title="Importées de Letterboxd" kicker="Vos listes, telles qu'elles sont sur Letterboxd">
+        <Shelf id="letterboxd" title="Importées de Letterboxd">
           <div className={grid}>
             {lists.map((l) => (
               <ListTile key={l.slug} href={`/listes/${l.slug}`} posters={l.posters} name={l.name} meta={`${l.count} films`} />
