@@ -11,7 +11,8 @@
     "enrich": "tsx --env-file=.env.local scripts/enrich-tmdb.ts",
     "reco": "tsx --env-file=.env.local scripts/reco.ts",
     "alertes": "tsx --env-file=.env.local scripts/alerts.ts",
-    "vers-turso": "tsx --env-file=.env.local scripts/vers-turso.ts"
+    "vers-turso": "tsx --env-file=.env.local scripts/vers-turso.ts",
+    "icons": "tsx scripts/icons.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

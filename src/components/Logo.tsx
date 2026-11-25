@@ -5,7 +5,7 @@ import { BRAND_PATH, BRAND_VIEWBOX } from "@/lib/brand-path";
  * Le logo de Dreams Movies : l'étoile entre deux croissants (tracé d'origine, public/brand/logo-blanc.svg),
  * en argent poli (thème noir et blanc) ou en rouge laqué (thème noir et rouge : variables --logo-0 à --logo-7). Le métal est fait de trois couches : un dégradé argent (variations de lumière),
  * un éclat spéculaire en haut à gauche, et un reflet qui balaie la surface au survol.
- * Le tracé n'est jamais déformé : seul le remplissage change.
+ * Un fin contour à angles vifs épaissit le dessin pour qu'il reste lisible en petit, sans arrondir les pointes.
  */
 export function BrandMark({ className = "", title = "Dreams Movies" }: { className?: string; title?: string }) {
   const id = useId().replace(/:/g, "");
@@ -13,14 +13,14 @@ export function BrandMark({ className = "", title = "Dreams Movies" }: { classNa
     <svg viewBox={BRAND_VIEWBOX} className={`brand-mark ${className}`} role="img" aria-label={title}>
       <defs>
         <linearGradient id={`${id}-silver`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1658" y2="966">
-          <stop offset="0" style={{ stopColor: "var(--logo-0, #8e929c)" }} />
-          <stop offset="0.22" style={{ stopColor: "var(--logo-1, #f4f5f8)" }} />
-          <stop offset="0.36" style={{ stopColor: "var(--logo-2, #b9bcc4)" }} />
+          <stop offset="0" style={{ stopColor: "var(--logo-0, #b8bcc4)" }} />
+          <stop offset="0.22" style={{ stopColor: "var(--logo-1, #ffffff)" }} />
+          <stop offset="0.36" style={{ stopColor: "var(--logo-2, #d4d7dd)" }} />
           <stop offset="0.48" style={{ stopColor: "var(--logo-3, #ffffff)" }} />
-          <stop offset="0.56" style={{ stopColor: "var(--logo-4, #7c808a)" }} />
-          <stop offset="0.7" style={{ stopColor: "var(--logo-5, #e6e8ed)" }} />
-          <stop offset="0.86" style={{ stopColor: "var(--logo-6, #9da1aa)" }} />
-          <stop offset="1" style={{ stopColor: "var(--logo-7, #eef0f4)" }} />
+          <stop offset="0.56" style={{ stopColor: "var(--logo-4, #a9adb6)" }} />
+          <stop offset="0.7" style={{ stopColor: "var(--logo-5, #f2f3f6)" }} />
+          <stop offset="0.86" style={{ stopColor: "var(--logo-6, #c3c6cd)" }} />
+          <stop offset="1" style={{ stopColor: "var(--logo-7, #ffffff)" }} />
         </linearGradient>
         <radialGradient id={`${id}-spec`} gradientUnits="userSpaceOnUse" cx="760" cy="300" r="620">
           <stop offset="0" stopColor="#fff" style={{ stopOpacity: "var(--logo-spec, 0.55)" }} />
@@ -35,7 +35,14 @@ export function BrandMark({ className = "", title = "Dreams Movies" }: { classNa
           <path d={BRAND_PATH} />
         </clipPath>
       </defs>
-      <path d={BRAND_PATH} fill={`url(#${id}-silver)`} />
+      <path
+        d={BRAND_PATH}
+        fill={`url(#${id}-silver)`}
+        stroke={`url(#${id}-silver)`}
+        strokeWidth={22}
+        strokeLinejoin="miter"
+        strokeMiterlimit={4}
+      />
       <path d={BRAND_PATH} fill={`url(#${id}-spec)`} />
       <g clipPath={`url(#${id}-clip)`}>
         <rect className="brand-sweep" x="-500" y="-100" width="420" height="1200" fill={`url(#${id}-sweep)`} transform="skewX(-18)" />

@@ -1055,14 +1055,14 @@ html[data-theme="rouge"] {
 }
 /* le logo en rouge laqué */
 html[data-theme="rouge"] {
-  --logo-0: #9a0712;
-  --logo-1: #ff2a37;
-  --logo-2: #c20b18;
-  --logo-3: #ff5560;
-  --logo-4: #8a0610;
-  --logo-5: #ff1f2e;
-  --logo-6: #b00915;
-  --logo-7: #ff3a46;
+  --logo-0: #c8141f;
+  --logo-1: #ff3a46;
+  --logo-2: #e01a27;
+  --logo-3: #ff6a73;
+  --logo-4: #b81019;
+  --logo-5: #ff3341;
+  --logo-6: #d8121f;
+  --logo-7: #ff4f5a;
   --logo-spec: 0.2;
 }
 html[data-theme="rouge"] body::before {
@@ -1227,13 +1227,13 @@ html[data-theme="lilas"] {
 }
 /* le logo en lilas laqué */
 html[data-theme="lilas"] {
-  --logo-0: #6e4fa8;
+  --logo-0: #9475cf;
   --logo-1: #e6d6ff;
-  --logo-2: #9b77dc;
+  --logo-2: #b597ea;
   --logo-3: #dcc6ff;
-  --logo-4: #5d3f95;
+  --logo-4: #8667c2;
   --logo-5: #c9a8ff;
-  --logo-6: #8964cc;
+  --logo-6: #a786e0;
   --logo-7: #ece2ff;
   --logo-spec: 0.4;
 }
