@@ -11,7 +11,7 @@ export default async function WatchlistPage() {
   const films = await watchlistFilms();
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow={<><span className="tabular">{films.length.toLocaleString("fr-FR")}</span> films à voir</>} title="Watchlist">
+      <PageHeader title="Watchlist">
         <LibraryTabs />
       </PageHeader>
       <FilmGrid films={films} />

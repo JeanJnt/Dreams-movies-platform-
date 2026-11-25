@@ -39,8 +39,6 @@ export default async function FilmsPage({ searchParams }: { searchParams: Promis
   return (
     <div className="space-y-10">
       <PageHeader
-        eyebrow="Journal"
-        number={diaryView ? `${(diary ?? []).length.toLocaleString("fr-FR")} dernières séances` : `${(films ?? []).length.toLocaleString("fr-FR")} films vus`}
         title={diaryView ? "Mes séances" : "Mes films"}
         actions={
           <div className="flex rounded-full p-1 ring-1 ring-[var(--line-2)]" role="group" aria-label="Affichage">

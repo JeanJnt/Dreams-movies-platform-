@@ -1,10 +1,13 @@
 import type { MetadataRoute } from "next";
 import { cookies } from "next/headers";
+import { appIconSuffix, iconChoiceFrom, themeFrom } from "@/lib/themes";
 
 // Ce fichier rend Dreams « installable » comme une vraie appli : Windows, Mac, iPhone et Android.
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
-  // l'icône de l'appli installée suit le thème choisi au moment de l'installation
-  const r = (await cookies()).get("dm-theme")?.value === "rouge" ? "-rouge" : "";
+  // l'icône de l'appli installée : celle choisie dans les réglages, sinon celle du thème.
+  // Chrome (ordinateur et Android) relit ce manifeste et met à jour l'icône de l'appli déjà installée.
+  const jar = await cookies();
+  const r = appIconSuffix(themeFrom(jar.get("dm-theme")?.value), iconChoiceFrom(jar.get("dm-icon")?.value));
   return {
     id: "/",
     name: "Dreams Movies — journal de cinéma",

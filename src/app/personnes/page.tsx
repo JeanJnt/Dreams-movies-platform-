@@ -13,7 +13,7 @@ export default async function PeoplePage() {
 
   return (
     <div className="space-y-14">
-      <PageHeader eyebrow="Journal" title="Cinéastes et acteurs" lede="Celles et ceux que vous avez le plus suivis, d’après vos films vus.">
+      <PageHeader title="Cinéastes et acteurs">
         <LibraryTabs />
       </PageHeader>
       <Ranking title="Mes cinéastes" people={directors} role="director" />

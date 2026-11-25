@@ -5,7 +5,7 @@ import { LogoLoader } from "./LogoLoader";
 
 /*
  * Le premier chargement de l'appli : un rideau noir avec le logo argent (3D dès que possible),
- * retiré dès que la page est prête — jamais plus longtemps que nécessaire, et au plus 2,5 s.
+ * retiré dès que la page est prête, et au plus tard à 1,5 s même sans JavaScript (animation CSS de .splash).
  */
 export function Splash() {
   const ref = useRef<HTMLDivElement>(null);

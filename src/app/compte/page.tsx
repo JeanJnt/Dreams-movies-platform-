@@ -7,7 +7,7 @@ import { LetterboxdConnect } from "@/components/LetterboxdConnect";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ThemeChoice } from "@/components/ThemeChoice";
+import { IconChoicePicker, ThemeChoice } from "@/components/ThemeChoice";
 
 export const metadata: Metadata = { title: "Mon compte" };
 export const dynamic = "force-dynamic";
@@ -33,6 +33,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     { id: "import", label: "Letterboxd" },
     { id: "profil", label: "Profil" },
     { id: "theme", label: "Thème" },
+    { id: "icone", label: "Icône" },
     { id: "agenda", label: "Agenda" },
     { id: "securite", label: "Sécurité" },
     { id: "donnees", label: "Mes données" },
@@ -40,8 +41,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   return (
     <div className="space-y-12">
       <PageHeader
-        eyebrow="Réglages"
-        number={me.email}
         title="Mon compte"
         actions={
           <>
@@ -88,8 +87,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </div>
           </Setting>
 
-          <Setting id="theme" title="Thème" text="Deux ambiances pour Dreams : noir et blanc, ou noir et rouge.">
+          <Setting id="theme" title="Thème" text="Trois ambiances pour Dreams : noir et blanc, noir et rouge, ou noir et lilas.">
             <ThemeChoice />
+          </Setting>
+
+          <Setting
+            id="icone"
+            title="Icône de l'appli"
+            text="Dans l'onglet, sur l'écran d'accueil et dans le Dock. Sur iPhone, rajoutez Dreams à l'écran d'accueil pour la changer."
+          >
+            <IconChoicePicker />
           </Setting>
 
           <Setting id="agenda" title="Agenda dans mon téléphone" text="Vos séances dans le calendrier de votre téléphone. Ce lien est personnel : ne le partagez pas.">

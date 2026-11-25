@@ -55,6 +55,8 @@ Open [dreams-movies-platform.vercel.app](https://dreams-movies-platform.vercel.a
 2. Tap **Install app** on the *Install* page, or the **⋮** menu → **Install app**.
 3. Long-press the icon for shortcuts: Recommendations, Scanner, Agenda, Now showing.
 
+The app icon (silver, red or lilac star) is chosen in **Account → App icon**. Chrome re-reads the manifest and updates the icon of the installed app on its own (it may ask you to confirm). The Play Store build made with PWABuilder (package `app.dreams.journal`) has its icon baked into the APK: rebuild it from `public/icon-512*.png` and `public/icon-maskable-512*.png` to change it. Regenerate every icon with `node scripts/make-icons.mjs`.
+
 ### 🪟 Windows
 1. Open Dreams in **Chrome** or **Edge**.
 2. Click the **install icon** in the address bar (or the *Install* button on the *Install* page).

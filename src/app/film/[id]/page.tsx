@@ -104,14 +104,18 @@ export default async function FilmPage({ params }: Props) {
         </div>
         <div className="relative grid grid-cols-1 items-center gap-2 pt-2 pb-8 lg:min-h-[min(88svh,840px)] lg:grid-cols-[minmax(0,11fr)_minmax(0,10fr)] lg:gap-12 lg:pt-6">
           <div className="relative z-10 min-w-0 max-lg:mt-4 lg:col-start-2 lg:row-start-1">
-            <p className="flex flex-wrap items-center gap-x-2.5 text-[14px] text-muted">
-              {meta.map((m, i) => (
-                <span key={i} className="flex items-center gap-2.5">
-                  {i > 0 && <span aria-hidden className="size-1 rounded-full bg-current opacity-50" />}
-                  {m}
-                </span>
-              ))}
-            </p>
+            {/* Chaque point précède son élément ; la ligne est décalée d'un point vers la gauche et rognée :
+                quand la ligne se coupe sur téléphone, aucun point ne reste en début de ligne */}
+            <div className="overflow-hidden">
+              <p className="-ml-3.5 flex flex-wrap items-center gap-x-2.5 text-[14px] text-muted">
+                {meta.map((m, i) => (
+                  <span key={i} className="flex items-center gap-2.5">
+                    <span aria-hidden className="size-1 rounded-full bg-current opacity-50" />
+                    {m}
+                  </span>
+                ))}
+              </p>
+            </div>
             <h1 data-split className="mt-3 text-[clamp(2.6rem,6vw,6.4rem)] leading-[0.92] break-words">
               {titles.main}
             </h1>
@@ -182,22 +186,18 @@ export default async function FilmPage({ params }: Props) {
               </dd>
             </dl>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            {/* Les actions : la critique, puis l'habillage (boîtier et disque dans l'atelier, affiche à part).
+                Sur téléphone, empilées en pleine largeur, toutes de la même taille. */}
+            <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap sm:items-center">
               <Link href={critique ? (critique.status === "published" ? `/critiques/${critique.id}` : `/film/${id}/critique`) : `/film/${id}/critique`} className="btn btn-primary">
                 {critique ? (critique.status === "published" ? "Lire ma critique" : "Reprendre ma critique") : "Écrire une critique"}
               </Link>
-              <Link href={`/agenda?film=${id}`} className="btn">
-                Planifier une séance
-              </Link>
-            </div>
-            {/* L'habillage : le boîtier et le disque dans l'atelier ; l'affiche (vignettes, listes) à part */}
-            <div className="mt-4 flex flex-wrap items-center gap-3">
               {cf && (
                 <Suspense fallback={null}>
-                  <DesignButton film={{ ...cf, edition: owned?.edition ?? null, caseType: owned?.caseType ?? null, mediaType: film.media_type }} className="btn btn-sm" />
+                  <DesignButton film={{ ...cf, edition: owned?.edition ?? null, caseType: owned?.caseType ?? null, mediaType: film.media_type }} className="btn" />
                 </Suspense>
               )}
-              <PosterPicker filmId={id} current={film.poster_path} hasCustom={Boolean(posters.custom)}>
+              <PosterPicker filmId={id} current={film.poster_path} hasCustom={Boolean(posters.custom)} className="btn">
                 <span className="w-4 shrink-0 overflow-hidden rounded-[2px]">
                   <Poster film={film} size="w185" className="!rounded-[2px] !shadow-none" />
                 </span>
@@ -221,20 +221,24 @@ export default async function FilmPage({ params }: Props) {
       {(bg || film.overview) && (
         <section id="synopsis" className="full-bleed relative scroll-mt-32" aria-label="Synopsis">
           <div className="relative mx-auto max-w-[1680px]">
-            {bg && <img src={bg} alt="" className="aspect-[2.39/1] max-h-[78svh] min-h-[22rem] w-full object-cover" />}
-            <BackdropButton filmId={id} current={film.backdrop_path} hasCustom={Boolean(images.backdrop)} />
-            <div className="absolute inset-0 bg-[linear-gradient(0deg,#000_0%,rgb(0_0_0/0.55)_38%,transparent_70%),linear-gradient(90deg,rgb(0_0_0/0.6),transparent_55%)]" />
+            {/* Sur téléphone, le texte est plus haut que l'image : il passe dessous, aligné sur le reste de la page */}
+            <div className={`relative ${bg ? "" : "min-h-14"}`}>
+              {bg && <img src={bg} alt="" className="aspect-[2.39/1] w-full rounded-[var(--r-poster)] object-cover md:max-h-[78svh] md:min-h-[22rem] md:rounded-none" />}
+              <BackdropButton filmId={id} current={film.backdrop_path} hasCustom={Boolean(images.backdrop)} />
+              {bg && <div className="absolute inset-0 hidden bg-[linear-gradient(0deg,#000_0%,rgb(0_0_0/0.55)_38%,transparent_70%),linear-gradient(90deg,rgb(0_0_0/0.6),transparent_55%)] md:block" />}
+            </div>
             {film.overview && (
-              <div className="absolute inset-x-0 bottom-0 px-[var(--gutter)] pb-10 md:pb-14">
+              <div className={`mt-6 ${bg ? "md:absolute md:inset-x-0 md:bottom-0 md:mt-0 md:px-[var(--gutter)] md:pb-14" : ""}`}>
                 <p className="wide text-muted">Synopsis</p>
-                <p className="mt-4 max-w-[52ch] text-[clamp(1.15rem,1.8vw,1.55rem)] leading-[1.5] font-medium">{film.overview}</p>
+                <p className="mt-3 max-w-[52ch] text-[clamp(1.05rem,1.8vw,1.55rem)] leading-[1.55] font-medium md:mt-4">{film.overview}</p>
               </div>
             )}
           </div>
         </section>
       )}
 
-      <div className="mt-0">
+      {/* sur téléphone, le synopsis est sous l'image : la barre des chapitres prend de l'air */}
+      <div className="mt-8 md:mt-0">
         <ChapterNav chapters={CHAPTERS} />
       </div>
 
@@ -278,7 +282,6 @@ export default async function FilmPage({ params }: Props) {
 
           <section id="presse" className="reveal scroll-mt-32">
             <H2>Lire la presse</H2>
-            <p className="-mt-2 mb-5 text-sm text-muted">Ce film dans les revues de référence.</p>
             <div className="no-scrollbar swipe-row bleed flex gap-3 overflow-x-auto sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
               {ARTICLE_SOURCES.map((s) => (
                 <a key={s.domain} href={articleUrl(s, film)} target="_blank" rel="noreferrer" className="card card-hover group !rounded-xl px-4 py-3.5">
@@ -335,7 +338,7 @@ export default async function FilmPage({ params }: Props) {
         {/* ——— Colonne : ma séance, ma collection, où le voir ——— */}
         <aside className="min-w-0 space-y-5 lg:sticky lg:top-36 lg:self-start">
           <div className="card p-6">
-            <p className="eyebrow mb-4">Mon visionnage</p>
+            <h3 className="mb-4 text-lg">Mon visionnage</h3>
             {seen ? (
               <>
                 <div className="flex items-center gap-3">
@@ -370,7 +373,7 @@ export default async function FilmPage({ params }: Props) {
           />
 
           <div className="card p-6">
-            <p className="eyebrow mb-4">Où le voir</p>
+            <h3 className="mb-4 text-lg">Où le voir</h3>
             {providers && (providers.flatrate.length > 0 || providers.rent.length > 0 || providers.buy.length > 0) ? (
               <>
                 <ProviderRow label="Abonnement" items={providers.flatrate} link={providers.link} />
@@ -469,10 +472,7 @@ async function Videos({ film }: { film: FilmDetail }) {
   const director = film.directors[0] ?? "";
   return (
     <section>
-      <div className="mb-6">
-        <h2 className="text-[2rem] leading-none md:text-[2.6rem]">Analyses vidéo</h2>
-        <p className="mt-2 text-sm text-muted">Uniquement des sources reconnues : Arte, Cahiers du cinéma, Cinémathèque, France Culture, Criterion, BFI, Every Frame a Painting…</p>
-      </div>
+      <h2 className="mb-6 text-[2rem] leading-none md:text-[2.6rem]">Analyses vidéo</h2>
       {videos?.length ? (
         <div className="no-scrollbar swipe-row bleed flex gap-3 overflow-x-auto sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-5 sm:gap-y-7 sm:overflow-visible sm:px-0">
           {videos.map((v) => <VideoCard key={v.id} video={v} />)}

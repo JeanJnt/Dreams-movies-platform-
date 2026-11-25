@@ -21,7 +21,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-14">
-      <PageHeader eyebrow={frise ? "Mes années de cinéma" : "Mes chiffres"} title={frise ? "Ma frise" : "Statistiques"}>
+      <PageHeader title={frise ? "Ma frise" : "Statistiques"}>
         <Tabs
           active={frise ? "/stats?vue=frise" : "/stats"}
           tabs={[

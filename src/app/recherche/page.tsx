@@ -15,7 +15,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Films, séries et personnes, dans toutes les langues" title="Rechercher" />
+      <PageHeader title="Rechercher" />
       <SearchBox defaultValue={q} />
 
       {q && !films.length && !people.length && <p className="text-muted">Aucun résultat pour « {q} ».</p>}

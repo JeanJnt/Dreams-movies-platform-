@@ -20,12 +20,11 @@ export function MoreLink({ href, children = "Tout voir" }: { href: string; child
 }
 
 /*
- * Une section de page : un filet, le titre en Bodoni, la précision (kicker) dessous en gris,
- * « Tout voir » à droite. Pas de numéro de rubrique : le contenu n'est pas une suite ordonnée.
+ * Une section de page : un filet, le titre, « Tout voir » à droite. Pas de sous-titre gris :
+ * le contenu se présente lui-même. Pas de numéro de rubrique : le contenu n'est pas une suite ordonnée.
  */
 export function Section({
   title,
-  kicker,
   href,
   linkLabel,
   aside,
@@ -34,7 +33,6 @@ export function Section({
 }: {
   index?: number | string;
   title: ReactNode;
-  kicker?: ReactNode;
   href?: string;
   linkLabel?: string;
   aside?: ReactNode;
@@ -47,7 +45,6 @@ export function Section({
       <div className="mb-6 flex items-end justify-between gap-4 border-t border-[var(--line)] pt-5 md:mb-8 md:pt-7">
         <div className="min-w-0">
           <h2 className="text-[2rem] leading-none md:text-[2.75rem]">{title}</h2>
-          {kicker && <p className="mt-2.5 text-[14.5px] text-muted">{kicker}</p>}
         </div>
         {aside ?? (href && <MoreLink href={href}>{linkLabel}</MoreLink>)}
       </div>

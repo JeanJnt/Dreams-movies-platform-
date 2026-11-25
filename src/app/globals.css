@@ -1214,6 +1214,172 @@ html[data-theme="rouge"] .skip-link {
   color: #fff;
 }
 
+/* --- Thème « Noir et lilas » : tout est identique ; le lilas remplace le blanc et l'argent pour agir et situer --- */
+html[data-theme="lilas"] {
+  --accent: #c9a8ff;
+  --on-accent: #0d0815;
+  --accent-hi: #dcc6ff;
+  --accent-glow: rgb(201 168 255 / 0.6);
+  --accent-soft: rgb(201 168 255 / 0.12);
+  --heart: #c9a8ff;
+  --marker: linear-gradient(90deg, #c9a8ff, #c9a8ff);
+  --marker-text: linear-gradient(180deg, #dcc6ff, #a983f2);
+}
+/* le logo en lilas laqué */
+html[data-theme="lilas"] {
+  --logo-0: #6e4fa8;
+  --logo-1: #e6d6ff;
+  --logo-2: #9b77dc;
+  --logo-3: #dcc6ff;
+  --logo-4: #5d3f95;
+  --logo-5: #c9a8ff;
+  --logo-6: #8964cc;
+  --logo-7: #ece2ff;
+  --logo-spec: 0.4;
+}
+html[data-theme="lilas"] body::before {
+  background:
+    radial-gradient(90% 55% at 50% -12%, rgb(201 168 255 / 0.16), transparent 70%),
+    radial-gradient(60% 40% at 50% -5%, rgb(201 168 255 / 0.08), transparent 70%);
+}
+html[data-theme="lilas"] ::selection {
+  background: #c9a8ff;
+  color: #0d0815;
+}
+
+/* ============================================================================
+ * Thème « Noir et lilas » — l'identité lilas, sur toute l'expérience
+ * Palette : lilas #c9a8ff · lilas clair #dcc6ff · lilas profond #9b6fe8 · prune #4c2c80 · nuit lilas #0d0815
+ * Les titres de pages et de sections passent en lilas ; le texte courant reste ivoire (contraste AA) ;
+ * surfaces, filets et halos sont teintés de lilas, sans jamais devenir une plaque lilas sous du texte.
+ * ========================================================================== */
+html[data-theme="lilas"] {
+  --lilac: #c9a8ff;
+  --lilac-light: #dcc6ff;
+  --lilac-deep: #9b6fe8;
+  --lilac-plum: #4c2c80;
+  --lilac-night: #0d0815;
+  --surface: #0b0811;
+  --surface-2: #130e1b;
+  --surface-3: #1b1426;
+  --line: rgb(214 190 255 / 0.1);
+  --line-2: rgb(214 190 255 / 0.2);
+  --line-3: rgb(214 190 255 / 0.34);
+  --muted: #a99cbb;
+  --faint: #625875;
+  --text-2: #d6cce3;
+  scrollbar-color: rgb(201 168 255 / 0.55) transparent;
+}
+html[data-theme="lilas"] body::before {
+  background:
+    radial-gradient(100% 60% at 50% -14%, rgb(201 168 255 / 0.22), transparent 70%),
+    radial-gradient(70% 50% at 100% 100%, rgb(76 44 128 / 0.28), transparent 70%),
+    radial-gradient(60% 45% at 0% 70%, rgb(76 44 128 / 0.16), transparent 70%);
+}
+/* titres de pages et de sections */
+html[data-theme="lilas"] h1,
+html[data-theme="lilas"] h2,
+html[data-theme="lilas"] .page-title {
+  color: var(--lilac);
+}
+html[data-theme="lilas"] :is(h1, h2) .text-muted {
+  color: var(--muted);
+}
+html[data-theme="lilas"] .card h2,
+html[data-theme="lilas"] .credits + h2 {
+  color: var(--lilac-light);
+}
+/* libellés de générique et mentions */
+html[data-theme="lilas"] .wide,
+html[data-theme="lilas"] .billing,
+html[data-theme="lilas"] .credits > dt {
+  color: var(--lilac-light);
+  opacity: 0.85;
+}
+html[data-theme="lilas"] .eyebrow {
+  color: #bba8d6;
+}
+html[data-theme="lilas"] .credits {
+  border-top-color: rgb(201 168 255 / 0.45);
+}
+/* surfaces : un panneau nuit lilas, une tranche de lumière lilas en haut */
+html[data-theme="lilas"] .card {
+  background: linear-gradient(180deg, #16101f, #0b0811 65%);
+  box-shadow:
+    inset 0 1px 0 rgb(214 190 255 / 0.16),
+    0 0 0 1px var(--line);
+}
+html[data-theme="lilas"] .card-hover:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(214 190 255 / 0.24),
+    0 0 0 1px rgb(201 168 255 / 0.4),
+    0 24px 50px -24px rgb(201 168 255 / 0.35);
+}
+html[data-theme="lilas"] .ticket:hover {
+  box-shadow: inset 0 0 0 1px rgb(201 168 255 / 0.45);
+}
+/* interactions */
+html[data-theme="lilas"] .btn:hover {
+  border-color: rgb(201 168 255 / 0.55);
+}
+html[data-theme="lilas"] .chip:hover {
+  box-shadow: inset 0 0 0 1px rgb(201 168 255 / 0.55);
+}
+html[data-theme="lilas"] .section-tab[aria-current="page"],
+html[data-theme="lilas"] .section-tab:hover {
+  color: var(--lilac-light);
+}
+html[data-theme="lilas"] .link-draw {
+  background-image: linear-gradient(var(--lilac), var(--lilac));
+}
+html[data-theme="lilas"] a:hover .font-display,
+html[data-theme="lilas"] .group:hover .font-display {
+  color: var(--lilac-light);
+}
+html[data-theme="lilas"] :focus-visible {
+  outline-color: var(--lilac-light);
+}
+html[data-theme="lilas"] :is(a, .group):hover > .poster,
+html[data-theme="lilas"] .group:hover .poster {
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.6),
+    0 34px 54px -26px rgb(201 168 255 / 0.55),
+    0 0 0 1px rgb(201 168 255 / 0.5);
+}
+/* navigation */
+html[data-theme="lilas"] .nav-bar {
+  background: linear-gradient(180deg, rgb(10 7 15 / 0.92), rgb(10 7 15 / 0.7));
+  box-shadow: 0 1px 0 rgb(201 168 255 / 0.22);
+}
+html[data-theme="lilas"] .nav-bar a[aria-current="page"] {
+  color: var(--lilac-light);
+}
+html[data-theme="lilas"] .tabbar {
+  background: linear-gradient(180deg, rgb(27 19 40 / 0.94), rgb(10 7 15 / 0.96));
+  box-shadow:
+    inset 0 1px 0 rgb(214 190 255 / 0.22),
+    inset 0 0 0 1px rgb(201 168 255 / 0.14),
+    0 20px 40px -12px rgb(0 0 0 / 0.95);
+}
+html[data-theme="lilas"] .tab-on {
+  background: rgb(201 168 255 / 0.16);
+  color: var(--lilac-light);
+}
+html[data-theme="lilas"] .avatar {
+  background: radial-gradient(circle at 32% 28%, #3b275e, #120c1c 70%);
+  box-shadow:
+    inset 0 1px 0 rgb(228 212 255 / 0.3),
+    0 0 0 1px rgb(201 168 255 / 0.5);
+  color: #efe5ff;
+}
+html[data-theme="lilas"] footer nav p.wide {
+  color: var(--lilac);
+}
+html[data-theme="lilas"] .skip-link {
+  background: var(--lilac);
+  color: #0d0815;
+}
+
 /* version allégée du chargement : le reflet balaie l'étoile en boucle */
 .loader-sheen .brand-sweep {
   animation: sheen-loop 1.6s var(--ease-io) infinite;
@@ -1235,10 +1401,18 @@ html[data-theme="rouge"] .skip-link {
   place-items: center;
   background: #000;
   transition: opacity 0.45s var(--ease), visibility 0.45s;
+  /* filet de sécurité sans JavaScript : sur un téléphone lent, la page n'attend pas l'appli pour se montrer */
+  animation: splash-out 0.45s var(--ease) 1.5s forwards;
 }
 .splash[data-done] {
   opacity: 0;
   visibility: hidden;
+}
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 /* Tranches : la composition suit la maquette de la jaquette (matières et compositions variées) */

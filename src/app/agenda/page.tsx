@@ -54,8 +54,6 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-16">
       <PageHeader
-        eyebrow="Amis"
-        number={`${upcoming.length} séance${upcoming.length > 1 ? "s" : ""} à venir`}
         title="Agenda"
         actions={
           <a href={calendarUrl} className="btn" title="Ajoutez toutes vos séances au calendrier de votre téléphone ou de votre ordinateur">

@@ -74,9 +74,7 @@ export function MediaGallery({ filmId, media }: { filmId: number; media: Media[]
         </form>
       )}
 
-      {media.length === 0 && !adding ? (
-        <p className="text-sm text-muted">Ajoutez vos captures préférées, des photos de votre édition, des extraits vidéo.</p>
-      ) : (
+      {media.length === 0 ? null : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {media.map((m) => (
             <figure key={m.id} className="group relative">

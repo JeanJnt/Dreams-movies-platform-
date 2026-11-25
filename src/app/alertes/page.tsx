@@ -6,7 +6,6 @@ import { PushToggle } from "@/components/PushToggle";
 import { alertSources } from "@/lib/alert-sources";
 import { listAlerts, markAlertsSeen, nowPlaying, type Alert } from "@/lib/alerts";
 import { requireUser } from "@/lib/auth";
-import { db } from "@/lib/db";
 import { formatLongDate, showtimeLinks } from "@/lib/format";
 import { searchPci } from "@/lib/pariscine";
 import { normalize } from "@/lib/titles";
@@ -29,15 +28,13 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
   const q = ((await searchParams).q ?? "").trim().slice(0, 80);
   const me = await requireUser();
   const isParis = /^paris$/i.test(me.city.trim());
-  const [alerts, playing, sources, checked, programme] = await Promise.all([
+  const [alerts, playing, sources, programme] = await Promise.all([
     listAlerts(),
     nowPlaying(),
     alertSources(me.id),
-    db().execute({ sql: "SELECT alerts_checked_at FROM users WHERE id = ?", args: [me.id] }),
     q && isParis ? searchPci(q) : Promise.resolve([]),
   ]);
   await markAlertsSeen(); // ouvrir la page = alertes lues
-  const checkedAt = (checked.rows[0]?.alerts_checked_at as string) ?? null;
 
   // Recherche : on ne garde que les films dont un titre contient la recherche
   const match = (title: string) => !q || normalize(title).includes(normalize(q));
@@ -48,12 +45,10 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
     <div className="space-y-16">
       <header className="space-y-8">
         <PageHeader
-          eyebrow={`Séances à ${me.city}`}
-          number={checkedAt ? `mis à jour ${new Date(checkedAt).toLocaleString("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}` : undefined}
           title="À l'affiche"
           actions={
             <Link href="/compte#profil" className="btn btn-sm">
-              Changer de ville
+              {me.city} · changer
             </Link>
           }
         />

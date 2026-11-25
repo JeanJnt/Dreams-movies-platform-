@@ -25,7 +25,7 @@ export default async function CritiquesPage() {
 
   return (
     <div className="space-y-20">
-      <PageHeader eyebrow="Journal" number={`${published.length} publiée${published.length > 1 ? "s" : ""}, ${drafts.length} en cours`} title="Mes critiques" actions={<Link href="/films" className="btn btn-primary">Écrire sur un film</Link>} />
+      <PageHeader title="Mes critiques" actions={<Link href="/films" className="btn btn-primary">Écrire sur un film</Link>} />
 
       {!critiques.length && (
         <div className="card px-6 py-16 text-center">
